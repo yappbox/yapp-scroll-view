@@ -39,7 +39,7 @@ function handleStart(e) {
   let touch = e.touches[0];
   if (!touch) { return; }
   let target = touch.target;
-  if (target && target.tagName.match(fieldRegex)) {
+  if (target && target.tagName.match(fieldRegex) || target && target.hasAttribute('data-prevent-scrolling')) {
     return;
   }
   if (e.fromMouseEvent) {
