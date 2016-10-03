@@ -27,7 +27,7 @@ export default Ember.Service.extend({
   removeScrollView: function(scrollView) {
     this._scrollViews.removeObject(scrollView);
   },
-  startScrolling: function(scrollView) {
+  startScrolling: function() {
     this.set('isScrolling', true);
   },
   endScrolling: function() {
