@@ -9,6 +9,11 @@ export default Ember.Service.extend({
     if (viewport) {
       viewport.on('heightDidChange', this, this.refreshAll);
     }
+    if (Ember.testing) {
+      Ember.Test.registerWaiter(() => {
+        return this.get('isScrolling') === false;
+      });
+    }
   },
   willDestroy: function() {
     let viewport = this.get('viewport');
@@ -24,11 +29,9 @@ export default Ember.Service.extend({
   },
   startScrolling: function(scrollView) {
     this.set('isScrolling', true);
-    this._currentlyScrollingView = scrollView;
   },
   endScrolling: function() {
     this.set('isScrolling', false);
-    this._currentlyScrollingView = null;
   },
   startRefreshing: function() {
     this.set('isRefreshing', true);
