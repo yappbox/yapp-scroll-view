@@ -34,12 +34,14 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
     let scrollerOptions = {
       scrollingX: false,
       scrollingComplete: () => {
+        console.log('scroller.scrollingComplete');
         this.trigger('scrollingDidComplete');
       }
     };
     let scroller = new Scroller( (left, top/*, zoom*/) => {
       if (this.isDestroyed || this.isDestroying) { return; }
       run(this, function() {
+        console.log('scroller.run', top);
         this.set('scrollTop', top);
         this.updateScrollbar(top);
         translateY(this.scrollableElement, top);
@@ -58,8 +60,9 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
     this.scheduleRefresh();
   }.observes('viewport.width', 'viewport.height'),
 
-  didInitializeScroller() { },
-  scrollingDidComplete() { },
+  // didInitializeScroller() { },
+  // scrollingDidStart() { },
+  // scrollingDidComplete() { },
 
   willDestroyElement() {
     this._super(...arguments);
@@ -69,7 +72,10 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
 
   scrollTo(yPos, animated=false) {
     if (this.element) {
+      this.trigger('scrollingDidStart');
       return this.scroller.scrollTo(0, yPos, animated);
+    } else {
+      return Logger.warn("Called scrollTo before scrollView is inDOM");
     }
   },
 
@@ -85,12 +91,9 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
   },
 
   scrollToElement(el, animated=false) {
-    if (this.element) {
-      let yPos = this._yOffset(el) + (this.get('extraYOffsetForScrollToElement') || 0);
-      return this.scroller.scrollTo(0, yPos, animated);
-    } else {
-      return Logger.warn("scrollToElement called before scrollView is inDOM");
-    }
+    console.log('about to scroll to element', el);
+    let yPos = this._yOffset(el) + (this.get('extraYOffsetForScrollToElement') || 0);
+    return this.scrollTo(yPos, animated);
   },
 
   _yOffset(el) {

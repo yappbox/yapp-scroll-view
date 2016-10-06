@@ -78,11 +78,20 @@ function handleMove(e) {
   }
 }
 
+function scrollingDidStart() {
+  console.log('scrollingDidStart');
+  Ember.run(() => {
+    this.get('scrollerRegistry').startScrolling();
+  });
+}
+
 function scrollingDidComplete() {
+  console.log('scrollingDidComplete');
   Ember.run(() => {
     this.get('scrollerRegistry').endScrolling();
   });
   setTimeout(()=>{
+    // if (this.isDestroyed || this.isDestroying) { return; }
     Ember.run(() => {
       this.set('isScrolling', false);
     });
@@ -170,7 +179,9 @@ export default Ember.Mixin.create({
   }),
 
   bindScrollerEvents: function() {
+    console.log('binding scroller events');
     var handlers, mousedown, scrollView, scrollViewBound;
+    this.on('scrollingDidStart', this, scrollingDidStart);
     this.on('scrollingDidComplete', this, scrollingDidComplete);
     let el = this.get('element');
     scrollView = this;
@@ -243,6 +254,7 @@ export default Ember.Mixin.create({
     el.addEventListener(normalizeWheel.getEventType(), handlers.wheel, false);
   },
   unbindScrollerEvents: function() {
+    this.off('scrollingDidStart', this, scrollingDidStart);
     this.off('scrollingDidComplete', this, scrollingDidComplete);
     let el = this.get('element');
     let handlers = this.scrollerEventHandlers;

@@ -11,6 +11,7 @@ export default Ember.Service.extend({
     }
     if (Ember.testing) {
       Ember.Test.registerWaiter(() => {
+        console.log('scrolling?', this.get('isScrolling'));
         return this.get('isScrolling') === false;
       });
     }
