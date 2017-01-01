@@ -83,6 +83,9 @@ function scrollingDidComplete() {
     this.get('scrollerRegistry').endScrolling();
   });
   setTimeout(()=>{
+    if (this.isDestroyed || this.isDestroying) {
+      return;
+    }
     Ember.run(() => {
       this.set('isScrolling', false);
     });
