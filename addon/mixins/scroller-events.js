@@ -43,9 +43,9 @@ function handleStart(e) {
     return;
   }
   if (e.fromMouseEvent) {
-    bindWindowMouseEvents.call(this);
+    bindDocumentMouseEvents.call(this);
   } else {
-    bindWindowTouchEvents.call(this);
+    bindDocumentTouchEvents.call(this);
     let el = this.get('element');
     let handlers = this.scrollerEventHandlers;
     el.addEventListener("click", handlers.fastclick, false);
@@ -99,9 +99,9 @@ function handleEnd(e) {
 
 function handleCancel(e) {
   if (e.fromMouseEvent) {
-    unbindWindowMouseEvents.call(this);
+    unbindDocumentMouseEvents.call(this);
   } else {
-    unbindWindowTouchEvents.call(this);
+    unbindDocumentTouchEvents.call(this);
     let el = this.get('element');
     let handlers = this.scrollerEventHandlers;
     setTimeout(function(){
@@ -115,44 +115,44 @@ function handleCancel(e) {
   });
 }
 
-function bindWindowTouchEvents() {
+function bindDocumentTouchEvents() {
   let handlers = this.scrollerEventHandlers;
   if (handlers == null) {
     return;
   }
-  window.addEventListener("touchmove", handlers.touchmove, true);
-  window.addEventListener("touchend", handlers.touchend, true);
-  window.addEventListener("touchcancel", handlers.touchcancel, true);
+  document.addEventListener("touchmove", handlers.touchmove, { capture: true, passive: false });
+  document.addEventListener("touchend", handlers.touchend, { capture: true, passive: false });
+  document.addEventListener("touchcancel", handlers.touchcancel, { capture: true, passive: false });
 }
 
-function bindWindowMouseEvents() {
+function bindDocumentMouseEvents() {
   let handlers = this.scrollerEventHandlers;
   if (handlers == null) {
     return;
   }
-  window.addEventListener("mousemove", handlers.mousemove, true);
-  window.addEventListener("mouseup", handlers.mouseup, true);
-  window.addEventListener("mouseout", handlers.mouseout, true);
+  document.addEventListener("mousemove", handlers.mousemove, { capture: true, passive: false });
+  document.addEventListener("mouseup", handlers.mouseup, { capture: true, passive: false });
+  document.addEventListener("mouseout", handlers.mouseout, { capture: true, passive: false });
 }
 
-function unbindWindowTouchEvents() {
+function unbindDocumentTouchEvents() {
   let handlers = this.scrollerEventHandlers;
   if (handlers == null) {
     return;
   }
-  window.removeEventListener("touchmove", handlers.touchmove, true);
-  window.removeEventListener("touchend", handlers.touchend, true);
-  window.removeEventListener("touchcancel", handlers.touchcancel, true);
+  document.removeEventListener("touchmove", handlers.touchmove, { capture: true, passive: false });
+  document.removeEventListener("touchend", handlers.touchend, { capture: true, passive: false });
+  document.removeEventListener("touchcancel", handlers.touchcancel, { capture: true, passive: false });
 }
 
-function unbindWindowMouseEvents() {
+function unbindDocumentMouseEvents() {
   let handlers = this.scrollerEventHandlers;
   if (handlers == null) {
     return;
   }
-  window.removeEventListener("mousemove", handlers.mousemove, true);
-  window.removeEventListener("mouseup", handlers.mouseup, true);
-  window.removeEventListener("mouseout", handlers.mouseout, true);
+  document.removeEventListener("mousemove", handlers.mousemove, { capture: true, passive: false });
+  document.removeEventListener("mouseup", handlers.mouseup, { capture: true, passive: false });
+  document.removeEventListener("mouseout", handlers.mouseout, { capture: true, passive: false });
 }
 
 export default Ember.Mixin.create({
@@ -252,8 +252,8 @@ export default Ember.Mixin.create({
     if (handlers == null) {
       return;
     }
-    unbindWindowTouchEvents.call(this);
-    unbindWindowMouseEvents.call(this);
+    unbindDocumentTouchEvents.call(this);
+    unbindDocumentMouseEvents.call(this);
     this.scrollerEventHandlers = null;
     if (el) {
       el.removeEventListener("touchstart", handlers.touchstart, false);
