@@ -53,7 +53,7 @@ function handleStart(e) {
   Ember.run(this, function() {
     this.scroller.doTouchStart(e.touches, e.timeStamp);
   });
-  if (fastClickWillSynthesizeClicks) {
+  if (fastClickWillSynthesizeClicks && (this.$().css('touchAction') !== 'manipulation')) {
     e.preventDefault();
   }
 }
