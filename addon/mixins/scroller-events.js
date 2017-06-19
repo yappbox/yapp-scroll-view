@@ -167,6 +167,9 @@ export default Ember.Mixin.create({
     set(key, value){
       this._isScrolling = value;
       this.get('scrollViewApi').scrollingChanged(value);
+      if (value === false) {
+        this.trigger('becameValidForMeasurement');
+      }
 
       return value;
     }

@@ -29,7 +29,7 @@ export default Ember.Mixin.create({
     }
 
     if (this._isScrolling) {
-      this.one('scrollingDidComplete', this, () => {
+      this.one('becameValidForMeasurement', this, () => {
         Ember.run(this, 'scheduleRefresh');
       });
       return;
