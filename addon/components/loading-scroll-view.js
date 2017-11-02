@@ -18,12 +18,16 @@ export default ScrollView.extend({
     this._super(...arguments);
     this.scheduleRefresh();
     this.setupLoadMoreHooks();
-    this.scrollableRegistry.register(this);
+    if (this.scrollableRegistry) {
+      this.scrollableRegistry.register(this);
+    }
   },
 
   willDestroyElement() {
     this._super(...arguments);
-    this.scrollableRegistry.unregister(this);
+    if (this.scrollableRegistry) {
+      this.scrollableRegistry.unregister(this);
+    }
     this.tearDownLoadMoreHooks();
   },
 
