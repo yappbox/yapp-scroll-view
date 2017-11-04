@@ -6,16 +6,17 @@ import ScrollbarHost from '../mixins/scrollbar-host';
 import ScrollerMeasurement from '../mixins/scroller-measurement';
 import getVendorPrefix from '../utils/vendor-prefix';
 import cssTransform from '../utils/css-transform';
-import ScrollsToTop from '../mixins/scroller-scrolls-to-top';
+import ScrollerApiRegistration from '../mixins/scroller-api-registration';
 import template from '../templates/components/scroll-view';
 
 let vendorPrefix = getVendorPrefix();
 let translateY = cssTransform.translateY;
 
-export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasurement, ScrollsToTop, {
+export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasurement, ScrollerApiRegistration, {
   classNames: ['y-scroll-view', 'js-scrollView'],
   layout: template,
   scroller: null,
+  initialScrollTop: 0,
   scrollTop: 0,
   scrollableElement: null,
   viewport: null, // injected
@@ -75,6 +76,10 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
 
   scrollToTop() {
     return this.scrollTo(0, true);
+  },
+
+  resetScrollPosition() {
+    return this.scrollTo(this.get('initialScrollTop'), false);
   },
 
   scrollToBottom() {
