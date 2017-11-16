@@ -44,6 +44,9 @@ export default Ember.Mixin.create({
       return;
     }
     let scrollableElement = this.scrollableElement;
+    if (!scrollableElement) {
+      return; // can happen if triggered before component is inDOM
+    }
     let scrollableHeight = scrollableElement.offsetHeight;
     this.scrollableHeight = scrollableHeight;
     this.set('maxScrollTop', scrollableHeight - scrollerHeight);
