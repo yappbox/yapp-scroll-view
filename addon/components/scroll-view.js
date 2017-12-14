@@ -100,7 +100,7 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
 
   _yOffset(el) {
     let top = el.offsetTop;
-    while ((el = el.offsetParent)) {
+    while (el !== this.element && (el = el.offsetParent)) {
       top += el.offsetTop;
     }
     return top;
