@@ -1,5 +1,5 @@
-import Ember from 'ember';
-const { computed } = Ember;
+import Mixin from '@ember/object/mixin';
+import { computed } from '@ember/object';
 
 class ScrollControlApi {
   constructor(scrollable) {
@@ -15,7 +15,7 @@ class ScrollControlApi {
   }
 }
 
-export default Ember.Mixin.create({
+export default Mixin.create({
   scrollControlApi: computed(function(){
     return new ScrollControlApi(this);
   }),

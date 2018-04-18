@@ -1,5 +1,7 @@
 /* globals Modernizr */
-import Ember from 'ember';
+import { run, schedule } from '@ember/runloop';
+
+import Mixin from '@ember/object/mixin';
 import cssTransform from '../utils/css-transform';
 
 var cssPrefix, cssify, getContentHeight;
@@ -46,20 +48,24 @@ getContentHeight = function() {
   return this.scrollableHeight || this.scrollableElement.offsetHeight;
 };
 
-export default Ember.Mixin.create({
+export default Mixin.create({
   scrollbarWidth: 5,
   scrollbarSideInset: 2,
   scrollbarEndInset: 2,
-  setupScrollbarHost: function() {
+  init() {
+    this._super(...arguments);
+    this.setupScrollbarHost();
+  },
+  setupScrollbarHost() {
     this.on("didInitializeScroller", this, 'initScrollbars');
     this.on("scrollingDidComplete", this, function() {
-      if (Ember.run.currentRunLoop) {
-        return Ember.run.schedule('afterRender', this, 'hideScrollbar');
+      if (run.currentRunLoop) {
+        return schedule('afterRender', this, 'hideScrollbar');
       } else {
         return this.hideScrollbar();
       }
     });
-  }.on('init'),
+  },
   renderScrollbar: function(buffer) {
     return buffer.push('<div class="y-scrollbar-track"><div class="thumb" style="opacity:0"></div></div>');
   },

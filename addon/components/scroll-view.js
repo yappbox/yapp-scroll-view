@@ -1,6 +1,14 @@
 /* globals Scroller */
+import { readOnly } from '@ember/object/computed';
+
+import Evented from '@ember/object/evented';
+import Component from '@ember/component';
+import { run } from '@ember/runloop';
+import EmberObject, { computed, observer } from '@ember/object';
 import Ember from 'ember';
-const { run, Logger, computed } = Ember;
+const {
+  Logger
+} = Ember;
 import ScrollerEvents from '../mixins/scroller-events';
 import ScrollbarHost from '../mixins/scrollbar-host';
 import ScrollerMeasurement from '../mixins/scroller-measurement';
@@ -12,7 +20,7 @@ import template from '../templates/components/scroll-view';
 let vendorPrefix = getVendorPrefix();
 let translateY = cssTransform.translateY;
 
-export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasurement, ScrollerApiRegistration, {
+export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasurement, ScrollerApiRegistration, {
   classNames: ['y-scroll-view', 'js-scrollView'],
   layout: template,
   scroller: null,
@@ -55,9 +63,9 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
     scrollableElement.style[vendorPrefix + 'TransformOrigin'] = "left top";
   },
 
-  dimensionsDidChange: function () {
+  dimensionsDidChange: observer('viewport.{width, height}',function() {
     this.scheduleRefresh();
-  }.observes('viewport.width', 'viewport.height'),
+  }),
 
   didInitializeScroller() { },
   scrollingDidComplete() { },
@@ -123,13 +131,13 @@ export default Ember.Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMea
   }),
 
   scrollViewApi: computed(function() {
-    return ScrollViewApi.create({
-      _scrollView: this
-    });
-  })
+    return ScrollViewApi.create({
+      _scrollView: this
+    });
+  })
 });
 
-const ScrollViewApi = Ember.Object.extend(Ember.Evented, {
+const ScrollViewApi = EmberObject.extend(Evented, {
   init(){
     this._super(...arguments);
     let _scrollView = this.get('_scrollView');
@@ -142,5 +150,5 @@ const ScrollViewApi = Ember.Object.extend(Ember.Evented, {
   scrollingChanged(value) {
     this.trigger('isScrollingChanged', value);
   },
-  scrollTop: computed.readOnly('_scrollView.scrollTop')
+  scrollTop: readOnly('_scrollView.scrollTop')
 });

@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { observer } from '@ember/object';
 import ScrollView from './scroll-view';
-const { run, observer } = Ember;
 
 const THRESHOLD_FROM_BOTTOM_TO_TRIGGER_LOAD_MORE = 350;
 const MAX_LOAD_MORE_FREQUENCY_MS = 1000;
@@ -54,7 +54,7 @@ export default ScrollView.extend({
     let maxScrollTop = this.get('maxScrollTop');
     let distanceFromBottom = maxScrollTop - scrollTop;
     if (distanceFromBottom < THRESHOLD_FROM_BOTTOM_TO_TRIGGER_LOAD_MORE) {
-      this.sendAction('loadMore');
+      this.sendAction('loadMore'); //eslint-disable-line ember/closure-actions
     }
   },
 
