@@ -245,9 +245,9 @@ export default Mixin.create({
       scroller.scrollBy(0, delta, true);
       e.stopPropagation();
     };
-    el.addEventListener("touchstart", handlers.touchstart, false);
+    el.addEventListener("touchstart", handlers.touchstart, { passive: false });
     el.addEventListener("mousedown", handlers.mousedown, false);
-    el.addEventListener(normalizeWheel.getEventType(), handlers.wheel, false);
+    el.addEventListener(normalizeWheel.getEventType(), handlers.wheel, { passive: false });
   },
   unbindScrollerEvents: function() {
     this.off('scrollingDidComplete', this, scrollingDidComplete);
