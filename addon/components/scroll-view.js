@@ -63,7 +63,7 @@ export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasureme
     scrollableElement.style[vendorPrefix + 'TransformOrigin'] = "left top";
   },
 
-  dimensionsDidChange: observer('viewport.{width, height}',function() {
+  dimensionsDidChange: observer('viewport.{width,height}',function() {
     this.scheduleRefresh();
   }),
 
