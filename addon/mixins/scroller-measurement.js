@@ -1,6 +1,8 @@
-import Ember from 'ember';
+import { run, scheduleOnce } from '@ember/runloop';
+import { inject as service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 
-export default Ember.Mixin.create({
+export default Mixin.create({
   init() {
     this._super(...arguments);
     this.get('scrollerRegistry').addScrollView(this);
@@ -9,7 +11,7 @@ export default Ember.Mixin.create({
     this.get('scrollerRegistry').removeScrollView(this);
     this._super(...arguments);
   },
-  scrollerRegistry: Ember.inject.service('scroller-registry'),
+  scrollerRegistry: service('scroller-registry'),
   adjustScrollableViewMinHeight() {
     let height = this.$().height();
     let scrollableElement = this.get('scrollableElement');
@@ -30,7 +32,7 @@ export default Ember.Mixin.create({
 
     if (this._isScrolling) {
       this.one('becameValidForMeasurement', this, () => {
-        Ember.run(this, 'scheduleRefresh');
+        run(this, 'scheduleRefresh');
       });
       return;
     }
@@ -58,6 +60,6 @@ export default Ember.Mixin.create({
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
-    return Ember.run.scheduleOnce('afterRender', this, this.refresh);
+    return scheduleOnce('afterRender', this, this.refresh);
   }
 });

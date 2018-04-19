@@ -1,5 +1,6 @@
-import Ember from 'ember';
-const { computed } = Ember;
+import Mixin from '@ember/object/mixin';
+import { run } from '@ember/runloop';
+import { computed } from '@ember/object';
 import $ from 'jquery';
 import FastClick from 'fastclick';
 import normalizeWheel from 'ember-virtual-scrollkit/utils/normalize-wheel';
@@ -50,7 +51,7 @@ function handleStart(e) {
     let handlers = this.scrollerEventHandlers;
     el.addEventListener("click", handlers.fastclick, false);
   }
-  Ember.run(this, function() {
+  run(this, function() {
     this.scroller.doTouchStart(e.touches, e.timeStamp);
   });
   if (fastClickWillSynthesizeClicks && (this.$().css('touchAction') !== 'manipulation')) {
@@ -67,7 +68,7 @@ function handleMove(e) {
   }
   if (!this._isScrolling && scrollTopBefore !== this.scrollTop) {
     this._didScroll = true;
-    Ember.run(this, function() {
+    run(this, function() {
       this.set('isScrolling', true);
       this.showScrollbar();
       this.get('scrollerRegistry').startScrolling(this);
@@ -79,14 +80,14 @@ function handleMove(e) {
 }
 
 function scrollingDidComplete() {
-  Ember.run(() => {
+  run(() => {
     this.get('scrollerRegistry').endScrolling();
   });
   setTimeout(()=>{
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
-    Ember.run(() => {
+    run(() => {
       this.set('isScrolling', false);
     });
     this._decelerationVelocityY = 0;
@@ -110,7 +111,7 @@ function handleCancel(e) {
       }
     }, 0);
   }
-  Ember.run(this, function(){
+  run(this, function(){
     this.scroller.doTouchEnd(e.timeStamp);
   });
 }
@@ -155,7 +156,7 @@ function unbindDocumentMouseEvents() {
   document.removeEventListener("mouseout", handlers.mouseout, { capture: true, passive: false });
 }
 
-export default Ember.Mixin.create({
+export default Mixin.create({
   init: function() {
     return this._super();
   },
@@ -244,9 +245,9 @@ export default Ember.Mixin.create({
       scroller.scrollBy(0, delta, true);
       e.stopPropagation();
     };
-    el.addEventListener("touchstart", handlers.touchstart, false);
+    el.addEventListener("touchstart", handlers.touchstart, { passive: false });
     el.addEventListener("mousedown", handlers.mousedown, false);
-    el.addEventListener(normalizeWheel.getEventType(), handlers.wheel, false);
+    el.addEventListener(normalizeWheel.getEventType(), handlers.wheel, { passive: false });
   },
   unbindScrollerEvents: function() {
     this.off('scrollingDidComplete', this, scrollingDidComplete);

@@ -1,8 +1,12 @@
+import { registerWaiter } from '@ember/test';
+import Service from '@ember/service';
 import Ember from 'ember';
 
-export default Ember.Service.extend({
+export default Service.extend({
   viewport: null,
-  init: function() {
+  init() {
+    this._super(...arguments);
+
     this._scrollViews = [];
     this.isScrolling = false;
     let viewport = this.get('viewport');
@@ -10,7 +14,7 @@ export default Ember.Service.extend({
       viewport.on('heightDidChange', this, this.refreshAll);
     }
     if (Ember.testing) {
-      Ember.Test.registerWaiter(() => {
+      registerWaiter(() => {
         return this.get('isScrolling') === false;
       });
     }
