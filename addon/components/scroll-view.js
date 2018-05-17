@@ -12,6 +12,7 @@ const {
 import ScrollerEvents from '../mixins/scroller-events';
 import ScrollbarHost from '../mixins/scrollbar-host';
 import ScrollerMeasurement from '../mixins/scroller-measurement';
+import ScrollPositionMemory from '../mixins/scroll-position-memory';
 import getVendorPrefix from '../utils/vendor-prefix';
 import cssTransform from '../utils/css-transform';
 import ScrollerApiRegistration from '../mixins/scroller-api-registration';
@@ -20,7 +21,7 @@ import template from '../templates/components/scroll-view';
 let vendorPrefix = getVendorPrefix();
 let translateY = cssTransform.translateY;
 
-export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasurement, ScrollerApiRegistration, {
+export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasurement, ScrollerApiRegistration, ScrollPositionMemory, {
   classNames: ['y-scroll-view', 'js-scrollView'],
   layout: template,
   scroller: null,
