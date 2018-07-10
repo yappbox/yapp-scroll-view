@@ -3,12 +3,10 @@ import { readOnly } from '@ember/object/computed';
 
 import Evented from '@ember/object/evented';
 import Component from '@ember/component';
-import { run } from '@ember/runloop';
+import { throttle } from '@ember/runloop';
 import EmberObject, { computed, observer } from '@ember/object';
 import Ember from 'ember';
-const {
-  Logger
-} = Ember;
+const { Logger } = Ember;
 import ScrollerEvents from '../mixins/scroller-events';
 import ScrollbarHost from '../mixins/scrollbar-host';
 import ScrollerMeasurement from '../mixins/scroller-measurement';
@@ -17,6 +15,8 @@ import getVendorPrefix from '../utils/vendor-prefix';
 import cssTransform from '../utils/css-transform';
 import ScrollerApiRegistration from '../mixins/scroller-api-registration';
 import template from '../templates/components/scroll-view';
+
+const SCOLLER_CALLBACK_THROTTLE_AMOUNT = 200;
 
 let vendorPrefix = getVendorPrefix();
 let translateY = cssTransform.translateY;
@@ -35,27 +35,29 @@ export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasureme
     return this.element.firstElementChild;
   },
 
-  didInsertElement: function() {
+  didInsertElement() {
     this._super(...arguments);
 
     let scrollableElement = this.getScrollableElement();
     this.set('scrollableElement', scrollableElement);
 
+    let setScrollTop = (top) => this.set('scrollTop', Math.floor(top));
+    let scrollerCallback = (left, top/*, zoom*/) => {
+      if (this.isDestroyed || this.isDestroying) { return; }
+
+      this.updateScrollbar(top);
+      translateY(this.scrollableElement, top);
+      this._decelerationVelocityY = scroller.__decelerationVelocityY;
+      throttle(this, setScrollTop, top, SCOLLER_CALLBACK_THROTTLE_AMOUNT);
+    }
     let scrollerOptions = {
       scrollingX: false,
       scrollingComplete: () => {
         this.trigger('scrollingDidComplete');
       }
     };
-    let scroller = new Scroller( (left, top/*, zoom*/) => {
-      if (this.isDestroyed || this.isDestroying) { return; }
-      run(this, function() {
-        this.set('scrollTop', top);
-        this.updateScrollbar(top);
-        translateY(this.scrollableElement, top);
-        this._decelerationVelocityY = scroller.__decelerationVelocityY;
-      });
-    }, scrollerOptions);
+
+    let scroller = new Scroller(scrollerCallback, scrollerOptions);
 
     this.scroller = scroller;
     this.trigger('didInitializeScroller');
