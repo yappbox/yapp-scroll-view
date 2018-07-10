@@ -117,14 +117,6 @@ export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasureme
     return top;
   },
 
-  elementIsVisible(el) {
-    let top = this._yOffset(el);
-    let scrollTop = this.get('scrollTop');
-    let height = this.$().height();
-
-    return top > scrollTop && top < scrollTop + height;
-  },
-
   getViewHeight() {
     return this.$().height();
   },
