@@ -1,6 +1,6 @@
 {
   "name": "yapp-scroll-view",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Scroll View component",
   "keywords": [
     "ember-addon"
