@@ -133,7 +133,6 @@ function bindDocumentMouseEvents() {
   }
   document.addEventListener("mousemove", handlers.mousemove, { capture: true, passive: false });
   document.addEventListener("mouseup", handlers.mouseup, { capture: true, passive: false });
-  document.addEventListener("mouseout", handlers.mouseout, { capture: true, passive: false });
 }
 
 function unbindDocumentTouchEvents() {
@@ -153,7 +152,6 @@ function unbindDocumentMouseEvents() {
   }
   document.removeEventListener("mousemove", handlers.mousemove, { capture: true, passive: false });
   document.removeEventListener("mouseup", handlers.mouseup, { capture: true, passive: false });
-  document.removeEventListener("mouseout", handlers.mouseout, { capture: true, passive: false });
 }
 
 export default Mixin.create({
