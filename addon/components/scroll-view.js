@@ -41,14 +41,17 @@ export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasureme
     let scrollableElement = this.getScrollableElement();
     this.set('scrollableElement', scrollableElement);
 
-    let setScrollTop = (top) => this.set('scrollTop', Math.floor(top));
     let scrollerCallback = (left, top/*, zoom*/) => {
       if (this.isDestroyed || this.isDestroying) { return; }
 
       this.updateScrollbar(top);
       translateY(this.scrollableElement, top);
       this._decelerationVelocityY = scroller.__decelerationVelocityY;
-      throttle(this, setScrollTop, top, SCOLLER_CALLBACK_THROTTLE_AMOUNT);
+      if (top === 0) {
+        this.setScrollTop(top); // 0 is important and is sometimes missed by throttle
+      } else {
+        throttle(this, this.setScrollTop, top, SCOLLER_CALLBACK_THROTTLE_AMOUNT);
+      }
     }
     let scrollerOptions = {
       scrollingX: false,
@@ -64,6 +67,10 @@ export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasureme
     this.bindScrollerEvents();
 
     scrollableElement.style[vendorPrefix + 'TransformOrigin'] = "left top";
+  },
+
+  setScrollTop(top) {
+    this.set('scrollTop', top);
   },
 
   dimensionsDidChange: observer('viewport.{width,height}',function() {
