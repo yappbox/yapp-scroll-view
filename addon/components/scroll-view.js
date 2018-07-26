@@ -3,7 +3,7 @@ import { readOnly } from '@ember/object/computed';
 
 import Evented from '@ember/object/evented';
 import Component from '@ember/component';
-import { throttle } from '@ember/runloop';
+import { run, throttle } from '@ember/runloop';
 import EmberObject, { computed, observer } from '@ember/object';
 import Ember from 'ember';
 const { Logger } = Ember;
@@ -48,7 +48,7 @@ export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasureme
       translateY(this.scrollableElement, top);
       this._decelerationVelocityY = scroller.__decelerationVelocityY;
       if (top === 0) {
-        this.setScrollTop(top); // 0 is important and is sometimes missed by throttle
+        run(this, this.setScrollTop, top); // 0 is important and is sometimes missed by throttle
       } else {
         throttle(this, this.setScrollTop, top, SCOLLER_CALLBACK_THROTTLE_AMOUNT);
       }
