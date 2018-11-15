@@ -1,13 +1,9 @@
 'use strict';
 
 module.exports = {
-  name: 'yapp-scroll-view',
+  name: require('./package').name,
 
-  isDevelopingAddon: function() {
-    return true;
-  },
-
-  included: function (app) {
+  included(app) {
     // see: https://github.com/ember-cli/ember-cli/issues/3718
     if (typeof app.import !== 'function' && app.app) {
       app = app.app;
