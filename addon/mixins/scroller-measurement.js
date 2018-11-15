@@ -40,8 +40,8 @@ export default Mixin.create({
     this.adjustScrollableViewMinHeight();
     let element = this.get('element');
     let scrollerHeight = element.clientHeight;
-    this.scrollerHeight = scrollerHeight;
-    this.scrollerTrackHeight = this.$('.y-scrollbar-track').height();
+    this.set('scrollerHeight', scrollerHeight);
+    this.set('scrollerTrackHeight', this.$('.y-scrollbar-track').height());
     if (scrollerHeight === 0) {
       return;
     }
@@ -50,7 +50,7 @@ export default Mixin.create({
       return; // can happen if triggered before component is inDOM
     }
     let scrollableHeight = scrollableElement.offsetHeight;
-    this.scrollableHeight = scrollableHeight;
+    this.set('scrollableHeight', scrollableHeight);
     this.set('maxScrollTop', scrollableHeight - scrollerHeight);
     if (this.scroller) {
       this.scroller.setDimensions(element.clientWidth, scrollerHeight, scrollableElement.offsetWidth, scrollableHeight);
