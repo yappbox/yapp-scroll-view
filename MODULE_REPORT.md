@@ -1,20 +1,6 @@
 ## Module Report
 ### Unknown Global
 
-**Global**: `Ember.Logger`
-
-**Location**: `addon/components/scroll-view.js` at line 9
-
-```js
-import EmberObject, { computed, observer } from '@ember/object';
-import Ember from 'ember';
-const { Logger } = Ember;
-import ScrollerEvents from '../mixins/scroller-events';
-import ScrollbarHost from '../mixins/scrollbar-host';
-```
-
-### Unknown Global
-
 **Global**: `Ember.testing`
 
 **Location**: `addon/services/scroller-registry.js` at line 16
@@ -25,4 +11,18 @@ import ScrollbarHost from '../mixins/scrollbar-host';
     if (Ember.testing) {
       registerWaiter(() => {
         return this.get('isScrolling') === false;
+```
+
+### Unknown Global
+
+**Global**: `Ember.Logger`
+
+**Location**: `addon/components/scroll-view.js` at line 9
+
+```js
+import EmberObject, { computed, observer } from '@ember/object';
+import Ember from 'ember';
+const { Logger } = Ember;
+import ScrollerEvents from '../mixins/hammer-scroller-events';
+import ScrollbarHost from '../mixins/scrollbar-host';
 ```

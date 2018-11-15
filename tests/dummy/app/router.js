@@ -7,6 +7,10 @@ const Router = EmberRouter.extend({
 });
 
 Router.map(function() {
+  this.route('virtual');
+  this.route('images');
+  this.route('scroll-position');
+  this.route('scroll-view');
 });
 
 export default Router;

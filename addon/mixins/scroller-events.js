@@ -3,7 +3,7 @@ import { run } from '@ember/runloop';
 import { computed } from '@ember/object';
 import $ from 'jquery';
 import FastClick from 'fastclick';
-import normalizeWheel from 'ember-virtual-scrollkit/utils/normalize-wheel';
+import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
 
 let fieldRegex = /input|textarea|select/i;
 let fastClickWillSynthesizeClicks = !FastClick.notNeeded(document.body);
@@ -36,6 +36,21 @@ function mouseEventToFauxTouchEvent(e) {
   };
 }
 
+function scrollingDidComplete() {
+  run(() => {
+    this.get('scrollerRegistry').endScrolling();
+  });
+  setTimeout(()=>{
+    if (this.isDestroyed || this.isDestroying) {
+      return;
+    }
+    run(() => {
+      this.set('isScrolling', false);
+    });
+    this._decelerationVelocityY = 0;
+  }, 0);
+}
+
 function handleStart(e) {
   let touch = e.touches[0];
   if (!touch) { return; }
@@ -60,6 +75,10 @@ function handleStart(e) {
 }
 
 function handleMove(e) {
+  if (!this.canScroll()) {
+    handleCancel.call(this, e);
+    return;
+  }
   let scrollTopBefore = this.scrollTop;
   this.scroller.doTouchMove(e.touches, e.timeStamp, e.scale);
   if (!e.fromMouseEvent) {
@@ -77,21 +96,6 @@ function handleMove(e) {
       $(e.target).trigger(scrollerstart);
     });
   }
-}
-
-function scrollingDidComplete() {
-  run(() => {
-    this.get('scrollerRegistry').endScrolling();
-  });
-  setTimeout(()=>{
-    if (this.isDestroyed || this.isDestroying) {
-      return;
-    }
-    run(() => {
-      this.set('isScrolling', false);
-    });
-    this._decelerationVelocityY = 0;
-  }, 0);
 }
 
 function handleEnd(e) {
@@ -155,17 +159,13 @@ function unbindDocumentMouseEvents() {
 }
 
 export default Mixin.create({
-  init: function() {
-    return this._super();
-  },
-
   isScrolling: computed({
     get(){
       return this._isScrolling;
     },
     set(key, value){
       this._isScrolling = value;
-      this.get('scrollViewApi').scrollingChanged(value);
+      this.scrollViewApi.scrollingChanged(value);
       if (value === false) {
         this.trigger('becameValidForMeasurement');
       }
@@ -174,17 +174,11 @@ export default Mixin.create({
     }
   }),
 
-  bindScrollerEvents: function() {
-    var handlers, mousedown, scrollView, scrollViewBound;
+  bindScrollerEvents() {
     this.on('scrollingDidComplete', this, scrollingDidComplete);
-    let el = this.get('element');
-    scrollView = this;
-    scrollViewBound = function(f) {
-      return function(e) {
-        return f.call(scrollView, e);
-      };
-    };
-    handlers = { };
+    let el = this.element;
+    let scrollView = this;
+    let handlers = { };
     this.scrollerEventHandlers = handlers;
     handlers.captureClick = function(e){
       e.stopPropagation(); // Stop the click from being propagated.
@@ -196,14 +190,14 @@ export default Mixin.create({
       }
     };
 
-    handlers.touchstart = scrollViewBound(handleStart);
-    handlers.touchmove = scrollViewBound(handleMove);
-    handlers.touchend = scrollViewBound(handleEnd);
-    handlers.touchcancel = scrollViewBound(handleCancel);
+    handlers.touchstart = handleStart.bind(scrollView);
+    handlers.touchmove = handleMove.bind(scrollView);
+    handlers.touchend = handleEnd.bind(scrollView);
+    handlers.touchcancel = handleCancel.bind(scrollView);
 
-    mousedown = false;
+    let mousedown = false;
     handlers.mousedown = function(e) {
-      scrollViewBound(handleStart)(mouseEventToFauxTouchEvent(e));
+      handleStart.call(scrollView, mouseEventToFauxTouchEvent(e));
       mousedown = true;
       scrollView._didScroll = false;
     };
@@ -211,14 +205,14 @@ export default Mixin.create({
       if (!mousedown) {
         return;
       }
-      scrollViewBound(handleMove)(mouseEventToFauxTouchEvent(e));
+      handleMove.call(scrollView, mouseEventToFauxTouchEvent(e));
       mousedown = true;
     };
     handlers.mouseup = function(e) {
       if (!mousedown) {
         return;
       }
-      scrollViewBound(handleEnd)(mouseEventToFauxTouchEvent(e));
+      handleEnd.call(scrollView, mouseEventToFauxTouchEvent(e));
       if (scrollView._didScroll || (scrollView._isScrolling && Math.abs(scrollView._decelerationVelocityY) > 2)) {
         el.addEventListener('click', handlers.captureClick, true);
         setTimeout(function(){
@@ -263,5 +257,8 @@ export default Mixin.create({
       el.removeEventListener("click", handlers.fastclick, false);
       el.removeEventListener(normalizeWheel.getEventType(), handlers.wheel, false);
     }
+  },
+  canScroll() {
+    return true;
   }
 });

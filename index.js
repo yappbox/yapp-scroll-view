@@ -2,6 +2,9 @@
 
 module.exports = {
   name: require('./package').name,
+  isDevelopingAddon() {
+    return true;
+  },
 
   included(app) {
     // see: https://github.com/ember-cli/ember-cli/issues/3718
@@ -15,5 +18,7 @@ module.exports = {
 
     app.import('vendor/fastclick/fastclick.js');
     app.import('vendor/yapp-scroll-view-shims/shims.js');
+    app.import('vendor/zynga-scroller/Animate.js');
+    app.import('vendor/zynga-scroller/Scroller.js');
   }
 };

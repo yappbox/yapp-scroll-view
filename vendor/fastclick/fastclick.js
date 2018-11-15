@@ -195,22 +195,6 @@
 	 */
 	var deviceIsIOS = /iP(ad|hone|od)/.test(navigator.userAgent) && !deviceIsWindowsPhone;
 
-
-	/**
-	 * iOS 4 requires an exception for select elements.
-	 *
-	 * @type boolean
-	 */
-	var deviceIsIOS4 = deviceIsIOS && (/OS 4_\d(_\d)?/).test(navigator.userAgent);
-
-
-	/**
-	 * iOS 6.0-7.* requires the target element to be manually derived
-	 *
-	 * @type boolean
-	 */
-	var deviceIsIOSWithBadTarget = deviceIsIOS && (/OS [6-7]_\d/).test(navigator.userAgent);
-
 	/**
 	 * BlackBerry requires exceptions.
 	 *
@@ -407,31 +391,28 @@
 				return true;
 			}
 
-			if (!deviceIsIOS4) {
-
-				// Weird things happen on iOS when an alert or confirm dialog is opened from a click event callback (issue #23):
-				// when the user next taps anywhere else on the page, new touchstart and touchend events are dispatched
-				// with the same identifier as the touch event that previously triggered the click that triggered the alert.
-				// Sadly, there is an issue on iOS 4 that causes some normal touch events to have the same identifier as an
-				// immediately preceeding touch event (issue #52), so this fix is unavailable on that platform.
-				// Issue 120: touch.identifier is 0 when Chrome dev tools 'Emulate touch events' is set with an iOS device UA string,
-				// which causes all touch events to be ignored. As this block only applies to iOS, and iOS identifiers are always long,
-				// random integers, it's safe to to continue if the identifier is 0 here.
-				if (touch.identifier && touch.identifier === this.lastTouchIdentifier) {
-					event.preventDefault();
-					return false;
-				}
-
-				this.lastTouchIdentifier = touch.identifier;
-
-				// If the target element is a child of a scrollable layer (using -webkit-overflow-scrolling: touch) and:
-				// 1) the user does a fling scroll on the scrollable layer
-				// 2) the user stops the fling scroll with another tap
-				// then the event.target of the last 'touchend' event will be the element that was under the user's finger
-				// when the fling scroll was started, causing FastClick to send a click event to that layer - unless a check
-				// is made to ensure that a parent layer was not scrolled before sending a synthetic click (issue #42).
-				this.updateScrollParent(targetElement);
+			// Weird things happen on iOS when an alert or confirm dialog is opened from a click event callback (issue #23):
+			// when the user next taps anywhere else on the page, new touchstart and touchend events are dispatched
+			// with the same identifier as the touch event that previously triggered the click that triggered the alert.
+			// Sadly, there is an issue on iOS 4 that causes some normal touch events to have the same identifier as an
+			// immediately preceeding touch event (issue #52), so this fix is unavailable on that platform.
+			// Issue 120: touch.identifier is 0 when Chrome dev tools 'Emulate touch events' is set with an iOS device UA string,
+			// which causes all touch events to be ignored. As this block only applies to iOS, and iOS identifiers are always long,
+			// random integers, it's safe to to continue if the identifier is 0 here.
+			if (touch.identifier && touch.identifier === this.lastTouchIdentifier) {
+				event.preventDefault();
+				return false;
 			}
+
+			this.lastTouchIdentifier = touch.identifier;
+
+			// If the target element is a child of a scrollable layer (using -webkit-overflow-scrolling: touch) and:
+			// 1) the user does a fling scroll on the scrollable layer
+			// 2) the user stops the fling scroll with another tap
+			// then the event.target of the last 'touchend' event will be the element that was under the user's finger
+			// when the fling scroll was started, causing FastClick to send a click event to that layer - unless a check
+			// is made to ensure that a parent layer was not scrolled before sending a synthetic click (issue #42).
+			this.updateScrollParent(targetElement);
 		}
 
 		this.trackingClick = true;
@@ -544,18 +525,6 @@
 		this.trackingClick = false;
 		this.trackingClickStart = 0;
 
-		// On some iOS devices, the targetElement supplied with the event is invalid if the layer
-		// is performing a transition or scroll, and has to be re-detected manually. Note that
-		// for this to function correctly, it must be called *after* the event target is checked!
-		// See issue #57; also filed as rdar://13048589 .
-		if (deviceIsIOSWithBadTarget) {
-			touch = event.changedTouches[0];
-
-			// In certain cases arguments of elementFromPoint can be negative, so prevent setting targetElement to null
-			targetElement = document.elementFromPoint(touch.pageX - window.pageXOffset, touch.pageY - window.pageYOffset) || targetElement;
-			targetElement.fastClickScrollParent = this.targetElement.fastClickScrollParent;
-		}
-
 		targetTagName = targetElement.tagName.toLowerCase();
 		if (targetTagName === 'label') {
 			forElement = this.findControl(targetElement);
@@ -589,7 +558,7 @@
 			return false;
 		}
 
-		if (deviceIsIOS && !deviceIsIOS4) {
+		if (deviceIsIOS) {
 
 			// Don't send a synthetic click event if the target element is contained within a parent layer that was scrolled
 			// and this tap is being used to stop the scrolling (usually initiated by a fling - issue #42).

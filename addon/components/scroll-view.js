@@ -7,7 +7,7 @@ import { run, throttle } from '@ember/runloop';
 import EmberObject, { computed, observer } from '@ember/object';
 import Ember from 'ember';
 const { Logger } = Ember;
-import ScrollerEvents from '../mixins/scroller-events';
+import ScrollerEvents from '../mixins/hammer-scroller-events';
 import ScrollbarHost from '../mixins/scrollbar-host';
 import ScrollerMeasurement from '../mixins/scroller-measurement';
 import ScrollPositionMemory from '../mixins/scroll-position-memory';
