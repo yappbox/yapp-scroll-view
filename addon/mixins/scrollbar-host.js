@@ -66,17 +66,17 @@ export default Mixin.create({
       }
     });
   },
-  renderScrollbar: function(buffer) {
+  renderScrollbar(buffer) {
     return buffer.push('<div class="y-scrollbar-track"><div class="thumb" style="opacity:0"></div></div>');
   },
   initScrollbars: initScrollbars,
-  willDestroyElement: function() {
+  willDestroyElement() {
     this._super(...arguments);
     this.off("didInitializeScroller", this, 'initScrollbars');
     this.off("scrollingDidComplete", this, 'hideScrollbar');
     this.$thumb = null;
   },
-  updateScrollbar: function(yPos) {
+  updateScrollbar(yPos) {
     var compressedMaxScrollbarTop, compressionAmount, containerHeight,
     contentHeight, contentRatio, element, scrollbarHeight, scrollbarTop, thumb,
     trackHeight, uncompressedMaxScrollbarTop, uncompressedScrollbarHeight;
@@ -108,12 +108,14 @@ export default Mixin.create({
     return translateY(thumb, -scrollbarTop);
   },
   getContentHeight: getContentHeight,
-  hideScrollbar: function() {
-    var _ref;
-    return (_ref = this.$thumb) != null ? _ref.css('opacity', 0) : void 0;
+  hideScrollbar() {
+    if (this.$thumb) {
+      this.$thumb.css('opacity', 0);
+    }
   },
-  showScrollbar: function() {
-    var _ref;
-    return (_ref = this.$thumb) != null ? _ref.css('opacity', 1) : void 0;
+  showScrollbar() {
+    if (this.$thumb) {
+      this.$thumb.css('opacity', 1);
+    }
   }
 });

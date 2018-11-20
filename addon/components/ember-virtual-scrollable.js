@@ -6,6 +6,7 @@ import { translate } from 'ember-collection/utils/translate';
 import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
 import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer'
+const FIELD_REGEXP = /input|textarea|select/i;
 
 // let fieldRegex = /input|textarea|select/i;
 // let handleTouchStart = function (e) {
@@ -108,7 +109,9 @@ export default Component.extend({
     }, {
       scrollingX: false,
       scrollingComplete: () => {
-        this.sendAction('scrollingComplete');
+        if (this.scrollingComplete) {
+          this.scrollingComplete();
+        }
       }
     });
   },
@@ -120,7 +123,9 @@ export default Component.extend({
         translate(this.contentElement, scrollLeft, -1 * scrollTop);
       }
       if (this._initialSizeCheckCompleted && (this._scrollLeft !== scrollLeft || this._scrollTop !== scrollTop)) {
-        this.sendAction('scrollChange', scrollLeft, scrollTop, params);
+        if (this.scrollChange) {
+          this.scrollChange(scrollLeft, scrollTop, params);
+        }
       }
     }
   },
@@ -195,94 +200,110 @@ export default Component.extend({
       this._needsContentSizeUpdate = false;
     }
   },
-  startSizeCheck() {
-    const component = this;
-    function step() {
-      component.sizeCheck();
-      nextStep();
-    }
-    function nextStep() {
-      component._animationFrame = requestAnimationFrame(step);
-    }
-
-    // Before we check the size for the first time, we capture the intended scroll position
-    // and apply it after we determine and apply the size. The reason we need to do this
-    // is that attempting to apply the scroll position before the scroller has size results
-    // in a scroll position of [0,0].
-    let initialScrollLeft = this._scrollLeft;
-    let initialScrollTop = this._initialScrollTop;
-    component.sizeCheck();
-    this._initialSizeCheckCompleted = true;
-    if (initialScrollLeft || initialScrollTop) {
-      this.scroller.scrollTo(initialScrollLeft, initialScrollTop);
-    }
-    nextStep();
-  },
-  cancelSizeCheck() {
-    if (this._animationFrame) {
-      cancelAnimationFrame(this._animationFrame);
-      this._animationFrame = undefined;
-    }
-  },
-  sizeCheck() {
-    let element = this.element;
-    let clientWidth = element.offsetWidth;
-    let clientHeight = element.offsetHeight;
-    if (clientWidth !== this._clientWidth || clientHeight !== this._clientHeight) {
-      this._clientWidth = clientWidth;
-      this._clientHeight = clientHeight;
-      join(() => {
-        this.updateScrollerDimensions();
-        this.sendClientSizeChange(clientWidth, clientHeight);
+  // startSizeCheck() {
+  //   const component = this;
+  //   function step() {
+  //     component.sizeCheck();
+  //     nextStep();
+  //   }
+  //   function nextStep() {
+  //     component._animationFrame = requestAnimationFrame(step);
+  //   }
+  //
+  //   // Before we check the size for the first time, we capture the intended scroll position
+  //   // and apply it after we determine and apply the size. The reason we need to do this
+  //   // is that attempting to apply the scroll position before the scroller has size results
+  //   // in a scroll position of [0,0].
+  //   let initialScrollLeft = this._scrollLeft;
+  //   let initialScrollTop = this._initialScrollTop;
+  //   component.sizeCheck();
+  //   this._initialSizeCheckCompleted = true;
+  //   if (initialScrollLeft || initialScrollTop) {
+  //     this.scroller.scrollTo(initialScrollLeft, initialScrollTop);
+  //   }
+  //   nextStep();
+  // },
+  // cancelSizeCheck() {
+  //   if (this._animationFrame) {
+  //     cancelAnimationFrame(this._animationFrame);
+  //     this._animationFrame = undefined;
+  //   }
+  // },
+  // sizeCheck() {
+  //   let element = this.element;
+  //   let clientWidth = element.offsetWidth;
+  //   let clientHeight = element.offsetHeight;
+  //   if (clientWidth !== this._clientWidth || clientHeight !== this._clientHeight) {
+  //     this._clientWidth = clientWidth;
+  //     this._clientHeight = clientHeight;
+  //     join(() => {
+  //       this.updateScrollerDimensions();
+  //       this.sendClientSizeChange(clientWidth, clientHeight);
+  //     });
+  //   }
+  // },
+  // sendClientSizeChange(width, height) {
+  //   if (this.clientSizeChange) {
+  //     this.clientSizeChange(width, height);
+  //   }
+  // },
+    bindScrollerEvents() {
+      this.hammer = new Hammer.Manager(this.element, {
+        inputClass: Hammer.TouchMouseInput,
+        recognizers: [
+          [ZyngaScrollerVerticalRecognizer, { scrollComponent: this }]
+        ]
       });
+      this._boundHandleWheel = this.handleWheel.bind(this);
+      this.element.addEventListener(
+        normalizeWheel.getEventType(),
+        this._boundHandleWheel,
+        { passive: false }
+      );
+    },
+    unbindScrollerEvents() {
+      this.hammer.destroy();
+      this.element.removeEventListener(
+        normalizeWheel.getEventType(),
+        this._boundHandleWheel,
+        false
+      );
+    },
+    handleWheel(e) {
+      if (e.target && e.target.tagName.match(FIELD_REGEXP)) {
+        return;
+      }
+      let eventInfo = normalizeWheel(e);
+      let delta = eventInfo.pixelY;
+      let scroller = this.scroller;
+      let scrollTop = scroller.__scrollTop;
+      let maxScrollTop = scroller.__maxScrollTop;
+      let candidatePosition = scrollTop + delta;
+
+      e.preventDefault();
+      if ( (scrollTop === 0 && candidatePosition < 0) ||
+           (scrollTop === maxScrollTop && candidatePosition > maxScrollTop)) {
+        return;
+      }
+      scroller.scrollBy(0, delta, true);
+      e.stopPropagation();
+    },
+
+  doTouchStart(touches, timeStamp) {
+    this._isTouching = true;
+    this.scroller.doTouchStart(touches, timeStamp)
+    if (this.touchingChange) {
+      this.touchingChange(this._isTouching);
     }
   },
-  sendClientSizeChange(width, height) {
-    this.sendAction('clientSizeChange', width, height);
+  doTouchMove(touches, timeStamp, scale) {
+    this.scroller.doTouchMove(touches, timeStamp, scale)
   },
-  bindScrollerEvents() {
-    this.hammer = new Hammer.Manager(this.element, {
-      inputClass: Hammer.TouchMouseInput,
-      recognizers: [
-        [ZyngaScrollerVerticalRecognizer, { scrollComponent: this }]
-      ]
-    });
-    this.element.addEventListener(normalizeWheel.getEventType(), this.scrollerEventHandlers.wheel, false);
-  },
-  unbindScrollerEvents: function() {
-    this.hammer.destroy();
-    this.element.removeEventListener(normalizeWheel.getEventType(), this.scrollerEventHandlers.wheel, false);
-  },
-
-  // doTouchStart: function(touches, timeStamp) {
-  //   this._isTouching = true;
-  //   this.scroller.doTouchStart(touches, timeStamp);
-  //   this.sendAction('touchingChange', this._isTouching);
-  // },
-  // doTouchMove: function(touches, timeStamp) {
-  //   this.scroller.doTouchMove(touches, timeStamp);
-  // },
-  // doTouchEnd: function(timeStamp) {
-  //   this._isTouching = false;
-  //   this.scroller.doTouchEnd(timeStamp);
-  //   this.sendAction('touchingChange', this._isTouching);
-  // },
-
-  mouseWheel: function(e){
-    let eventInfo = normalizeWheel(e);
-    let delta = eventInfo.pixelY;
-    let scroller = this.scroller;
-    let scrollTop = scroller.__scrollTop;
-    let maxScrollTop = scroller.__maxScrollTop;
-    let candidatePosition = scrollTop + delta;
-
-    if ( (scrollTop === 0 && candidatePosition < 0) ||
-         (scrollTop === maxScrollTop && candidatePosition > maxScrollTop)) {
-      return false;
+  doTouchEnd(timeStamp) {
+    this._isTouching = false;
+    this.scroller.doTouchEnd(timeStamp)
+    if (this.touchingChange) {
+      this.touchingChange(this._isTouching);
     }
-
-    scroller.scrollBy(0, delta, true);
-    e.stopPropagation();
-    return false;
   }
 });

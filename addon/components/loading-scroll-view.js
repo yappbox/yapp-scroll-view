@@ -54,7 +54,9 @@ export default ScrollView.extend({
     let maxScrollTop = this.get('maxScrollTop');
     let distanceFromBottom = maxScrollTop - scrollTop;
     if (distanceFromBottom < THRESHOLD_FROM_BOTTOM_TO_TRIGGER_LOAD_MORE) {
-      this.sendAction('loadMore'); //eslint-disable-line ember/closure-actions
+      if (this.loadMore) {
+        this.loadMore();
+      }
     }
   },
 

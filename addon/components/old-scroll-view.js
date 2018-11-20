@@ -15,6 +15,7 @@ import getVendorPrefix from '../utils/vendor-prefix';
 import cssTransform from '../utils/css-transform';
 import ScrollerApiRegistration from '../mixins/scroller-api-registration';
 import template from '../templates/components/scroll-view';
+import ScrollViewApi from '../utils/scroll-view-api';
 
 const SCOLLER_CALLBACK_THROTTLE_AMOUNT = 200;
 
@@ -129,28 +130,12 @@ export default Component.extend(ScrollerEvents, ScrollbarHost, ScrollerMeasureme
   },
 
   scrollView: computed(function() {
-    return this;  // perhaps return a proxy that exposes only the "public" methods
+    return this;
   }),
 
   scrollViewApi: computed(function() {
     return ScrollViewApi.create({
-      _scrollView: this
+      _scrollComponent: this
     });
   })
-});
-
-const ScrollViewApi = EmberObject.extend(Evented, {
-  init(){
-    this._super(...arguments);
-    let _scrollView = this.get('_scrollView');
-    this.scrollToBottom = _scrollView.scrollToBottom.bind(_scrollView);
-    this.scrollToElement = _scrollView.scrollToElement.bind(_scrollView);
-    this.scrollToTop = _scrollView.scrollToTop.bind(_scrollView);
-    this.scheduleRefresh = _scrollView.scheduleRefresh.bind(_scrollView);
-    this.getViewHeight = _scrollView.getViewHeight.bind(_scrollView);
-  },
-  scrollingChanged(value) {
-    this.trigger('isScrollingChanged', value);
-  },
-  scrollTop: readOnly('_scrollView.scrollTop')
 });

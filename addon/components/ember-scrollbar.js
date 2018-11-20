@@ -46,79 +46,79 @@ export default Component.extend({
     this.scheduleCheckIsMoving();
   },
 
-  applyTrackStyles(){
-    const track = this.$('.track')[0];
-    track.style.position = 'absolute';
-    if (this.direction === 'vertical') {
-      track.style.width = `${this.get('width')}px`;
-      track.style.top = `${this.get('endInset')}px`;
-      track.style.bottom = `${this.get('endInset')}px`;
-      track.style.right = `${this.get('sideInset')}px`;
-    } else {
-      track.style.height = `${this.get('width')}px`;
-      track.style.left = `${this.get('endInset')}px`;
-      track.style.right = `${this.get('endInset')}px`;
-      track.style.bottom = `${this.get('sideInset')}px`;
-    }
-  },
-  applyStyles(scrollbarPosition, scrollbarLength) {
-    if (this.direction === 'vertical') {
-      this.thumbElement.style.height = `${scrollbarLength}px`;
-      translate(this.thumbElement, 0, scrollbarPosition);
-    } else {
-      this.thumbElement.style.width = `${scrollbarLength}px`;
-      translate(this.thumbElement, scrollbarPosition, 0);
-    }
-  },
-  applyVisibility(){
-    this.thumbElement.style.opacity = this._isThumbVisible ? 1.0 : 0;
-  },
+  // applyTrackStyles(){
+  //   const track = this.$('.track')[0];
+  //   track.style.position = 'absolute';
+  //   if (this.direction === 'vertical') {
+  //     track.style.width = `${this.get('width')}px`;
+  //     track.style.top = `${this.get('endInset')}px`;
+  //     track.style.bottom = `${this.get('endInset')}px`;
+  //     track.style.right = `${this.get('sideInset')}px`;
+  //   } else {
+  //     track.style.height = `${this.get('width')}px`;
+  //     track.style.left = `${this.get('endInset')}px`;
+  //     track.style.right = `${this.get('endInset')}px`;
+  //     track.style.bottom = `${this.get('sideInset')}px`;
+  //   }
+  // },
+  // applyStyles(scrollbarPosition, scrollbarLength) {
+  //   if (this.direction === 'vertical') {
+  //     this.thumbElement.style.height = `${scrollbarLength}px`;
+  //     translate(this.thumbElement, 0, scrollbarPosition);
+  //   } else {
+  //     this.thumbElement.style.width = `${scrollbarLength}px`;
+  //     translate(this.thumbElement, scrollbarPosition, 0);
+  //   }
+  // },
+  // applyVisibility(){
+  //   this.thumbElement.style.opacity = this._isThumbVisible ? 1.0 : 0;
+  // },
 
-  checkIsTouching(){
-    if (this._appliedIsTouching === this._isTouching) {
-      return;
-    }
-    this._appliedIsTouching = this._isTouching;
-    this.computeVisibility();
-  },
-  checkIsMoving(){
-    if (this._checkIsMovingTimer) {
-      cancel(this._checkIsMovingTimer);
-      this._checkIsMovingTimer = null;
-    }
-    var timeDelta = new Date() - this._previousScrollOffsetTimestamp;
-    if (this._scrollOffset === this._previousScrollOffset) {
-      if (timeDelta > 100) { // if timeDelta <= 100ms, don't set isMoving to false. Instead, wait for the timer to call this again.
-        this._isMoving = false;
-      }
-    } else {
-      this._isMoving = true;
-    }
-    this._previousScrollOffsetTimestamp = new Date();
-    this._previousScrollOffset = this._scrollOffset;
-    if (this._appliedIsMoving !== this._isMoving) {
-      this._appliedIsMoving = this._isMoving;
-      this.computeVisibility();
-    }
-  },
-  scheduleCheckIsMoving(){
-    if (!this._checkIsMovingTimer) {
-      this._checkIsMovingTimer = later(this, this.checkIsMoving, 250);
-    }
-  },
-  computeVisibility(){
-    if (this._isThumbVisible) {
-      // visible, keep showing if user is touching or view is still moving
-      this._isThumbVisible = this._isTouching || this._isMoving;
-    } else {
-      // not yet visible, show it if user is touching and has panned
-      this._isThumbVisible = this._isTouching && this._isMoving;
-    }
-    if (this._appliedIsThumbVisible !== this._isThumbVisible) {
-      this._appliedIsThumbVisible = this._isThumbVisible;
-      this.applyVisibility();
-    }
-  },
+  // checkIsTouching(){
+  //   if (this._appliedIsTouching === this._isTouching) {
+  //     return;
+  //   }
+  //   this._appliedIsTouching = this._isTouching;
+  //   this.computeVisibility();
+  // },
+  // checkIsMoving(){
+  //   if (this._checkIsMovingTimer) {
+  //     cancel(this._checkIsMovingTimer);
+  //     this._checkIsMovingTimer = null;
+  //   }
+  //   var timeDelta = new Date() - this._previousScrollOffsetTimestamp;
+  //   if (this._scrollOffset === this._previousScrollOffset) {
+  //     if (timeDelta > 100) { // if timeDelta <= 100ms, don't set isMoving to false. Instead, wait for the timer to call this again.
+  //       this._isMoving = false;
+  //     }
+  //   } else {
+  //     this._isMoving = true;
+  //   }
+  //   this._previousScrollOffsetTimestamp = new Date();
+  //   this._previousScrollOffset = this._scrollOffset;
+  //   if (this._appliedIsMoving !== this._isMoving) {
+  //     this._appliedIsMoving = this._isMoving;
+  //     this.computeVisibility();
+  //   }
+  // },
+  // scheduleCheckIsMoving(){
+  //   if (!this._checkIsMovingTimer) {
+  //     this._checkIsMovingTimer = later(this, this.checkIsMoving, 250);
+  //   }
+  // },
+  // computeVisibility(){
+  //   if (this._isThumbVisible) {
+  //     // visible, keep showing if user is touching or view is still moving
+  //     this._isThumbVisible = this._isTouching || this._isMoving;
+  //   } else {
+  //     // not yet visible, show it if user is touching and has panned
+  //     this._isThumbVisible = this._isTouching && this._isMoving;
+  //   }
+  //   if (this._appliedIsThumbVisible !== this._isThumbVisible) {
+  //     this._appliedIsThumbVisible = this._isThumbVisible;
+  //     this.applyVisibility();
+  //   }
+  // },
   updateScrollbar: function() {
     if (this._appliedScrollOffset === this._scrollOffset &&
         this._appliedViewportLength === this._viewportLength &&

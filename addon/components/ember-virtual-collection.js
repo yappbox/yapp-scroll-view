@@ -2,6 +2,8 @@ import { set } from '@ember/object';
 import EmberCollection from 'ember-collection/components/ember-collection';
 import layout from './ember-virtual-collection/template';
 const hasTouch = ('ontouchstart' in window) || window.DocumentTouch && document instanceof window.DocumentTouch;
+import { computed } from '@ember/object';
+import ScrollViewApi from '../utils/scroll-view-api';
 
 export default EmberCollection.extend({
   layout: layout,
@@ -10,7 +12,6 @@ export default EmberCollection.extend({
   captureClicksWhenScrolling: true,
   init() {
     this._super(...arguments);
-    this._clientSizeChange = this.getAttr('client-size-change');
     this._initialScrollTop = this.getAttr('initial-scroll-top');
     this._scrollControlApiRegistrar = this.getAttr('scroll-control-api-registrar');
   },
@@ -71,7 +72,9 @@ export default EmberCollection.extend({
   },
   handleScrollChange(scrollLeft, scrollTop, params){
     if (this._scrollChange) {
-      this.sendAction('scroll-change', scrollLeft, scrollTop, params);
+      if (this.scrollChange) {
+        this.scrollChange('scrollChange', scrollLeft, scrollTop, params);
+      }
     } else {
       if (scrollLeft !== this._scrollLeft ||
           scrollTop !== this._scrollTop) {
@@ -84,12 +87,33 @@ export default EmberCollection.extend({
     this._decelerationVelocityY = params.decelerationVelocityY;
   },
   handleScrollingComplete(){
-    this.sendAction('scrolling-complete');
     setTimeout(()=>{
       this._isScrolling = false;
       this._decelerationVelocityY = 0;
     }, 0);
   },
+  scrollToBottom() {
+    let scrollableViewHeight = this._contentSize.height;
+    let height = this._clientHeight;
+
+    return this.scrollTo(scrollableViewHeight - height, true);
+  },
+  scrollToElement() {},
+  scrollToTop() {
+    return this.scrollTo(0, true);
+  },
+  scheduleRefresh() {
+    console.warn('scheduleRefresh is a no-op for ember-virtual-collection because ember-virtual-scrollable monitors its own size');
+  },
+  getViewHeight() {},
+  scrollTo(yPos, animated = 'ignored') {
+    set(this, '_scrollTop', yPos);
+  },
+  scrollViewApi: computed(function() {
+    return ScrollViewApi.create({
+      _scrollComponent: this
+    });
+  }),
   actions: {
     touchingChange(val){
       this.set('isTouching', val);
@@ -101,9 +125,6 @@ export default EmberCollection.extend({
       this.handleScrollChange(scrollLeft, scrollTop, params);
     },
     clientSizeChange(clientWidth, clientHeight) {
-      if (this._clientSizeChange) {
-        this.sendAction('client-size-change', clientWidth, clientHeight);
-      }
       if (this._clientWidth !== clientWidth ||
           this._clientHeight !== clientHeight) {
         set(this, '_clientWidth', clientWidth);

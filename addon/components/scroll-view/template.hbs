@@ -1,0 +1,10 @@
+<div data-test-scroll-container>
+  {{yield scrollViewApi}}
+</div>
+<VerticalScrollBar
+  data-test-scroll-bar
+  class="ScrollView-scrollBar"
+  @scrollTop={{_scrollTop}}
+  @contentHeight={{_contentHeight}}
+  @isTouching={{_isTouching}}
+/>

@@ -1,40 +1,10 @@
 import Mixin from '@ember/object/mixin';
 import { run } from '@ember/runloop';
 import { computed } from '@ember/object';
-import $ from 'jquery';
 import FastClick from 'fastclick';
 import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
 
-let fieldRegex = /input|textarea|select/i;
 let fastClickWillSynthesizeClicks = !FastClick.notNeeded(document.body);
-
-function mouseEventToFauxTouchEvent(e) {
-  var fauxTouch, originalEvent;
-  fauxTouch = {
-    pageX: e.pageX,
-    pageY: e.pageY,
-    screenX: e.screenX,
-    screenY: e.screenY,
-    clientX: e.clientX,
-    clientY: e.clientY,
-    target: e.target,
-    ctrlKey: e.ctrlKey,
-    altKey: e.altKey,
-    shiftKey: e.shiftKey,
-    metaKey: e.metaKey
-  };
-  originalEvent = e;
-  return {
-    target: e.target,
-    touches: [fauxTouch],
-    changedTouches: [fauxTouch],
-    timeStamp: e.timeStamp,
-    fromMouseEvent: true,
-    preventDefault() {
-      return originalEvent.preventDefault();
-    }
-  };
-}
 
 function scrollingDidComplete() {
   run(() => {
@@ -54,10 +24,6 @@ function scrollingDidComplete() {
 function handleStart(e) {
   let touch = e.touches[0];
   if (!touch) { return; }
-  let target = touch.target;
-  if (target && target.tagName.match(fieldRegex) || target && target.hasAttribute('data-prevent-scrolling')) {
-    return;
-  }
   if (e.fromMouseEvent) {
     bindDocumentMouseEvents.call(this);
   } else {
@@ -91,9 +57,6 @@ function handleMove(e) {
       this.set('isScrolling', true);
       this.showScrollbar();
       this.get('scrollerRegistry').startScrolling(this);
-      let scrollerstart = $.Event('scrollerstart');
-      scrollerstart.originalEvent = e;
-      $(e.target).trigger(scrollerstart);
     });
   }
 }

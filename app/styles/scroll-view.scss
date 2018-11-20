@@ -1,0 +1,20 @@
+.ScrollView {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+
+  & :first-child {
+    position: relative;
+    will-change: transform;
+  }
+  &-scrollBar {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    bottom: 2px;
+    width: 5px;
+  }
+}
