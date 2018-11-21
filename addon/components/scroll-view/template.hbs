@@ -8,3 +8,8 @@
   @contentHeight={{_contentHeight}}
   @isTouching={{_isTouching}}
 />
+{{emitter-action
+    emitter=windowRef
+    eventName="requestScrollToTop"
+    action=scrollViewApi.scrollToTopIfInViewport
+}}

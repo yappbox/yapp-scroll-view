@@ -3,37 +3,27 @@ import Component from '@ember/component';
 import { classNames, layout } from '@ember-decorators/component';
 import template from './template';
 import { computed } from '@ember-decorators/object';
+import { service } from '@ember-decorators/service';
 import { argument } from '@ember-decorators/argument';
-// import { optional, type } from '@ember-decorators/argument/type';
-// import { ClosureAction } from '@ember-decorators/argument/types';
+import { optional, type } from '@ember-decorators/argument/type';
 import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
 import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer'
-import { join } from '@ember/runloop';
+import { join, schedule } from '@ember/runloop';
 import { translate } from 'ember-collection/utils/translate';
 import { timeout } from 'ember-concurrency';
 import { task } from 'ember-concurrency-decorators';
 import ScrollViewApi from '../../utils/scroll-view-api';
+import { setupCaptureClick } from '../../utils/capture-click';
 
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
-
-function setupCaptureClick(component) {
-  let { element } = component;
-  function captureClick(e) {
-    e.stopPropagation(); // Stop the click from being propagated.
-    element.removeEventListener('click', captureClick, true); // cleanup
-  }
-  element.addEventListener('click', captureClick, true);
-  setTimeout(function(){
-    element.removeEventListener('click', captureClick, true);
-  }, 0);
-}
 
 @layout(template)
 @classNames('ScrollView')
 export default class ScrollView extends Component {
   @argument contentHeight; // optional, when not provided, we measure the size
+  @argument @type(optional('string')) key;
 
   _scrollTop = 0;
   _needsContentSizeUpdate = true;
@@ -43,6 +33,9 @@ export default class ScrollView extends Component {
   _appliedScrollTop;
   _shouldMeasureContent = false;
   _isTouching = false;
+
+  @service('scroll-position-memory')
+  memory;
 
   constructor() {
     super(...arguments);
@@ -63,9 +56,19 @@ export default class ScrollView extends Component {
     this.bindScrollerEvents();
   }
 
+  didRender() {
+    let { key, _lastKey } = this;
+    if (key && key !== _lastKey) {
+      this.remember(_lastKey);
+      this._lastKey = key;
+      this.restore(key);
+    }
+  }
+
   willDestroyElement() {
     super.willDestroyElement(...arguments);
     this.unbindScrollerEvents();
+    this.remember(this.key);
   }
 
   setupScroller(){
@@ -193,7 +196,7 @@ export default class ScrollView extends Component {
       return;
     }
 
-    while(true) {
+    while(true) { // eslint-disable-line no-constant-condition
       yield timeout(MEASUREMENT_INTERVAL);
       this.measureClientAndContent();
     }
@@ -219,6 +222,19 @@ export default class ScrollView extends Component {
     });
   }
 
+  @computed
+  get windowRef() {
+    return window;
+  }
+
+  get isInViewport() {
+    let rect = this.element.getBoundingClientRect();
+    return rect.top >= 0 &&
+           rect.left >= 0 &&
+           rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+           rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+  }
+
   scrollTo(yPos, animated=false) {
     if (this.element) {
       return this.scroller.scrollTo(0, yPos, animated);
@@ -227,6 +243,12 @@ export default class ScrollView extends Component {
 
   scrollToTop() {
     return this.scrollTo(0, true);
+  }
+
+  scrollToTopIfInViewport() {
+    if (this.isInViewport) {
+      this.scrollToTop();
+    }
   }
 
   scrollToBottom() {
@@ -254,6 +276,19 @@ export default class ScrollView extends Component {
     console.debug('scheduleRefresh is no longer needed. Hurray!'); // eslint-disable-line
   }
   getViewHeight(){}
+
+  remember(key) {
+    if (key) {
+      let position = this._scrollTop;
+      this.memory[key] = position;
+    }
+  }
+
+  restore(key) {
+    let position = this.memory[key] || 0;
+    schedule('afterRender', this, this.scrollTo, position);
+    this.scrollTo(position);
+  }
 
   @computed
   get scrollViewApi() {

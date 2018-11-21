@@ -21,7 +21,7 @@ module('Integration | Component | scroll-view', function(hooks) {
   const EXAMPLE_1_HBS = hbs`
     <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
       <ScrollView as |scrollViewApi|>
-        <div style="width:320px;height:200px">
+        <div id="element1" style="width:320px;height:200px">
           One
           <button
             onclick={{action scrollViewApi.scrollToBottom}}
@@ -68,7 +68,7 @@ module('Integration | Component | scroll-view', function(hooks) {
 
   test('it scrolls with a swipe', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
-    let panYPromise = panY(find('.ScrollView'), {
+    let panYPromise = panY(find('.ScrollView #element1'), {
       position: [10, 50],
       amount: 200,
       duration: 400
@@ -171,10 +171,84 @@ module('Integration | Component | scroll-view', function(hooks) {
     assert.ok(true, 'Scroll buttons worked!')
   });
 
-  // swiping on textarea does not scroll
-  // simulate however tapping the title-bar scrolls the scroll view to the top, registrar?
-  // memory scrolling
-  // loading-scroll-view
+  test('subscribes to requestScrollToTop event on window and scrolls to top when in viewport', async function(assert) {
+    await this.render(EXAMPLE_1_HBS);
+    await click('[data-test-scroll-to-bottom-button]');
+    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) < -500);
+    await click(SCROLL_CONTAINER);
+
+    let bottomScrollPos = scrollPosition(find(SCROLL_CONTAINER));
+    this.element.style.transform = 'translateX(-10000px)';
+    window.dispatchEvent(new Event('requestScrollToTop'));
+    assert.equal(find(SCROLLBAR_THUMB).style.opacity, '0', 'scrollbar is not shown');
+    await timeout(50);
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), bottomScrollPos, 'does not scroll to top');
+
+    this.element.style.transform = 'translateX(0px)';
+    window.dispatchEvent(new Event('requestScrollToTop'));
+    await timeout(50);
+    assert.equal(find(SCROLLBAR_THUMB).style.opacity, '1');
+    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) > -5, {
+      timeoutMessage: 'should scroll to top'
+    });
+    assert.ok(true, 'Scrolled to top!');
+  });
+
+  test('swiping on a textarea does not cause scrolling', async function(assert) {
+    let template = hbs`
+      <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+        <ScrollView as |scrollViewApi|>
+          <div style="width:320px;height:200px">
+            <textarea style="width:320px;height:200px">
+            </textarea>
+          </div>
+          <div style="width:320px;height:200px">Two</div>
+          <div style="width:320px;height:200px">Three</div>
+          <div style="width:320px;height:200px">Four</div>
+          <div style="width:320px;height:200px">Five</div>
+        </ScrollView>
+        </div>
+    `;
+    await this.render(template);
+    await panY(find('.ScrollView textarea'), {
+      position: [10, 50],
+      amount: 100,
+      duration: 200
+    });
+    assert.equal(find(SCROLLBAR_THUMB).style.opacity, '0');
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
+  });
+
+  test('remembers scroll position based on key attribute', async function(assert) {
+    const template = hbs`
+      <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+        <ScrollView @key={{key}}>
+          <div style="width:320px;height:400px">One</div>
+          <div style="width:320px;height:400px">Two</div>
+        </ScrollView>
+        </div>
+    `
+    this.set('key', 'my-scroll-view');
+    await this.render(template);
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
+    await panY(find('.ScrollView'), {
+      position: [10, 50],
+      amount: 100,
+      duration: 200
+    });
+    await click(SCROLL_CONTAINER);
+    let scrollPos = scrollPosition(find(SCROLL_CONTAINER));
+
+    await this.render(hbs``);
+    this.set('key', 'other-scroll-view');
+    await this.render(template);
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0, 'previous scroll position is not restored when there key does not match');
+
+    await this.render(hbs``);
+    this.set('key', 'my-scroll-view');
+    await this.render(template);
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), scrollPos, 'previous scroll position is restored');
+  });
 
   module('needs focus / tempermental', function(hooks){
     setupTestRequiringBrowserFocus(hooks);

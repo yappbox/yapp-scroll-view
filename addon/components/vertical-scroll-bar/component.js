@@ -82,7 +82,7 @@ export default class VerticalScrollBar extends Component {
 
   @task
   manageIsShowingThumbTask = function*() {
-    while(true) {
+    while(true) { // eslint-disable-line no-constant-condition
       yield waitForProperty(this, 'isScrolling', true)
       this.set('isShowingThumb', true);
       yield waitForProperty(this, 'isScrolling', false);
