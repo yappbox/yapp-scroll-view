@@ -1,7 +1,8 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
-import { find, waitUntil } from '@ember/test-helpers';
+import { find } from '@ember/test-helpers';
+import { scrollPosition, waitForOpacity } from '../../helpers/scrolling';
 
 module('Integration | Component | vertical-scroll-bar', function(hooks) {
   setupRenderingTest(hooks);
@@ -31,11 +32,6 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     </div>
   `;
   const THUMB = '[data-test-thumb]';
-
-  function scrollPosition(element) {
-    let { transform } = element.style;
-    return new window.WebKitCSSMatrix(transform).m42;
-  }
 
   test('it renders with a thumb size proportional to content ratio', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
@@ -73,7 +69,8 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('scrollTop', 100);
     assert.equal(find(THUMB).style.opacity, "1");
     this.set('isTouching', false);
-    await waitUntil(() => find(THUMB).style.opacity === '0');
+    await waitForOpacity(THUMB, '0');
+
     assert.equal(find(THUMB).style.opacity, "0");
   });
 

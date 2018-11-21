@@ -2,7 +2,7 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 import { find, settled, waitFor } from '@ember/test-helpers';
-import { panY } from 'yapp-test-support/test-support/helpers';
+import { scrollPosition, scrollDown } from '../../helpers/scrolling';
 import RSVP from 'rsvp';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
@@ -41,11 +41,6 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     </div>
   `;
 
-  function scrollPosition(element) {
-    let { transform } = element.style;
-    return new window.WebKitCSSMatrix(transform).m42;
-  }
-
   test('it renders', async function(assert) {
     this.render(EXAMPLE_1_HBS);
     await waitFor('.ScrollView');
@@ -61,8 +56,7 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
       assert.ok(false, 'should not invoke loadMore');
     });
     await this.render(EXAMPLE_1_HBS);
-    await panY(find('.ScrollView #element1'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView #element1', {
       amount: 500,
       duration: 300
     });
@@ -75,16 +69,14 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
       return RSVP.resolve();
     });
     await this.render(EXAMPLE_1_HBS);
-    await panY(find('.ScrollView #element1'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView #element1', {
       amount: 500,
       duration: 300
     });
     assert.dom(SCROLL_CONTAINER).containsText('Five');
     await settled();
     assert.dom(SCROLL_CONTAINER).containsText('Ten');
-    await panY(find('.ScrollView #element6'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView #element6', {
       amount: 500,
       duration: 300
     });
@@ -102,20 +94,17 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
       this.set('isLoadingMore', true);
     });
     await this.render(EXAMPLE_1_HBS);
-    await panY(find('.ScrollView #element1'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView #element1', {
       amount: 500,
       duration: 300
     });
     await settled();
-    await panY(find('.ScrollView #element1'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView #element1', {
       amount: -500,
       duration: 300
     });
     await settled();
-    await panY(find('.ScrollView #element1'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView #element1', {
       amount: 500,
       duration: 300
     });

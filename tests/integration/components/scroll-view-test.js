@@ -1,10 +1,11 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
-import { click, find, waitFor, waitUntil } from '@ember/test-helpers';
+import { click, find, waitUntil } from '@ember/test-helpers';
 import RSVP from 'rsvp';
 import { timeout } from 'ember-concurrency';
-import { panY, setupTestRequiringBrowserFocus } from 'yapp-test-support/test-support/helpers';
+import { setupTestRequiringBrowserFocus } from 'yapp-test-support/test-support/helpers';
+import { scrollPosition, waitForOpacity, scrollDown } from '../../helpers/scrolling';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
 const SCROLLBAR_THUMB = '[data-test-scroll-bar] [data-test-thumb]';
@@ -53,15 +54,8 @@ module('Integration | Component | scroll-view', function(hooks) {
       </div>
   `;
 
-
-  function scrollPosition(element) {
-    let { transform } = element.style;
-    return new window.WebKitCSSMatrix(transform).m42;
-  }
-
   test('it renders', async function(assert) {
-    this.render(EXAMPLE_1_HBS);
-    await waitFor('.ScrollView');
+    await this.render(EXAMPLE_1_HBS);
     assert.dom('.ScrollView').containsText('One');
     assert.dom(SCROLL_CONTAINER).containsText('One');
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
@@ -69,16 +63,10 @@ module('Integration | Component | scroll-view', function(hooks) {
 
   test('it scrolls with a swipe', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
-    let panYPromise = panY(find('.ScrollView #element1'), {
-      position: [10, 50],
-      amount: 200,
-      duration: 400
-    });
-    await waitUntil(() => {
-      return find(SCROLLBAR_THUMB).style.opacity === '1';
-     });
+    let scrollPromise = scrollDown('.ScrollView #element1');
+    await waitForOpacity(SCROLLBAR_THUMB, '1');
     assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 227);
-    await panYPromise;
+    await scrollPromise;
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -190);
   });
 
@@ -88,21 +76,14 @@ module('Integration | Component | scroll-view', function(hooks) {
       scrollChangeCount++;
     });
     await this.render(EXAMPLE_1_HBS);
-    await panY(find('.ScrollView #element1'), {
-      position: [10, 50],
-      amount: 200,
-      duration: 400
-    });
+    await scrollDown('.ScrollView #element1');
     assert.ok(scrollChangeCount > 20, 'scrollChange action should be emitted a bunch');
   });
 
   test('it shows the scrollbar until the user releases their finger', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
     let mouseUpDeferred = RSVP.defer();
-    panY(find('.ScrollView'), {
-      position: [10, 50],
-      amount: 200,
-      duration: 400,
+    scrollDown('.ScrollView #element1', {
       waitForMouseUp: mouseUpDeferred.promise
     });
     await waitUntil(() => {
@@ -111,9 +92,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     assert.equal(find(SCROLLBAR_THUMB).style.opacity, '1', 'scrollbar visible while still touching');
     await timeout(100);
     mouseUpDeferred.resolve();
-    await waitUntil(() => {
-      return find(SCROLLBAR_THUMB).style.opacity === '0';
-     });
+    await waitForOpacity(SCROLLBAR_THUMB, '0');
     assert.equal(find(SCROLLBAR_THUMB).style.opacity, '0', 'scrollbar hides after no longer touching');
   });
 
@@ -138,8 +117,7 @@ module('Integration | Component | scroll-view', function(hooks) {
       timeoutMessage: 'scroll-view should update its scroll container size'
     });
     assert.equal(find('[data-test-scroll-bar]').offsetHeight, 1196, 'scrollbar height is correct');
-    await panY(find('.ScrollView'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView', {
       amount: 100,
       duration: 200
     });
@@ -174,8 +152,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP();
     assert.equal(find(SCROLL_CONTAINER).offsetHeight, 1800);
     assert.equal(find('[data-test-scroll-bar]').offsetHeight, 476);
-    await panY(find('.ScrollView'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView', {
       amount: 1000,
       duration: 200
     });
@@ -242,11 +219,7 @@ module('Integration | Component | scroll-view', function(hooks) {
         </div>
     `;
     await this.render(template);
-    await panY(find('.ScrollView textarea'), {
-      position: [10, 50],
-      amount: 100,
-      duration: 200
-    });
+    await scrollDown('.ScrollView textarea');
     assert.equal(find(SCROLLBAR_THUMB).style.opacity, '0');
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
   });
@@ -263,8 +236,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     this.set('key', 'my-scroll-view');
     await this.render(template);
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
-    await panY(find('.ScrollView'), {
-      position: [10, 50],
+    await scrollDown('.ScrollView', {
       amount: 100,
       duration: 200
     });
@@ -290,12 +262,7 @@ module('Integration | Component | scroll-view', function(hooks) {
       this.set('onClickLink', function(){
         assert.ok(false, 'should not activate action when tapping when scrolling');
       });
-      let panYPromise = panY(find('.ScrollView'), {
-        position: [10, 50],
-        amount: 200,
-        duration: 400
-      });
-      await panYPromise;
+      await scrollDown('.ScrollView');
       let scrollPos = scrollPosition(find(SCROLL_CONTAINER));
       await click('[data-test-link]');
       await timeout(50);
