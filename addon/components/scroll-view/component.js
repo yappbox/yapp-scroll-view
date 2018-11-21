@@ -45,7 +45,7 @@ export default class ScrollView extends Component {
   }
 
   didReceiveAttrs() {
-    this._scrollTop = this.scrollTop;
+    this.set('_scrollTop', this.scrollTop);
   }
 
   didInsertElement() {
@@ -163,7 +163,7 @@ export default class ScrollView extends Component {
     }
     let eventInfo = normalizeWheel(e);
     let delta = eventInfo.pixelY;
-    let scroller = this.scroller;
+    let { scroller } = this;
     let scrollTop = scroller.__scrollTop;
     let maxScrollTop = scroller.__maxScrollTop;
     let candidatePosition = scrollTop + delta;
