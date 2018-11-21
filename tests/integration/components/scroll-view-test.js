@@ -2,10 +2,9 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 import { click, find, waitFor, waitUntil } from '@ember/test-helpers';
-import { panY } from '../../helpers/yapp-test-support/gestures';
 import RSVP from 'rsvp';
 import { timeout } from 'ember-concurrency';
-import { setupTestRequiringBrowserFocus } from '../../helpers/yapp-test-support';
+import { panY, setupTestRequiringBrowserFocus } from 'yapp-test-support/test-support/helpers';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
 const SCROLLBAR_THUMB = '[data-test-scroll-bar] [data-test-thumb]';
@@ -17,10 +16,12 @@ module('Integration | Component | scroll-view', function(hooks) {
     this.set('onClickLink', function(){});
     this.set('viewportHeight', 480);
     this.set('element3', null);
+    this.set('scrollChange', null);
+    this.set('clientSizeChange', null);
   });
   const EXAMPLE_1_HBS = hbs`
     <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
-      <ScrollView as |scrollViewApi|>
+      <ScrollView @scrollChange={{scrollChange}} @clientSizeChange={{clientSizeChange}} as |scrollViewApi|>
         <div id="element1" style="width:320px;height:200px">
           One
           <button
@@ -81,6 +82,20 @@ module('Integration | Component | scroll-view', function(hooks) {
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -190);
   });
 
+  test('it emits an action when scrolling', async function(assert) {
+    let scrollChangeCount = 0;
+    this.set('scrollChange', function(/* scrollTop */) {
+      scrollChangeCount++;
+    });
+    await this.render(EXAMPLE_1_HBS);
+    await panY(find('.ScrollView #element1'), {
+      position: [10, 50],
+      amount: 200,
+      duration: 400
+    });
+    assert.ok(scrollChangeCount > 20, 'scrollChange action should be emitted a bunch');
+  });
+
   test('it shows the scrollbar until the user releases their finger', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
     let mouseUpDeferred = RSVP.defer();
@@ -114,7 +129,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     assert.equal(find('[data-test-scroll-bar]').offsetHeight, 476);
   });
 
-  test('when scroll-view changes size, it scrolling behavior follows suit', async function(assert) {
+  test('when scroll-view changes size, scrolling behavior follows suit', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
 
     this.set('viewportHeight', 1200);
@@ -131,6 +146,23 @@ module('Integration | Component | scroll-view', function(hooks) {
     await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) === 0, {
       timeoutMessage: 'scroll position should bounce back to zero'
     });
+  });
+
+  test('when scroll-view changes size, it emits an action', async function(assert) {
+    let clientSizeChangeInvoked = false;
+    let newClientHeight;
+    this.set('clientSizeChange', function(clientWidth, clientHeight) {
+      clientSizeChangeInvoked = true;
+      newClientHeight = clientHeight;
+    });
+    await this.render(EXAMPLE_1_HBS);
+    this.set('viewportHeight', 1200);
+    window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP();
+    await waitUntil(() => document.querySelector(SCROLL_CONTAINER).offsetHeight === 1200, {
+      timeoutMessage: 'scroll-view should update its scroll container size'
+    });
+    assert.equal(clientSizeChangeInvoked, true);
+    assert.equal(newClientHeight, 1200);
   });
 
   test('when content height changes, it scrolling behavior follows suit', async function(assert) {

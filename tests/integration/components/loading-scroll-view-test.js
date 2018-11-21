@@ -2,7 +2,7 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 import { find, settled, waitFor } from '@ember/test-helpers';
-import { panY } from '../../helpers/yapp-test-support/gestures';
+import { panY } from 'yapp-test-support/test-support/helpers';
 import RSVP from 'rsvp';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';

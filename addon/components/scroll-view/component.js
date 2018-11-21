@@ -6,6 +6,7 @@ import { computed } from '@ember-decorators/object';
 import { service } from '@ember-decorators/service';
 import { argument } from '@ember-decorators/argument';
 import { optional, type } from '@ember-decorators/argument/type';
+import { ClosureAction } from '@ember-decorators/argument/types';
 import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
 import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer'
@@ -22,8 +23,9 @@ const MEASUREMENT_INTERVAL = 250;
 @layout(template)
 @classNames('ScrollView')
 export default class ScrollView extends Component {
-  @argument contentHeight; // optional, when not provided, we measure the size
+  @argument @type(optional('number')) contentHeight; // optional, when not provided, we measure the size
   @argument @type(optional('string')) key;
+  @argument @type(optional(ClosureAction)) scrollChange;
 
   _scrollTop = 0;
   _needsContentSizeUpdate = true;
@@ -46,6 +48,9 @@ export default class ScrollView extends Component {
 
   didReceiveAttrs() {
     this.set('_scrollTop', this.scrollTop);
+    if (!this._shouldMeasureContent && (this._contentHeight !== this.contentHeight)) {
+      this.measureClientAndContent();
+    }
   }
 
   didInsertElement() {
@@ -69,6 +74,9 @@ export default class ScrollView extends Component {
     super.willDestroyElement(...arguments);
     this.unbindScrollerEvents();
     this.remember(this.key);
+    if (Ember.testing) {
+      window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
+    }
   }
 
   setupScroller(){
@@ -101,6 +109,9 @@ export default class ScrollView extends Component {
     }
     this.set('_scrollTop', scrollTop);
     this._decelerationVelocityY = params.decelerationVelocityY;
+    if (this.scrollChange) {
+      this.scrollChange(scrollTop);
+    }
   }
 
   updateScrollerDimensions() {
@@ -203,7 +214,10 @@ export default class ScrollView extends Component {
   }
 
   measureClientAndContent() {
-    let element = this.element;
+    let { element } = this;
+    if (!element) {
+      return;
+    }
     let clientWidth = element.offsetWidth;
     let clientHeight = element.offsetHeight;
     let { contentHeight } = this;
@@ -219,6 +233,9 @@ export default class ScrollView extends Component {
     join(() => {
       this.contentElement.style.minHeight = `${clientHeight}px`;
       this.updateScrollerDimensions();
+      if (this.clientSizeChange) {
+        this.clientSizeChange(clientWidth, clientHeight);
+      }
     });
   }
 

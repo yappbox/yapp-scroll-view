@@ -5,7 +5,6 @@ import { type } from '@ember-decorators/argument/type';
 import { ClosureAction } from '@ember-decorators/argument/types';
 import { run } from '@ember/runloop';
 
-const THRESHOLD_FROM_BOTTOM_TO_TRIGGER_LOAD_MORE = 350;
 const MAX_LOAD_MORE_FREQUENCY_MS = 1000;
 
 @classNames('LoadingScrollView')
@@ -13,6 +12,7 @@ export default class LoadingScrollView extends ScrollView {
   @argument @type('boolean') hasMore;
   @argument @type('boolean') isLoadingMore;
   @argument @type(ClosureAction) loadMore;
+  @argument @type('number') threshold = 350;
 
   onScrollChange(scrollLeft, scrollTop, params) {
     super.onScrollChange(scrollLeft, scrollTop, params);
@@ -27,7 +27,7 @@ export default class LoadingScrollView extends ScrollView {
   }
 
   get canLoadMore() {
-    return (this.hasMore && !this.isLoadingMore && !this.isDestroyed && !this.isDestroying);
+    return (this.loadMore && this.hasMore && !this.isLoadingMore && !this.isDestroyed && !this.isDestroying);
   }
 
   throttledLoadMore() {
@@ -42,15 +42,15 @@ export default class LoadingScrollView extends ScrollView {
     let scrollTop = this._scrollTop;
     let maxScrollTop = this._contentHeight - this._clientHeight;
     let distanceFromBottom = maxScrollTop - scrollTop;
-    if (distanceFromBottom < THRESHOLD_FROM_BOTTOM_TO_TRIGGER_LOAD_MORE) {
-      if (this.loadMore) {
-        let loadMoreResult = this.loadMore();
-        if (loadMoreResult && loadMoreResult.then) {
-          loadMoreResult.then(() => {
-            this.measureClientAndContent();
-          });
-        }
-      }
+    if (distanceFromBottom >= this.threshold) {
+      return;
+    }
+
+    let loadMoreResult = this.loadMore();
+    if (loadMoreResult && loadMoreResult.then) {
+      loadMoreResult.then(() => {
+        this.measureClientAndContent();
+      });
     }
   }
 }

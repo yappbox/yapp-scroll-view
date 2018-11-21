@@ -1,0 +1,17 @@
+<div style="height:640px; width: 500px; overflow: hidden; position: relative">
+  <LoadingScrollView
+    @hasMore={{hasMore}}
+    @isLoadingMore={{isLoadingMore}}
+    @loadMore={{action 'loadMore'}}
+    @threshold={{100}}
+  >
+    {{#each loadedStrings as |string|}}
+      <p>{{string}}</p>
+    {{/each}}
+  </LoadingScrollView>
+</div>
+{{#if isLoadingMore}}
+<div style="color:red">
+  LOADING MORE...
+</div>
+{{/if}}
