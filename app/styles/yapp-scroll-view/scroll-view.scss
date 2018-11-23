@@ -6,7 +6,7 @@
   right: 0;
   overflow: hidden;
 
-  & :first-child {
+  & > :first-child {
     position: relative;
     will-change: transform;
   }

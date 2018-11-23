@@ -19,10 +19,11 @@ module('Integration | Component | scroll-view', function(hooks) {
     this.set('element3', null);
     this.set('scrollChange', null);
     this.set('clientSizeChange', null);
+    this.set('scrolledToTopChange', null);
   });
   const EXAMPLE_1_HBS = hbs`
     <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
-      <ScrollView @scrollChange={{scrollChange}} @clientSizeChange={{clientSizeChange}} as |scrollViewApi|>
+      <ScrollView @scrollChange={{scrollChange}} @clientSizeChange={{clientSizeChange}} @scrolledToTopChange={{scrolledToTopChange}} as |scrollViewApi|>
         <div id="element1" style="width:320px;height:200px">
           One
           <button
@@ -49,6 +50,7 @@ module('Integration | Component | scroll-view', function(hooks) {
           >
             Scroll to Top
           </button>
+          <div>isScrolling: {{if scrollViewApi.isScrolling 'true' 'false'}}</div>
         </div>
       </ScrollView>
       </div>
@@ -76,8 +78,38 @@ module('Integration | Component | scroll-view', function(hooks) {
       scrollChangeCount++;
     });
     await this.render(EXAMPLE_1_HBS);
-    await scrollDown('.ScrollView #element1');
+    assert.dom(SCROLL_CONTAINER).containsText('isScrolling: false');
+    let scrollPromise = scrollDown('.ScrollView #element1');
+    await timeout(50);
+    assert.dom(SCROLL_CONTAINER).containsText('isScrolling: true');
+    await scrollPromise;
+    assert.dom(SCROLL_CONTAINER).containsText('isScrolling: true');
     assert.ok(scrollChangeCount > 20, 'scrollChange action should be emitted a bunch');
+  });
+
+  test('it emits an action when scrolling to top', async function(assert) {
+    let scrolledToTopChangeCount = 0;
+    let isAtTopValue = false;
+    this.set('scrolledToTopChange', function(isAtTop) {
+      scrolledToTopChangeCount++;
+      isAtTopValue = isAtTop;
+    });
+    await this.render(EXAMPLE_1_HBS);
+    assert.equal(scrolledToTopChangeCount, 1, 'emits scrolledToTopChange on initial render')
+    assert.equal(isAtTopValue, true, 'is not at top')
+    await scrollDown('.ScrollView #element1', {
+      amount: 100,
+      duration: 200
+    });
+    assert.equal(scrolledToTopChangeCount, 2, 'emits scrolledToTopChange when scrolling down')
+    assert.equal(isAtTopValue, false, 'is not at top')
+    await scrollDown('.ScrollView #element1', {
+      amount: -100,
+      duration: 200
+    });
+    await waitUntil(() => scrolledToTopChangeCount === 3);
+    assert.equal(scrolledToTopChangeCount, 3, 'emits scrolledToTopChange when scrolling back up')
+    assert.equal(isAtTopValue, true, 'is at top')
   });
 
   test('it shows the scrollbar until the user releases their finger', async function(assert) {

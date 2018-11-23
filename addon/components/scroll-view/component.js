@@ -20,12 +20,22 @@ import { setupCaptureClick } from '../../utils/capture-click';
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
 
+function getScrolledToTopChanged(currentTop, lastTop) {
+  if (currentTop <= 0 && (lastTop > 0 || lastTop === undefined) ) {
+    return true;
+  } else if (currentTop > 0 && (lastTop <= 0 || lastTop === undefined) ) {
+    return false;
+  }
+}
+
 @layout(template)
 @classNames('ScrollView')
 export default class ScrollView extends Component {
   @argument @type(optional('number')) contentHeight; // optional, when not provided, we measure the size
   @argument @type(optional('string')) key;
   @argument @type(optional(ClosureAction)) scrollChange;
+  @argument @type(optional(ClosureAction)) clientSizeChange;
+  @argument @type(optional(ClosureAction)) scrolledToTopChange;
 
   _scrollTop = 0;
   _needsContentSizeUpdate = true;
@@ -34,7 +44,7 @@ export default class ScrollView extends Component {
   _contentHeight;
   _appliedScrollTop;
   _shouldMeasureContent = false;
-  _isTouching = false;
+  _isScrolling = false;
 
   @service('scroll-position-memory')
   memory;
@@ -83,15 +93,21 @@ export default class ScrollView extends Component {
     this.scroller = new Scroller((left, top/*, zoom*/) => {
       let { scroller } = this;
       join(this, this.onScrollChange, left|0, top|0, {
-        decelerationVelocityX: scroller.__decelerationVelocityX,
-        decelerationVelocityY: scroller.__decelerationVelocityY
+        decelerationVelocityY: scroller.__decelerationVelocityY,
+        isDragging: scroller.__isDragging,
+        isDecelerating: scroller.__isDecelerating,
+        isAnimating: scroller.__isAnimating
       });
     }, {
       scrollingX: false,
       scrollingComplete: () => {
+        if (this.isDestroyed || this.isDestroying) {
+          return;
+        }
         if (this.scrollingComplete) {
           this.scrollingComplete();
         }
+        this.set('_isScrolling', false);
       }
     });
   }
@@ -103,14 +119,24 @@ export default class ScrollView extends Component {
     if (this._appliedScrollTop === scrollTop) {
       return;
     }
+    let lastTop = this._appliedScrollTop;
     this._appliedScrollTop = scrollTop;
     if (this.contentElement) {
       translate(this.contentElement, 0, -1 * scrollTop);
     }
-    this.set('_scrollTop', scrollTop);
+    this.setProperties({
+      _scrollTop: scrollTop,
+      _isScrolling: !!(params.isDragging || params.isDecelerating || params.isAnimating)
+    });
     this._decelerationVelocityY = params.decelerationVelocityY;
     if (this.scrollChange) {
       this.scrollChange(scrollTop);
+    }
+    if (this.scrolledToTopChange) {
+      let isAtTop = getScrolledToTopChanged(scrollTop, lastTop);
+      if (isAtTop !== undefined) {
+        this.scrolledToTopChange(isAtTop)
+      }
     }
   }
 
@@ -145,7 +171,6 @@ export default class ScrollView extends Component {
   }
 
   doTouchStart(touches, timeStamp) {
-    this.set('_isTouching', true);
     this.scroller.doTouchStart(touches, timeStamp)
   }
 
@@ -154,7 +179,6 @@ export default class ScrollView extends Component {
   }
 
   doTouchEnd(touches, timeStamp) {
-    this.set('_isTouching', false);
     this.scroller.doTouchEnd(timeStamp);
     if (this.needsCaptureClick()) {
       setupCaptureClick(this);
@@ -303,8 +327,11 @@ export default class ScrollView extends Component {
 
   restore(key) {
     let position = this.memory[key] || 0;
-    schedule('afterRender', this, this.scrollTo, position);
-    this.scrollTo(position);
+    if (this.element) {
+      this.scrollTo(position);
+    } else {
+      schedule('afterRender', this, this.scrollTo, position);
+    }
   }
 
   @computed

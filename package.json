@@ -23,15 +23,18 @@
     "test:all": "ember try:each"
   },
   "dependencies": {
+    "@ember-decorators/argument": "^0.8.21",
     "@ember-decorators/babel-transforms": "^2.0.0",
     "babel-eslint": "^8.0.0",
     "ember-auto-import": "^1.2.15",
     "ember-cli-babel": "^6.16.0",
     "ember-cli-htmlbars": "^3.0.0",
+    "ember-concurrency": "^0.8.22",
+    "ember-concurrency-decorators": "^0.3.0",
+    "ember-decorators": "^3.0.2",
     "hammerjs": "^2.0.8"
   },
   "devDependencies": {
-    "@ember-decorators/argument": "^0.8.21",
     "@ember/jquery": "^0.5.2",
     "@ember/optional-features": "^0.6.3",
     "broccoli-asset-rev": "^2.7.0",
@@ -49,9 +52,6 @@
     "ember-cli-sri": "^2.1.1",
     "ember-cli-uglify": "^2.1.0",
     "ember-collection": "1.0.0-alpha.9",
-    "ember-concurrency": "^0.8.22",
-    "ember-concurrency-decorators": "^0.3.0",
-    "ember-decorators": "^3.0.2",
     "ember-disable-prototype-extensions": "^1.1.3",
     "ember-export-application-global": "^2.0.0",
     "ember-load-initializers": "^1.1.0",

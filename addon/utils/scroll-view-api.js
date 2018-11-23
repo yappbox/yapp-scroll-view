@@ -16,5 +16,6 @@ export default EmberObject.extend(Evented, {
   scrollingChanged(value) {
     this.trigger('isScrollingChanged', value);
   },
-  scrollTop: readOnly('_scrollComponent.scrollTop')
+  scrollTop: readOnly('_scrollComponent.scrollTop'),
+  isScrolling: readOnly('_scrollComponent._isScrolling')
 });

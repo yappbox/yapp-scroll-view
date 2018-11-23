@@ -11,7 +11,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('viewportHeight', 484);
     this.set('contentHeight', 1000);
     this.set('scrollTop', 0);
-    this.set('isTouching', true);
+    this.set('isScrolling', false);
   });
   const EXAMPLE_1_HBS = hbs`
     <style>
@@ -27,7 +27,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
       <VerticalScrollBar
         @contentHeight={{contentHeight}}
         @scrollTop={{scrollTop}}
-        @isTouching={{isTouching}}
+        @isScrolling={{isScrolling}}
       />
     </div>
   `;
@@ -36,6 +36,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
   test('it renders with a thumb size proportional to content ratio', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
     this.set('scrollTop', 100);
+    this.set('isScrolling', true);
     assert.equal(find(THUMB).offsetHeight, 230);
     assert.equal(scrollPosition(find(THUMB)), 48);
     assert.equal(find(THUMB).style.opacity, "1");
@@ -46,6 +47,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     await this.render(EXAMPLE_1_HBS);
     this.set('scrollTop', 5);
     this.set('scrollTop', 0);
+    this.set('isScrolling', true);
     assert.equal(find(THUMB).offsetHeight, 480);
     assert.equal(scrollPosition(find(THUMB)), 0);
     assert.equal(find(THUMB).style.opacity, "1");
@@ -63,12 +65,11 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     assert.equal(find(THUMB).offsetHeight, 15);
   });
 
-  test('keeps the thumb visible if isTouching is true', async function(assert) {
+  test('thumb is visible when isScrolling is true', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
-    this.set('isTouching', true);
-    this.set('scrollTop', 100);
+    this.set('isScrolling', true);
     assert.equal(find(THUMB).style.opacity, "1");
-    this.set('isTouching', false);
+    this.set('isScrolling', false);
     await waitForOpacity(THUMB, '0');
 
     assert.equal(find(THUMB).style.opacity, "0");

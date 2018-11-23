@@ -4,22 +4,17 @@ import { computed } from '@ember-decorators/object';
 import template from './template';
 import { argument } from '@ember-decorators/argument';
 import { htmlSafe } from '@ember/string';
-import { timeout, waitForProperty } from 'ember-concurrency';
-import { task, restartableTask } from 'ember-concurrency-decorators';
 import { assert } from '@ember/debug';
 import { optional, type } from '@ember-decorators/argument/type';
 
 const MIN_THUMB_LENGTH = 15;
-const IS_SCROLLING_TIMEOUT = 100;
 
 @layout(template)
 @classNames('VerticalScrollBar')
 export default class VerticalScrollBar extends Component {
   @argument @type(optional('number')) contentHeight;
   @argument @type(optional('number')) scrollTop;
-  @argument @type('boolean') isTouching;
-
-  isShowingThumb = false;
+  @argument @type('boolean') isScrolling;
 
   constructor() {
     super(...arguments);
@@ -30,15 +25,6 @@ export default class VerticalScrollBar extends Component {
     this._super(...arguments);
     assert("element has zero height", this.element.offsetHeight !== 0);
     this.set('viewportHeight', this.element.offsetHeight);
-    this.manageIsShowingThumbTask.perform();
-  }
-
-  didUpdateAttrs() {
-    this._super(...arguments);
-    if (this.scrollTop !== this._scrollTop) {
-      this.manageIsScrollingTask.perform();
-      this._scrollTop = this.scrollTop;
-    }
   }
 
   @computed('contentHeight', 'viewportHeight')
@@ -46,9 +32,9 @@ export default class VerticalScrollBar extends Component {
     return Math.min(1, this.viewportHeight / this.contentHeight);
   }
 
-  @computed('contentRatio', 'scrollTopRatio', 'viewportHeight', 'isShowingThumb', 'compressionFactor')
+  @computed('contentRatio', 'scrollTopRatio', 'viewportHeight', 'isScrolling', 'compressionFactor')
   get thumbStyle() {
-    let { viewportHeight, contentRatio, scrollTopRatio, isShowingThumb, compressionFactor } = this;
+    let { viewportHeight, contentRatio, scrollTopRatio, isScrolling, compressionFactor } = this;
     if (!viewportHeight) {
       return;
     }
@@ -56,7 +42,7 @@ export default class VerticalScrollBar extends Component {
     let maxThumbY = viewportHeight - thumbHeight;
     let thumbY = Math.min(maxThumbY, Math.max(0, scrollTopRatio * viewportHeight));
     let styleParts = [
-      `opacity: ${ isShowingThumb ? '1' : '0' }`,
+      `opacity: ${ isScrolling ? '1' : '0' }`,
       `height: ${thumbHeight}px`,
       `transform: translateY(${thumbY}px)`
     ];
@@ -78,23 +64,5 @@ export default class VerticalScrollBar extends Component {
   @computed('contentHeight', 'scrollTop')
   get scrollTopRatio() {
     return this.scrollTop / this.contentHeight;
-  }
-
-  @task
-  manageIsShowingThumbTask = function*() {
-    while(true) { // eslint-disable-line no-constant-condition
-      yield waitForProperty(this, 'isScrolling', true)
-      this.set('isShowingThumb', true);
-      yield waitForProperty(this, 'isScrolling', false);
-      yield waitForProperty(this, 'isTouching', false);
-      this.set('isShowingThumb', false);
-    }
-  }
-
-  @restartableTask
-  manageIsScrollingTask = function*() {
-    this.set('isScrolling', true);
-    yield timeout(IS_SCROLLING_TIMEOUT);
-    this.set('isScrolling', false);
   }
 }
