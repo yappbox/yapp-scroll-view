@@ -3,11 +3,16 @@ import { classNames, layout } from '@ember-decorators/component';
 import template from './template';
 import { action } from '@ember-decorators/object';
 import { set } from '@ember/object';
+import { argument } from '@ember-decorators/argument';
+import { optional, type } from '@ember-decorators/argument/type';
+import { ClosureAction } from '@ember-decorators/argument/types';
 
 /* An ember-collection subclass which integrates ScrollView */
 @layout(template)
 @classNames('CollectionScrollView')
 export default class CollectionScrollView extends EmberCollection {
+  @argument @type('any') auxiliaryComponent;
+  @argument @type(optional(ClosureAction)) scrolledToTopChange;
 
   @action
   scrollChange(scrollTop) {
@@ -27,4 +32,10 @@ export default class CollectionScrollView extends EmberCollection {
     }
   }
 
+  @action
+  onScrolledToTopChange(isAtTop) {
+    if (this.scrolledToTopChange) {
+      this.scrolledToTopChange(isAtTop);
+    }
+  }
 }

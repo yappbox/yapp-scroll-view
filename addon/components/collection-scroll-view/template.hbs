@@ -2,9 +2,22 @@
     @contentHeight={{_contentSize.height}}
     @clientSizeChange={{action 'clientSizeChange'}}
     @scrollChange={{action 'scrollChange'}}
+    @scrolledToTopChange={{action 'onScrolledToTopChange'}}
   as |scrollViewApi|
 >
   {{~#each _cells as |cell|~}}
-    <div style={{{cell.style}}}>{{yield cell.item cell.index }}</div>
+    <div style={{{cell.style}}}>{{yield cell.item cell.index}}</div>
   {{~/each~}}
 </ScrollView>
+
+{{#if auxiliaryComponent}}
+  {{component auxiliaryComponent
+      cell-layout=cell-layout
+      items=items
+      estimated-width=estimated-width
+      estimated-height=estimated-height
+      client-width=_clientWidth
+      client-height=_clientHeight
+      scroll-top=_scrollTop
+  }}
+{{/if}}

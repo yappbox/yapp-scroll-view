@@ -38,6 +38,7 @@ export default class ScrollView extends Component {
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
 
   _scrollTop = 0;
+  _isAtTop;
   _needsContentSizeUpdate = true;
   _appliedContentSize = {};
   _clientHeight;
