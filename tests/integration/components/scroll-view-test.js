@@ -342,6 +342,13 @@ module('Integration | Component | scroll-view', function(hooks) {
       await timeout(50);
       let newScrollPos = scrollPosition(find(SCROLL_CONTAINER));
       assert.ok(Math.abs(scrollPos - newScrollPos) < 5, 'scrolling should stop when clicked');
+
+      let linkClicked = false;
+      this.set('onClickLink', function(){
+        linkClicked = true;
+      });
+      await click('[data-test-link]');
+      assert.ok(linkClicked, 'subsequent click should work');
     });
   })
 });

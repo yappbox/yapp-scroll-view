@@ -15,7 +15,6 @@ import { translate } from 'ember-collection/utils/translate';
 import { timeout } from 'ember-concurrency';
 import { task } from 'ember-concurrency-decorators';
 import ScrollViewApi from '../../utils/scroll-view-api';
-import { setupCaptureClick } from '../../utils/capture-click';
 
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
@@ -34,6 +33,7 @@ export default class ScrollView extends Component {
   @argument @type(optional('number')) contentHeight; // optional, when not provided, we measure the size
   @argument @type(optional('string')) key;
   @argument @type(optional('number')) scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
+  @argument @type(optional('number')) initialScrollTop;
   @argument @type(optional(ClosureAction)) scrollChange;
   @argument @type(optional(ClosureAction)) clientSizeChange;
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
@@ -183,7 +183,23 @@ export default class ScrollView extends Component {
   doTouchEnd(touches, timeStamp) {
     this.scroller.doTouchEnd(timeStamp);
     if (this.needsCaptureClick()) {
-      setupCaptureClick(this);
+      this.setupCaptureClickTask.perform();
+    }
+  }
+
+  @task
+  setupCaptureClickTask = function *() {
+    try {
+      let { element } = this;
+      let captureClick = (e) => {
+        e.stopPropagation(); // Stop the click from being propagated.
+        element.removeEventListener('click', captureClick, true); // cleanup
+      }
+      this.element.addEventListener('click', captureClick, true);
+      yield timeout(0);
+      element.removeEventListener('click', captureClick, true);
+    } finally {
+      this._decelerationVelocityY = null;
     }
   }
 
@@ -220,7 +236,7 @@ export default class ScrollView extends Component {
     // and apply it after we determine and apply the size. The reason we need to do this
     // is that attempting to apply the scroll position before the scroller has size results
     // in a scroll position of [0,0].
-    let initialScrollTop = this.scrollTopOffset;
+    let initialScrollTop = this.initialScrollTop !== undefined ? this.initialScrollTop : this.scrollTopOffset;
     this.measureClientAndContent();
     this._initialSizeCheckCompleted = true;
     if (initialScrollTop) {
@@ -295,6 +311,7 @@ export default class ScrollView extends Component {
   }
 
   scrollToBottom() {
+    this.measureClientAndContent();
     return this.scrollTo(this._contentHeight - this._clientHeight, true);
   }
 
@@ -328,7 +345,7 @@ export default class ScrollView extends Component {
   }
 
   restore(key) {
-    let position = this.memory[key] || 0;
+    let position = this.initialScrollTop || this.memory[key] || this.scrollTopOffset;
     if (this.element) {
       this.scrollTo(position);
     } else {
