@@ -20,10 +20,10 @@ import { setupCaptureClick } from '../../utils/capture-click';
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
 
-function getScrolledToTopChanged(currentTop, lastTop) {
-  if (currentTop <= 0 && (lastTop > 0 || lastTop === undefined) ) {
+function getScrolledToTopChanged(currentTop, lastTop, offset) {
+  if (currentTop <= offset && (lastTop > offset || lastTop === undefined) ) {
     return true;
-  } else if (currentTop > 0 && (lastTop <= 0 || lastTop === undefined) ) {
+  } else if (currentTop > offset && (lastTop <= offset || lastTop === undefined) ) {
     return false;
   }
 }
@@ -33,6 +33,7 @@ function getScrolledToTopChanged(currentTop, lastTop) {
 export default class ScrollView extends Component {
   @argument @type(optional('number')) contentHeight; // optional, when not provided, we measure the size
   @argument @type(optional('string')) key;
+  @argument @type(optional('number')) scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
   @argument @type(optional(ClosureAction)) scrollChange;
   @argument @type(optional(ClosureAction)) clientSizeChange;
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
@@ -134,7 +135,7 @@ export default class ScrollView extends Component {
       this.scrollChange(scrollTop);
     }
     if (this.scrolledToTopChange) {
-      let isAtTop = getScrolledToTopChanged(scrollTop, lastTop);
+      let isAtTop = getScrolledToTopChanged(scrollTop, lastTop, this.scrollTopOffset);
       if (isAtTop !== undefined) {
         this.scrolledToTopChange(isAtTop)
       }
@@ -219,7 +220,7 @@ export default class ScrollView extends Component {
     // and apply it after we determine and apply the size. The reason we need to do this
     // is that attempting to apply the scroll position before the scroller has size results
     // in a scroll position of [0,0].
-    let initialScrollTop = this._initialScrollTop;
+    let initialScrollTop = this.scrollTopOffset;
     this.measureClientAndContent();
     this._initialSizeCheckCompleted = true;
     if (initialScrollTop) {

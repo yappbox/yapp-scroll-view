@@ -13,6 +13,7 @@ import { ClosureAction } from '@ember-decorators/argument/types';
 export default class CollectionScrollView extends EmberCollection {
   @argument @type('any') auxiliaryComponent;
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
+  @argument @type(optional('number')) scrollTopOffset = 0;
 
   @action
   scrollChange(scrollTop) {
