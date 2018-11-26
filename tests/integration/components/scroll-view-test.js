@@ -21,6 +21,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     this.set('clientSizeChange', null);
     this.set('scrolledToTopChange', null);
     this.set('scrollTopOffset', 0);
+    this.set('initialScrollTop', null);
   });
   const EXAMPLE_1_HBS = hbs`
     <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
@@ -138,7 +139,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     await this.render(template);
     assert.equal(scrolledToTopChangeCount, 1, 'emits scrolledToTopChange on initial render')
     assert.equal(isAtTopValue, true, 'is at top')
-    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), -50, 'starts in scrollTopOff position');
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), -50, 'starts in scrollTopOffset position');
     await scrollDown(SCROLL_CONTAINER, {
       amount: 100,
       duration: 200
@@ -152,6 +153,20 @@ module('Integration | Component | scroll-view', function(hooks) {
     await waitUntil(() => scrolledToTopChangeCount === 3);
     assert.equal(scrolledToTopChangeCount, 3, 'emits scrolledToTopChange when scrolling back up')
     assert.equal(isAtTopValue, true, 'is at top')
+  });
+
+  test('it sets initial scrollTop to initialScrollTop value', async function(assert) {
+    this.set('initialScrollTop', 50);
+    const template = hbs`
+      <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+        <ScrollView @initialScrollTop={{initialScrollTop}}>
+          <div style="width:320px;height:400px">One</div>
+          <div style="width:320px;height:400px">Two</div>
+        </ScrollView>
+      </div>
+    `
+    await this.render(template);
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), -50, 'starts in scrollTopOffset position');
   });
 
   test('it shows the scrollbar until the user releases their finger', async function(assert) {

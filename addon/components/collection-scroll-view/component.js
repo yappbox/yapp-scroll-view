@@ -14,6 +14,8 @@ export default class CollectionScrollView extends EmberCollection {
   @argument @type('any') auxiliaryComponent;
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
   @argument @type(optional('number')) scrollTopOffset = 0;
+  @argument @type(optional('number')) initialScrollTop;
+  @argument @type(optional('string')) key;
 
   @action
   scrollChange(scrollTop) {

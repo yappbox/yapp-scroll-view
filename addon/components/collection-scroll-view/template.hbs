@@ -1,6 +1,8 @@
 <ScrollView
     @contentHeight={{_contentSize.height}}
     @scrollTopOffset={{scrollTopOffset}}
+    @initialScrollTop={{initialScrollTop}}
+    @key={{key}}
     @clientSizeChange={{action 'clientSizeChange'}}
     @scrollChange={{action 'scrollChange'}}
     @scrolledToTopChange={{action 'onScrolledToTopChange'}}
