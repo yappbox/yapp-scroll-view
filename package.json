@@ -67,7 +67,7 @@
     "loader.js": "^4.7.0",
     "qunit-dom": "^0.8.0",
     "sass": "^1.15.1",
-    "yapp-test-support": "git+ssh://git@github.com/yappbox/yapp-test-support.git#v2.1.1"
+    "yapp-test-support": "git+ssh://git@github.com/yappbox/yapp-test-support.git#v2.2.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
