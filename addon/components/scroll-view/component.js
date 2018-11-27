@@ -15,6 +15,7 @@ import { translate } from 'ember-collection/utils/translate';
 import { timeout } from 'ember-concurrency';
 import { task } from 'ember-concurrency-decorators';
 import ScrollViewApi from '../../utils/scroll-view-api';
+import { DEBUG } from '@glimmer/env';
 
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
@@ -41,9 +42,9 @@ export default class ScrollView extends Component {
   _scrollTop = 0;
   _isAtTop;
   _needsContentSizeUpdate = true;
-  _appliedContentSize = {};
-  _clientHeight;
-  _contentHeight;
+  _appliedClientWidth;
+  _appliedClientHeight;
+  _appliedContentHeight;
   _appliedScrollTop;
   _shouldMeasureContent = false;
   _isScrolling = false;
@@ -60,7 +61,7 @@ export default class ScrollView extends Component {
 
   didReceiveAttrs() {
     this.set('_scrollTop', this.scrollTop);
-    if (!this._shouldMeasureContent && (this._contentHeight !== this.contentHeight)) {
+    if (!this._shouldMeasureContent && (this._appliedContentHeight !== this.contentHeight)) {
       this.measureClientAndContent();
     }
   }
@@ -86,51 +87,48 @@ export default class ScrollView extends Component {
     super.willDestroyElement(...arguments);
     this.unbindScrollerEvents();
     this.remember(this.key);
-    if (Ember.testing) {
-      window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
+    if (DEBUG) {
+      if (Ember.testing) {
+        window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
+      }
     }
   }
 
   setupScroller(){
-    this.scroller = new Scroller((left, top/*, zoom*/) => {
-      let { scroller } = this;
-      join(this, this.onScrollChange, left|0, top|0, {
-        decelerationVelocityY: scroller.__decelerationVelocityY,
-        isDragging: scroller.__isDragging,
-        isDecelerating: scroller.__isDecelerating,
-        isAnimating: scroller.__isAnimating
-      });
-    }, {
-      scrollingX: false,
-      scrollingComplete: () => {
-        if (this.isDestroyed || this.isDestroying) {
-          return;
-        }
-        if (this.scrollingComplete) {
-          this.scrollingComplete();
-        }
-        this.set('_isScrolling', false);
+    this.scroller = new Scroller(
+      this.onScrollChange.bind(this),
+      {
+        scrollingX: false,
+        scrollingComplete: this.onScrollingComplete.bind(this)
       }
-    });
+    );
   }
 
-  onScrollChange(scrollLeft, scrollTop, params) {
-    if (this.isDestroyed || this.isDestroying) {
-      return;
-    }
+  onScrollChange(left, top) {
+    let scrollTop = top|0;
     if (this._appliedScrollTop === scrollTop) {
       return;
     }
-    let lastTop = this._appliedScrollTop;
-    this._appliedScrollTop = scrollTop;
+    if (this.isDestroyed || this.isDestroying) {
+      return;
+    }
+    let { scroller } = this;
+    this._decelerationVelocityY = scroller.__decelerationVelocityY;
+    join(this, this.applyScrollTop, {
+      scrollTop,
+      lastTop: this._appliedScrollTop,
+      isScrolling: !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating)
+    });
+  }
+
+  applyScrollTop({ scrollTop, lastTop, isScrolling }) {
     if (this.contentElement) {
       translate(this.contentElement, 0, -1 * scrollTop);
     }
     this.setProperties({
       _scrollTop: scrollTop,
-      _isScrolling: !!(params.isDragging || params.isDecelerating || params.isAnimating)
+      _isScrolling: isScrolling
     });
-    this._decelerationVelocityY = params.decelerationVelocityY;
     if (this.scrollChange) {
       this.scrollChange(scrollTop);
     }
@@ -140,11 +138,19 @@ export default class ScrollView extends Component {
         this.scrolledToTopChange(isAtTop)
       }
     }
+    this._appliedScrollTop = scrollTop;
+  }
+
+  onScrollingComplete() {
+    if (this.isDestroyed || this.isDestroying) {
+      return;
+    }
+    join(this, this.set, '_isScrolling', false);
   }
 
   updateScrollerDimensions() {
-    if (this._clientWidth && this._clientHeight) {
-      this.scroller.setDimensions(this._clientWidth, this._clientHeight, this._clientWidth, this._contentHeight);
+    if (this._appliedClientWidth && this._appliedClientHeight) {
+      this.scroller.setDimensions(this._appliedClientWidth, this._appliedClientHeight, this._appliedClientWidth, this._appliedContentHeight);
     }
   }
 
@@ -204,10 +210,12 @@ export default class ScrollView extends Component {
   }
 
   needsCaptureClick() {
-    if (Math.abs(this._decelerationVelocityY) > 2) {
-      return true;
-    }
-    return false;
+    // when animating with "momentum", a tap should stop the movement rather than
+    // trigger an interactive element that may be under the tap. Zynga scroller
+    // takes care of stopping the movement, but we need to capture the click
+    // and stop propagation. This method determines whether the animation is
+    // moving fast enough that we should engage this behavior.
+    return Math.abs(this._decelerationVelocityY) > 2;
   }
 
   handleWheel(e) {
@@ -242,11 +250,13 @@ export default class ScrollView extends Component {
     if (initialScrollTop) {
       this.scroller.scrollTo(0, initialScrollTop);
     }
-    if (Ember.testing) {
-      window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
-        this.measureClientAndContent();
-      };
-      return;
+    if (DEBUG) {
+      if (Ember.testing) {
+        window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
+          this.measureClientAndContent();
+        };
+        return;
+      }
     }
 
     while(true) { // eslint-disable-line no-constant-condition
@@ -256,33 +266,42 @@ export default class ScrollView extends Component {
   }
 
   measureClientAndContent() {
-    let { element } = this;
-    if (!element) {
+    if (!this.element) {
       return;
     }
-    let clientWidth = element.offsetWidth;
-    let clientHeight = element.offsetHeight;
-    let { contentHeight } = this;
+    let { clientWidth, clientHeight, contentHeight } = this.getCurrentClientAndContentSizes();
+
+    if (!this.hasClientOrContentSizeChanged(clientWidth, clientHeight, contentHeight)) {
+      return;
+    }
+    join(this, this.applyNewMeasurements, clientWidth, clientHeight, contentHeight);
+  }
+
+  getCurrentClientAndContentSizes() {
+    let { contentHeight, element: { offsetWidth, offsetHeight }} = this;
     if (this._shouldMeasureContent) {
       contentHeight = this.contentElement.offsetHeight;
     }
-    if (clientWidth === this._clientWidth && clientHeight === this._clientHeight && contentHeight === this._contentHeight) {
-      return;
-    }
-    this._clientWidth = clientWidth;
-    this._clientHeight = clientHeight;
-    this.set('_contentHeight', contentHeight);
-    join(() => {
-      this.contentElement.style.minHeight = `${clientHeight}px`;
-      this.updateScrollerDimensions();
-      if (this.clientSizeChange) {
-        this.clientSizeChange(clientWidth, clientHeight);
-      }
-    });
+
+    return { contentHeight, clientHeight: offsetHeight , clientWidth: offsetWidth }
   }
 
-  @computed
-  get windowRef() {
+  hasClientOrContentSizeChanged(clientWidth, clientHeight, contentHeight) {
+    return contentHeight !== this._appliedContentHeight || clientWidth !== this._appliedClientWidth || clientHeight !== this._appliedClientHeight;
+  }
+
+  applyNewMeasurements(clientWidth, clientHeight, contentHeight) {
+    this._appliedClientWidth = clientWidth;
+    this._appliedClientHeight = clientHeight;
+    this.set('_appliedContentHeight', contentHeight);
+    this.contentElement.style.minHeight = `${clientHeight}px`;
+    this.updateScrollerDimensions();
+    if (this.clientSizeChange) {
+      this.clientSizeChange(clientWidth, clientHeight);
+    }
+  }
+
+  get windowRef() { // need a way to reference `window` from hbs
     return window;
   }
 
@@ -312,10 +331,11 @@ export default class ScrollView extends Component {
 
   scrollToBottom() {
     this.measureClientAndContent();
-    return this.scrollTo(this._contentHeight - this._clientHeight, true);
+    return this.scrollTo(this._appliedContentHeight - this._appliedClientHeight, true);
   }
 
   scrollToElement(el, animated=false) {
+    this.measureClientAndContent();
     if (this.element) {
       let yPos = this._yOffset(el) + (this.get('extraYOffsetForScrollToElement') || 0);
       return this.scroller.scrollTo(0, yPos, animated);

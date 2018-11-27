@@ -23,7 +23,7 @@ export default class VerticalScrollBar extends Component {
 
   didInsertElement(){
     this._super(...arguments);
-    assert("element has zero height", this.element.offsetHeight !== 0);
+    assert("vertical-scroll-bar has zero height (missing CSS?)", this.element.offsetHeight !== 0);
     this.set('viewportHeight', this.element.offsetHeight);
   }
 

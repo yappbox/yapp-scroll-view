@@ -4,7 +4,6 @@ import hbs from 'htmlbars-inline-precompile';
 import { click, find, waitUntil } from '@ember/test-helpers';
 import RSVP from 'rsvp';
 import { timeout } from 'ember-concurrency';
-import { setupTestRequiringBrowserFocus } from 'yapp-test-support/test-support/helpers';
 import { scrollPosition, waitForOpacity, scrollDown } from '../../helpers/scrolling';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
@@ -343,27 +342,25 @@ module('Integration | Component | scroll-view', function(hooks) {
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), scrollPos, 'previous scroll position is restored');
   });
 
-  module('needs focus / tempermental', function(hooks){
-    setupTestRequiringBrowserFocus(hooks);
-
-    test('when momentum scrolling, a tap stops the scroll', async function(assert) {
-      await this.render(EXAMPLE_1_HBS);
-      this.set('onClickLink', function(){
-        assert.ok(false, 'should not activate action when tapping when scrolling');
-      });
-      await scrollDown('.ScrollView');
-      let scrollPos = scrollPosition(find(SCROLL_CONTAINER));
-      await click('[data-test-link]');
-      await timeout(50);
-      let newScrollPos = scrollPosition(find(SCROLL_CONTAINER));
-      assert.ok(Math.abs(scrollPos - newScrollPos) < 5, 'scrolling should stop when clicked');
-
-      let linkClicked = false;
-      this.set('onClickLink', function(){
-        linkClicked = true;
-      });
-      await click('[data-test-link]');
-      assert.ok(linkClicked, 'subsequent click should work');
+  test('when momentum scrolling, a tap stops the scroll', async function(assert) {
+    await this.render(EXAMPLE_1_HBS);
+    this.set('onClickLink', function(){
+      assert.ok(false, 'should not activate action when tapping when scrolling');
     });
-  })
+    await scrollDown('.ScrollView');
+    await timeout(10);
+    click('[data-test-link]');
+    await timeout(5);
+    let scrollPos = scrollPosition(find(SCROLL_CONTAINER));
+    await timeout(50);
+    let newScrollPos = scrollPosition(find(SCROLL_CONTAINER));
+    assert.ok(Math.abs(scrollPos - newScrollPos) < 5, 'scrolling should stop when clicked');
+
+    let linkClicked = false;
+    this.set('onClickLink', function(){
+      linkClicked = true;
+    });
+    await click('[data-test-link]');
+    assert.ok(linkClicked, 'subsequent click should work');
+  });
 });
