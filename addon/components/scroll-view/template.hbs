@@ -1,0 +1,15 @@
+<div data-test-scroll-container>
+  {{yield scrollViewApi}}
+</div>
+<VerticalScrollBar
+  data-test-scroll-bar
+  class="ScrollView-scrollBar"
+  @scrollTop={{_scrollTop}}
+  @contentHeight={{_appliedContentHeight}}
+  @isScrolling={{_isScrolling}}
+/>
+{{emitter-action
+    emitter=windowRef
+    eventName="requestScrollToTop"
+    action=scrollViewApi.scrollToTopIfInViewport
+}}
