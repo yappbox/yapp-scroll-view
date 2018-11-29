@@ -79,13 +79,29 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     await this.render(EXAMPLE_1_HBS);
     this.set('scrollTop', -100);
     assert.equal(scrollPosition(find(THUMB)), 0, 'thumb is at top');
-    assert.equal(find(THUMB).offsetHeight, 184, 'thumb height is compressed');
+    assert.equal(find(THUMB).offsetHeight, 158, 'thumb height is compressed');
   });
 
   test('compresses scrollbar when overscrolled at bottom', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
     this.set('scrollTop', 650);
-    assert.equal(find(THUMB).offsetHeight, 170, 'thumb height is compressed');
-    assert.equal(Math.round(scrollPosition(find(THUMB))), 310, 'thumb is at bottom');
+    assert.equal(find(THUMB).offsetHeight, 136, 'thumb height is compressed');
+    assert.equal(Math.round(scrollPosition(find(THUMB))), 312, 'thumb is at bottom');
+  });
+
+  test('compresses scrollbar when overscrolled at top, short content', async function(assert) {
+    this.set('contentHeight', 300);
+    await this.render(EXAMPLE_1_HBS);
+    this.set('scrollTop', -100);
+    assert.equal(scrollPosition(find(THUMB)), 0, 'thumb is at top');
+    assert.equal(find(THUMB).offsetHeight, 15, 'thumb height is compressed');
+  });
+
+  test('compresses scrollbar when overscrolled at bottom, short content', async function(assert) {
+    this.set('contentHeight', 300);
+    await this.render(EXAMPLE_1_HBS);
+    this.set('scrollTop', 400);
+    assert.equal(find(THUMB).offsetHeight, 15, 'thumb height is compressed');
+    assert.equal(Math.round(scrollPosition(find(THUMB))), 465, 'thumb is at bottom');
   });
 });
