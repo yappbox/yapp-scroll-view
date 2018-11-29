@@ -1,5 +1,5 @@
 import { find, waitUntil } from '@ember/test-helpers';
-import { panY } from 'yapp-test-support/test-support/helpers';
+import { panY } from 'ember-simulant-test-helpers';
 
 export function scrollPosition(element) {
   let { transform } = element.style;
