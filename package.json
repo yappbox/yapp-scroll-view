@@ -25,7 +25,7 @@
   "dependencies": {
     "@ember-decorators/argument": "^0.8.21",
     "@ember-decorators/babel-transforms": "2.1.2",
-    "ember-auto-import": "^1.2.15",
+    "ember-auto-import": "^1.2.16",
     "ember-cli-babel": "^6.16.0",
     "ember-cli-htmlbars": "^3.0.0",
     "ember-cli-htmlbars-inline-precompile": "^1.0.3",
