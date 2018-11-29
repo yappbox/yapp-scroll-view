@@ -9,6 +9,7 @@ export default EmberObject.extend(Evented, {
     this.scrollToBottom = _scrollComponent.scrollToBottom.bind(_scrollComponent);
     this.scrollToElement = _scrollComponent.scrollToElement.bind(_scrollComponent);
     this.scrollToTop = _scrollComponent.scrollToTop.bind(_scrollComponent);
+    this.scrollTo = _scrollComponent.scrollTo.bind(_scrollComponent);
     this.scrollToTopIfInViewport = _scrollComponent.scrollToTopIfInViewport.bind(_scrollComponent);
     this.scheduleRefresh = _scrollComponent.scheduleRefresh.bind(_scrollComponent);
     this.getViewHeight = _scrollComponent.getViewHeight.bind(_scrollComponent);

@@ -48,8 +48,9 @@ export default class EmitterAction extends Component {
   }
 
   _action() {
+    let args = arguments;
     join(() => {
-      this.action();
+      this.action(...args);
     });
   }
 }
