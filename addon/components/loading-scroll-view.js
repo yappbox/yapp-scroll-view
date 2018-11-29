@@ -40,7 +40,7 @@ export default class LoadingScrollView extends ScrollView {
     }
 
     let scrollTop = this._scrollTop;
-    let maxScrollTop = this._contentHeight - this._clientHeight;
+    let maxScrollTop = this._appliedContentHeight - this._appliedClientHeight;
     let distanceFromBottom = maxScrollTop - scrollTop;
     if (distanceFromBottom >= this.threshold) {
       return;
