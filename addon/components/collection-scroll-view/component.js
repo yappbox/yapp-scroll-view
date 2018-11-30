@@ -16,6 +16,7 @@ export default class CollectionScrollView extends EmberCollection {
   @argument @type(optional('number')) scrollTopOffset = 0;
   @argument @type(optional('number')) initialScrollTop;
   @argument @type(optional('string')) key;
+  @argument @type(optional('any')) revealService;
 
   @action
   scrollChange(scrollTop) {
@@ -41,4 +42,27 @@ export default class CollectionScrollView extends EmberCollection {
       this.scrolledToTopChange(isAtTop);
     }
   }
+
+  @action
+  scrollToItem(scrollViewApi, revealItemPayload) {
+    let { id, source } = revealItemPayload;
+    if (source && isChildComponent(this, source)) {
+      return;
+    }
+    let itemIndex = this.items.indexOf(this.items.findBy('id', id));
+    if (itemIndex >= 0) {
+      let { y } = this._cellLayout.positionAt(itemIndex);
+      scrollViewApi.scrollTo(y, true);
+    }
+  }
+}
+
+function isChildComponent(component, candidateChildComponent) {
+  let parentView  = candidateChildComponent;
+  while (parentView = parentView.parentView) { // eslint-disable-line no-cond-assign
+    if (parentView === component) {
+      return true;
+    }
+  }
+  return false;
 }
