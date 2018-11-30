@@ -187,10 +187,10 @@ export default class ScrollView extends Component {
   }
 
   doTouchEnd(touches, timeStamp) {
-    this.scroller.doTouchEnd(timeStamp);
     if (this.needsCaptureClick()) {
       this.setupCaptureClickTask.perform();
     }
+    this.scroller.doTouchEnd(timeStamp);
   }
 
   @task
@@ -210,12 +210,18 @@ export default class ScrollView extends Component {
   }
 
   needsCaptureClick() {
-    // when animating with "momentum", a tap should stop the movement rather than
-    // trigger an interactive element that may be under the tap. Zynga scroller
-    // takes care of stopping the movement, but we need to capture the click
-    // and stop propagation. This method determines whether the animation is
-    // moving fast enough that we should engage this behavior.
-    return Math.abs(this._decelerationVelocityY) > 2;
+    // There are two cases where we want to prevent the click that normally follows a mouseup/touchend.
+    //
+    // 1) when the user is just finishing a purposeful scroll (i.e. dragging scroll view beyond a threshold)
+    // 2) when animating with "momentum", a tap should stop the movement rather than
+    //    trigger an interactive element that may be under the tap. Zynga scroller
+    //    takes care of stopping the movement, but we need to capture the click
+    //    and stop propagation.
+    //
+    // This method determines whether either of these cases apply.
+    let isFinishingDragging = this.scroller.__isDragging;
+    let isAnimatingWithMomentum = Math.abs(this._decelerationVelocityY) > 2;
+    return isFinishingDragging || isAnimatingWithMomentum;
   }
 
   handleWheel(e) {
