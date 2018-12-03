@@ -4,9 +4,8 @@
 <VerticalScrollBar
   data-test-scroll-bar
   class="ScrollView-scrollBar"
-  @scrollTop={{_scrollTop}}
   @contentHeight={{_appliedContentHeight}}
-  @isScrolling={{_isScrolling}}
+  @registerWithScrollView={{action scrollViewApi.registerScrollPositionCallback}}
 />
 {{emitter-action
     emitter=windowRef

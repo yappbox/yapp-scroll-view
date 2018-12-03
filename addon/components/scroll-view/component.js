@@ -21,11 +21,15 @@ const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
 
 function getScrolledToTopChanged(currentTop, lastTop, offset) {
-  if (currentTop <= offset && (lastTop > offset || lastTop === undefined) ) {
-    return true;
-  } else if (currentTop > offset && (lastTop <= offset || lastTop === undefined) ) {
-    return false;
+  let isAtTop = currentTop <= offset;
+  let isAtTopChanged = false;
+  if (isAtTop && (lastTop > offset || lastTop === undefined) ) {
+    isAtTopChanged = true;
+  } else if (!isAtTop && (lastTop <= offset || lastTop === undefined) ) {
+    isAtTopChanged = true;
   }
+
+  return { isAtTop, isAtTopChanged };
 }
 
 @layout(template)
@@ -35,7 +39,6 @@ export default class ScrollView extends Component {
   @argument @type(optional('string')) key;
   @argument @type(optional('number')) scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
   @argument @type(optional('number')) initialScrollTop;
-  @argument @type(optional(ClosureAction)) scrollChange;
   @argument @type(optional(ClosureAction)) clientSizeChange;
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
 
@@ -49,11 +52,14 @@ export default class ScrollView extends Component {
   _shouldMeasureContent = false;
   _isScrolling = false;
 
+
   @service('scroll-position-memory')
   memory;
 
   constructor() {
     super(...arguments);
+    this._scrollPositionCallbacks = [];
+
     if (!this.contentHeight) {
       this._shouldMeasureContent = true;
     }
@@ -86,6 +92,7 @@ export default class ScrollView extends Component {
   willDestroyElement() {
     super.willDestroyElement(...arguments);
     this.unbindScrollerEvents();
+    this._scrollPositionCallbacks = []
     this.remember(this.key);
     if (DEBUG) {
       if (Ember.testing) {
@@ -114,7 +121,7 @@ export default class ScrollView extends Component {
     }
     let { scroller } = this;
     this._decelerationVelocityY = scroller.__decelerationVelocityY;
-    join(this, this.applyScrollTop, {
+    this.applyScrollTop({
       scrollTop,
       lastTop: this._appliedScrollTop,
       isScrolling: !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating)
@@ -122,21 +129,19 @@ export default class ScrollView extends Component {
   }
 
   applyScrollTop({ scrollTop, lastTop, isScrolling }) {
+    let { isAtTop, isAtTopChanged } = getScrolledToTopChanged(scrollTop, lastTop, this.scrollTopOffset);
+
     if (this.contentElement) {
       translate(this.contentElement, 0, -1 * scrollTop);
     }
-    this.setProperties({
-      _scrollTop: scrollTop,
-      _isScrolling: isScrolling
-    });
+
+    this.notifyScrollPosition(isScrolling, scrollTop, isAtTop);
+
     if (this.scrollChange) {
       this.scrollChange(scrollTop);
     }
-    if (this.scrolledToTopChange) {
-      let isAtTop = getScrolledToTopChanged(scrollTop, lastTop, this.scrollTopOffset);
-      if (isAtTop !== undefined) {
-        this.scrolledToTopChange(isAtTop)
-      }
+    if (this.scrolledToTopChange && isAtTopChanged) {
+      this.scrolledToTopChange(isAtTop)
     }
     this._appliedScrollTop = scrollTop;
   }
@@ -145,7 +150,7 @@ export default class ScrollView extends Component {
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
-    join(this, this.set, '_isScrolling', false);
+    this.notifyScrollPosition(false, this._appliedScrollTop, this._appliedScrollTop <= this.scrollTopOffset);
   }
 
   updateScrollerDimensions() {
@@ -385,4 +390,14 @@ export default class ScrollView extends Component {
       _scrollComponent: this
     });
   }
-}
+
+  registerScrollPositionCallback(scrollPositionCallback) {
+    this._scrollPositionCallbacks.push(scrollPositionCallback);
+  }
+
+  notifyScrollPosition(isScrolling, scrollTop, isAtTop) {
+    this._scrollPositionCallbacks.forEach((callback) => {
+      callback(isScrolling, scrollTop, isAtTop);
+    });
+  }
+ }
