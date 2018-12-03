@@ -40,6 +40,7 @@ export default class ScrollView extends Component {
   @argument @type(optional('number')) scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
   @argument @type(optional('number')) initialScrollTop;
   @argument @type(optional(ClosureAction)) clientSizeChange;
+  @argument @type(optional(ClosureAction)) scrollChange;
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
 
   _scrollTop = 0;
@@ -66,7 +67,6 @@ export default class ScrollView extends Component {
   }
 
   didReceiveAttrs() {
-    this.set('_scrollTop', this.scrollTop);
     if (!this._shouldMeasureContent && (this._appliedContentHeight !== this.contentHeight)) {
       this.measureClientAndContent();
     }
@@ -370,7 +370,7 @@ export default class ScrollView extends Component {
 
   remember(key) {
     if (key) {
-      let position = this._scrollTop;
+      let position = this._appliedScrollTop;
       this.memory[key] = position;
     }
   }

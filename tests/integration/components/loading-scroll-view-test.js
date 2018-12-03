@@ -23,7 +23,6 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
           @hasMore={{hasMore}}
           @isLoadingMore={{isLoadingMore}}
           @loadMore={{loadMore}}
-        as |scrollViewApi|
       >
         <div id="element1" style="width:320px;height:200px">One</div>
         <div style="width:320px;height:200px">Two</div>

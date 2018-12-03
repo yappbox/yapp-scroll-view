@@ -56,7 +56,6 @@ module('Integration | Component | scroll-view', function(hooks) {
           >
             Scroll to Top
           </button>
-          <div>isScrolling: {{if scrollViewApi.isScrolling 'true' 'false'}}</div>
         </div>
       </ScrollView>
       </div>
@@ -84,12 +83,9 @@ module('Integration | Component | scroll-view', function(hooks) {
       scrollChangeCount++;
     });
     await this.render(EXAMPLE_1_HBS);
-    assert.dom(SCROLL_CONTAINER).containsText('isScrolling: false');
     let scrollPromise = scrollDown('.ScrollView #element1');
     await timeout(50);
-    assert.dom(SCROLL_CONTAINER).containsText('isScrolling: true');
     await scrollPromise;
-    assert.dom(SCROLL_CONTAINER).containsText('isScrolling: true');
     assert.ok(scrollChangeCount > 20, 'scrollChange action should be emitted a bunch');
   });
 

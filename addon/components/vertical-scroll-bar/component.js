@@ -16,6 +16,9 @@ export default class VerticalScrollBar extends Component {
   @argument @type(optional('number')) contentHeight;
   @argument @type(ClosureAction) registerWithScrollView;
 
+  _isScrolling = false;
+  _scrollTop = 0;
+
   init() {
     super.init(...arguments);
     // Default viewportHeight to something close to resonable
@@ -26,9 +29,11 @@ export default class VerticalScrollBar extends Component {
     this._super(...arguments);
     assert("vertical-scroll-bar has zero height (missing CSS?)", this.element.offsetHeight !== 0);
     this.set('viewportHeight', this.element.offsetHeight);
-    this.registerWithScrollView(this.updateScrollingParamerters.bind(this));
 
     this.thumb = this.element.querySelector('[data-thumb]');
+    this.updateThumbStyle();
+
+    this.registerWithScrollView(this.updateScrollingParamerters.bind(this));
   }
 
   @computed('contentHeight', 'viewportHeight')
