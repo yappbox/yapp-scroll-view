@@ -16,9 +16,11 @@ import { timeout } from 'ember-concurrency';
 import { task } from 'ember-concurrency-decorators';
 import ScrollViewApi from '../../utils/scroll-view-api';
 import { DEBUG } from '@glimmer/env';
+import { registerWaiter, unregisterWaiter } from '@ember/test';
 
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
+const MEASUREMENT_INTERVAL_WHILE_SCROLLING = 1000;
 
 function getScrolledToTopChanged(currentTop, lastTop, offset) {
   let isAtTop = currentTop <= offset;
@@ -52,7 +54,7 @@ export default class ScrollView extends Component {
   _appliedScrollTop;
   _shouldMeasureContent = false;
   _isScrolling = false;
-
+  _lastIsScrolling = false;
 
   @service('scroll-position-memory')
   memory;
@@ -78,6 +80,9 @@ export default class ScrollView extends Component {
     this.setupScroller();
     this.measurementTask.perform();
     this.bindScrollerEvents();
+    if (DEBUG) {
+      registerWaiter(this, this._isScrollingForWaiter);
+    }
   }
 
   didRender() {
@@ -98,6 +103,7 @@ export default class ScrollView extends Component {
       if (Ember.testing) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
       }
+      unregisterWaiter(this, this._isScrollingForWaiter);
     }
   }
 
@@ -113,9 +119,6 @@ export default class ScrollView extends Component {
 
   onScrollChange(left, top) {
     let scrollTop = top|0;
-    if (this._appliedScrollTop === scrollTop) {
-      return;
-    }
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
@@ -126,6 +129,9 @@ export default class ScrollView extends Component {
       lastTop: this._appliedScrollTop,
       isScrolling: !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating)
     });
+    if (+(new Date()) - this._lastMeasurement > MEASUREMENT_INTERVAL_WHILE_SCROLLING) {
+      this.measureClientAndContent();
+    }
   }
 
   applyScrollTop({ scrollTop, lastTop, isScrolling }) {
@@ -137,13 +143,16 @@ export default class ScrollView extends Component {
 
     this.notifyScrollPosition(isScrolling, scrollTop, isAtTop);
 
-    if (this.scrollChange) {
+    if (this.scrollChange && scrollTop !== lastTop) {
       this.scrollChange(scrollTop);
     }
     if (this.scrolledToTopChange && isAtTopChanged) {
       this.scrolledToTopChange(isAtTop)
     }
     this._appliedScrollTop = scrollTop;
+    if (DEBUG) {
+      this._trackIsScrollingForWaiter(isScrolling);
+    }
   }
 
   onScrollingComplete() {
@@ -151,6 +160,9 @@ export default class ScrollView extends Component {
       return;
     }
     this.notifyScrollPosition(false, this._appliedScrollTop, this._appliedScrollTop <= this.scrollTopOffset);
+    if (DEBUG) {
+      this._trackIsScrollingForWaiter(false);
+    }
   }
 
   updateScrollerDimensions() {
@@ -272,7 +284,9 @@ export default class ScrollView extends Component {
 
     while(true) { // eslint-disable-line no-constant-condition
       yield timeout(MEASUREMENT_INTERVAL);
-      this.measureClientAndContent();
+      if (!this._isScrolling) {
+        this.measureClientAndContent();
+      }
     }
   }
 
@@ -280,6 +294,7 @@ export default class ScrollView extends Component {
     if (!this.element) {
       return;
     }
+    this._lastMeasurement = +(new Date());
     let { clientWidth, clientHeight, contentHeight } = this.getCurrentClientAndContentSizes();
 
     if (!this.hasClientOrContentSizeChanged(clientWidth, clientHeight, contentHeight)) {
@@ -400,4 +415,12 @@ export default class ScrollView extends Component {
       callback(isScrolling, scrollTop, isAtTop);
     });
   }
- }
+
+  _trackIsScrollingForWaiter(isScrolling) {
+    this._lastIsScrolling = isScrolling;
+  }
+
+  _isScrollingForWaiter() {
+    return !this._lastIsScrolling;
+  }
+}

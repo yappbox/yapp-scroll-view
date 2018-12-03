@@ -1,5 +1,4 @@
 import Hammer from 'hammerjs';
-import { run } from '@ember/runloop';
 const FIELD_REGEXP = /input|textarea|select/i;
 
 export default class ZyngaScrollerVerticalRecognizer extends Hammer.Pan {
@@ -38,17 +37,11 @@ export default class ZyngaScrollerVerticalRecognizer extends Hammer.Pan {
 
   delegateToScrollComponent(inputData) {
     if (inputData.isFirst) {
-      run(this, function() {
-        this.options.scrollComponent.doTouchStart(inputData.pointers, inputData.timeStamp);
-      });
+      this.options.scrollComponent.doTouchStart(inputData.pointers, inputData.timeStamp);
     } else if (inputData.isFinal) {
-      run(this, function() {
-        this.options.scrollComponent.doTouchEnd(inputData.pointers, inputData.timeStamp);
-      });
+      this.options.scrollComponent.doTouchEnd(inputData.pointers, inputData.timeStamp);
     } else {
-      run(this, function() {
-        this.options.scrollComponent.doTouchMove(inputData.pointers, inputData.timeStamp, inputData.scale);
-      });
+      this.options.scrollComponent.doTouchMove(inputData.pointers, inputData.timeStamp, inputData.scale);
     }
   }
 }

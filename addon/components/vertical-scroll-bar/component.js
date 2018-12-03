@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import { classNames, layout } from '@ember-decorators/component';
-import { computed } from '@ember-decorators/object';
 import template from './template';
 import { argument } from '@ember-decorators/argument';
 import { assert } from '@ember/debug';
@@ -33,15 +32,14 @@ export default class VerticalScrollBar extends Component {
     this.thumb = this.element.querySelector('[data-thumb]');
     this.updateThumbStyle();
 
-    this.registerWithScrollView(this.updateScrollingParamerters.bind(this));
+    this.registerWithScrollView(this.updateScrollingParameters.bind(this));
   }
 
-  @computed('contentHeight', 'viewportHeight')
   get contentRatio() {
     return Math.min(1, this.viewportHeight / this.contentHeight);
   }
 
-  updateScrollingParamerters(isScrolling, scrollTop) {
+  updateScrollingParameters(isScrolling, scrollTop) {
     this._scrollTop = scrollTop;
     this._isScrolling = isScrolling;
     this.updateThumbStyle();
