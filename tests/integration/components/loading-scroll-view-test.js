@@ -23,7 +23,6 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
           @hasMore={{hasMore}}
           @isLoadingMore={{isLoadingMore}}
           @loadMore={{loadMore}}
-        as |scrollViewApi|
       >
         <div id="element1" style="width:320px;height:200px">One</div>
         <div style="width:320px;height:200px">Two</div>
@@ -71,14 +70,14 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     await this.render(EXAMPLE_1_HBS);
     await scrollDown('.ScrollView #element1', {
       amount: 500,
-      duration: 300
+      duration: 750
     });
     assert.dom(SCROLL_CONTAINER).containsText('Five');
     await settled();
     assert.dom(SCROLL_CONTAINER).containsText('Ten');
     await scrollDown('.ScrollView #element6', {
-      amount: 500,
-      duration: 300
+      amount: 800,
+      duration: 500
     });
     assert.ok(
       scrollPosition(find(SCROLL_CONTAINER)) < -1000,

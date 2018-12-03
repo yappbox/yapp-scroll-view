@@ -1,11 +1,10 @@
 import Component from '@ember/component';
 import { classNames, layout } from '@ember-decorators/component';
-import { computed } from '@ember-decorators/object';
 import template from './template';
 import { argument } from '@ember-decorators/argument';
-import { htmlSafe } from '@ember/string';
 import { assert } from '@ember/debug';
 import { optional, type } from '@ember-decorators/argument/type';
+import { ClosureAction } from '@ember-decorators/argument/types';
 
 const MIN_THUMB_LENGTH = 15;
 const COMPRESSION_MULTIPLIER = 3.1416;
@@ -14,11 +13,14 @@ const COMPRESSION_MULTIPLIER = 3.1416;
 @classNames('VerticalScrollBar')
 export default class VerticalScrollBar extends Component {
   @argument @type(optional('number')) contentHeight;
-  @argument @type(optional('number')) scrollTop;
-  @argument @type('boolean') isScrolling;
+  @argument @type(ClosureAction) registerWithScrollView;
 
-  constructor() {
-    super(...arguments);
+  _isScrolling = false;
+  _scrollTop = 0;
+
+  init() {
+    super.init(...arguments);
+    // Default viewportHeight to something close to resonable
     this.set('viewportHeight', this.contentHeight);
   }
 
@@ -26,16 +28,25 @@ export default class VerticalScrollBar extends Component {
     this._super(...arguments);
     assert("vertical-scroll-bar has zero height (missing CSS?)", this.element.offsetHeight !== 0);
     this.set('viewportHeight', this.element.offsetHeight);
+
+    this.thumb = this.element.querySelector('[data-thumb]');
+    this.updateThumbStyle();
+
+    this.registerWithScrollView(this.updateScrollingParameters.bind(this));
   }
 
-  @computed('contentHeight', 'viewportHeight')
   get contentRatio() {
     return Math.min(1, this.viewportHeight / this.contentHeight);
   }
 
-  @computed('contentRatio', 'scrollTopRatio', 'viewportHeight', 'isScrolling', 'compressionFactor')
-  get thumbStyle() {
-    let { viewportHeight, contentRatio, scrollTopRatio, isScrolling, compressionFactor } = this;
+  updateScrollingParameters(isScrolling, scrollTop) {
+    this._scrollTop = scrollTop;
+    this._isScrolling = isScrolling;
+    this.updateThumbStyle();
+  }
+
+  updateThumbStyle() {
+    let { viewportHeight, contentRatio, scrollTopRatio, _isScrolling, compressionFactor } = this;
     if (!viewportHeight) {
       return;
     }
@@ -48,15 +59,15 @@ export default class VerticalScrollBar extends Component {
     } else if (this.contentRatio > 0.9) {
       thumbY = maxThumbY;
     }
-    let styleParts = [
-      `opacity: ${ isScrolling ? '1' : '0' }`,
-      `height: ${thumbHeight}px`,
-      `transform: translateY(${thumbY}px)`
-    ];
-    return htmlSafe(styleParts.join(';'));
+
+    let styleParts = {
+      opacity: _isScrolling ? '1' : '0',
+      height: `${thumbHeight}px`,
+      transform: `translateY(${thumbY}px)`
+    };
+    Object.assign(this.thumb.style, styleParts);
   }
 
-  @computed('scrollTopRatio', 'contentRatio')
   get compressionFactor() {
     // when overscrolled, the thumb compresses
     if (this.scrollTopRatio < 0) {
@@ -68,8 +79,7 @@ export default class VerticalScrollBar extends Component {
     return 1;
   }
 
-  @computed('contentHeight', 'scrollTop')
   get scrollTopRatio() {
-    return this.scrollTop / this.contentHeight;
+    return this._scrollTop / this.contentHeight;
   }
 }

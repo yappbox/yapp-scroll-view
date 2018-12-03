@@ -1,5 +1,4 @@
 import Evented from '@ember/object/evented';
-import { readOnly } from '@ember/object/computed';
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend(Evented, {
@@ -13,11 +12,9 @@ export default EmberObject.extend(Evented, {
     this.scrollToTopIfInViewport = _scrollComponent.scrollToTopIfInViewport.bind(_scrollComponent);
     this.scheduleRefresh = _scrollComponent.scheduleRefresh.bind(_scrollComponent);
     this.getViewHeight = _scrollComponent.getViewHeight.bind(_scrollComponent);
+    this.registerScrollPositionCallback = _scrollComponent.registerScrollPositionCallback.bind(_scrollComponent);
   },
   scrollingChanged(value) {
     this.trigger('isScrollingChanged', value);
-  },
-  scrollTop: readOnly('_scrollComponent.scrollTop'),
-  isAtTop: readOnly('_scrollComponent._isAtTop'),
-  isScrolling: readOnly('_scrollComponent._isScrolling'),
+  }
 });
