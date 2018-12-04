@@ -5,6 +5,7 @@
   data-test-scroll-bar
   class="ScrollView-scrollBar"
   @contentHeight={{_appliedContentHeight}}
+  @scrollerHeight={{_appliedClientHeight}}
   @registerWithScrollView={{action scrollViewApi.registerScrollPositionCallback}}
 />
 {{emitter-action

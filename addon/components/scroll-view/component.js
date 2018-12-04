@@ -320,7 +320,7 @@ export default class ScrollView extends Component {
 
   applyNewMeasurements(clientWidth, clientHeight, contentHeight) {
     this._appliedClientWidth = clientWidth;
-    this._appliedClientHeight = clientHeight;
+    this.set('_appliedClientHeight', clientHeight);
     this.set('_appliedContentHeight', contentHeight);
     this.contentElement.style.minHeight = `${clientHeight}px`;
     this.updateScrollerDimensions();
