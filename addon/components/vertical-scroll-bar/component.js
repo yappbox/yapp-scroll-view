@@ -7,7 +7,6 @@ import { optional, type } from '@ember-decorators/argument/type';
 import { ClosureAction } from '@ember-decorators/argument/types';
 
 const MIN_THUMB_LENGTH = 15;
-const COMPRESSION_MULTIPLIER = 3.1416;
 
 @layout(template)
 @classNames('VerticalScrollBar')
@@ -24,67 +23,51 @@ export default class VerticalScrollBar extends Component {
     this.trackHeight = this.clientHeight;
   }
 
-  didInsertElement(){
+  didInsertElement() {
     this._super(...arguments);
-    assert("vertical-scroll-bar has zero height (missing CSS?)", this.element.offsetHeight !== 0);
-    this.trackHeight = this.element.offsetHeight;
+    assert(
+      'vertical-scroll-bar has zero height (missing CSS?)',
+      this.element.offsetHeight !== 0
+    );
 
+    this.trackHeight = this.element.offsetHeight;
     this.thumb = this.element.querySelector('[data-thumb]');
     this.updateThumbStyle();
-
     this.registerWithScrollView(this.updateScrollingParameters.bind(this));
   }
 
   updateScrollingParameters(isScrolling, scrollTop) {
     this._scrollTop = scrollTop;
     this._isScrolling = isScrolling;
+
     this.updateThumbStyle();
   }
 
   updateThumbStyle() {
-    let { scrollerHeight, trackHeight, contentRatio, scrollTopRatio, _isScrolling, compressionFactor } = this;
+    let { scrollerHeight, trackHeight, contentRatio, scrollTopRatio, _isScrolling } = this;
     if (!scrollerHeight) {
       return;
     }
-    let thumbHeight = contentRatio * trackHeight;
 
-    let trackAreaScrollSize = trackHeight - thumbHeight
-    // let maxThumbY = trackHeight - thumbHeight;
+    let thumbHeight = contentRatio * trackHeight;
+    let trackAreaScrollSize = trackHeight - thumbHeight;
     let thumbY = scrollTopRatio * trackAreaScrollSize;
     let isAtMax = thumbY + thumbHeight >= trackHeight;
-    // thumbHeight = Math.max(MIN_THUMB_LENGTH, thumbHeight * compressionFactor);
     thumbHeight = Math.max(MIN_THUMB_LENGTH, thumbHeight);
+
     if (isAtMax) {
       thumbY = trackHeight - thumbHeight;
     }
+
     if (thumbY < 0) {
       thumbY = 0;
     }
-    // console.log({ _scrollTop: this._scrollTop, contentRatio, scrollTopRatio, compressionFactor });
-    // thumbY = Math.min(maxThumbY, Math.max(0, thumbY));
-    // if (this.scrollTopRatio < 0) {
-    //   thumbY = 0;
-    // } else if (this.contentRatio > 0.9) {
-    //   thumbY = maxThumbY;
-    // }
-    // console.log({ thumbHeight, thumbY, trackHeight })
-    let styleParts = {
+
+    Object.assign(this.thumb.style, {
       opacity: _isScrolling ? '1' : '0',
       height: `${thumbHeight}px`,
       transform: `translateY(${thumbY}px)`
-    };
-    Object.assign(this.thumb.style, styleParts);
-  }
-
-  get compressionFactor() {
-    // when overscrolled, the thumb compresses
-    if (this.scrollTopRatio < 0) {
-      return (1 + (this.scrollTopRatio * COMPRESSION_MULTIPLIER));
-    }
-    if ((this.scrollTopRatio) > 1) {
-      return 1 - ((this.scrollTopRatio - 1) * COMPRESSION_MULTIPLIER);
-    }
-    return 1;
+    });
   }
 
   get contentRatio() {
@@ -102,6 +85,7 @@ export default class VerticalScrollBar extends Component {
 
   get overscrollAmount() {
     let scrollTop = this._scrollTop;
+
     if (scrollTop < 0) {
       return -scrollTop;
     } else if (scrollTop > this.scrollAreaSize) {
@@ -111,12 +95,6 @@ export default class VerticalScrollBar extends Component {
   }
 
   get scrollAreaSize() {
-    let size = this.effectiveContentHeight - this.scrollerHeight;
-    // if (this._scrollTop < 0) {
-    //   size = size + this._scrollTop;
-    // } else if (this._scrollTop > this.contentHeight) {
-    //   size = size - (this._scrollTop - this.contentHeight);
-    // }
-    return size;
+    return this.effectiveContentHeight - this.scrollerHeight;
   }
 }
