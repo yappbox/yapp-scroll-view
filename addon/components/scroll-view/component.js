@@ -187,7 +187,9 @@ export default class ScrollView extends Component {
   }
 
   unbindScrollerEvents() {
-    this.hammer.destroy();
+    if (this.hammer) {
+      this.hammer.destroy();
+    }
     this.element.removeEventListener(
       normalizeWheel.getEventType(),
       this._boundHandleWheel,
