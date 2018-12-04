@@ -72,7 +72,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     await this.render(EXAMPLE_1_HBS);
     let scrollPromise = scrollDown('.ScrollView #element1');
     await waitForOpacity(SCROLLBAR_THUMB, '1');
-    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 227);
+    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 228);
     await scrollPromise;
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -190);
   });
@@ -304,7 +304,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     `;
     await this.render(template);
     await scrollDown('.ScrollView textarea');
-    assert.equal(find(SCROLLBAR_THUMB).style.opacity, '0');
+    assert.equal(find(SCROLLBAR_THUMB).style.opacity, '');
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
   });
 
