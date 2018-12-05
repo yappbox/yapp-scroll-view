@@ -20,7 +20,7 @@ import { registerWaiter, unregisterWaiter } from '@ember/test';
 
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
-const MEASUREMENT_INTERVAL_WHILE_SCROLLING = 1000;
+const MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN = 1000;
 
 function getScrolledToTopChanged(currentTop, lastTop, offset) {
   let isAtTop = currentTop <= offset;
@@ -129,7 +129,7 @@ export default class ScrollView extends Component {
       lastTop: this._appliedScrollTop,
       isScrolling: !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating)
     });
-    if (+(new Date()) - this._lastMeasurement > MEASUREMENT_INTERVAL_WHILE_SCROLLING) {
+    if (+(new Date()) - this._lastMeasurement > MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN) {
       this.measureClientAndContent();
     }
   }
@@ -283,10 +283,11 @@ export default class ScrollView extends Component {
         return;
       }
     }
-
+    let lastIsInViewport = true;
     while(true) { // eslint-disable-line no-constant-condition
-      yield timeout(MEASUREMENT_INTERVAL);
-      if (!this._isScrolling) {
+      yield timeout(lastIsInViewport ? MEASUREMENT_INTERVAL : MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN);
+      lastIsInViewport = this.isInViewport;
+      if (lastIsInViewport && !this._isScrolling) {
         this.measureClientAndContent();
       }
     }

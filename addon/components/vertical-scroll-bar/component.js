@@ -59,6 +59,10 @@ export default class VerticalScrollBar extends Component {
     if (!scrollerHeight) {
       return;
     }
+    if (!_isScrolling) {
+      this.thumb.style.opacity = '0';
+      return;
+    }
 
     let thumbHeight = contentRatio * trackHeight;
     let trackAreaScrollSize = trackHeight - thumbHeight;
@@ -75,7 +79,7 @@ export default class VerticalScrollBar extends Component {
     }
 
     Object.assign(this.thumb.style, {
-      opacity: _isScrolling ? '1' : '0',
+      opacity: '1',
       height: `${thumbHeight}px`,
       transform: `translateY(${thumbY}px)`
     });
