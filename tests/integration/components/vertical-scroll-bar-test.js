@@ -54,7 +54,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
   test('it renders with a thumb size proportional to content ratio', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 100);
-    assert.equal(thumbSize(), 232);
+    assert.equal(thumbSize(), 233);
     assert.equal(thumbPosition(), 48);
     assert.equal(find(THUMB).style.opacity, "1");
   });
@@ -64,7 +64,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     await this.render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 5);
     this.simulateCallback(true, 0);
-    assert.equal(thumbSize(), 479);
+    assert.equal(thumbSize(), 480);
     assert.equal(thumbPosition(), 0);
     assert.equal(find(THUMB).style.opacity, "1");
   });
@@ -78,7 +78,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('contentHeight', 100000);
     await this.render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 100);
-    assert.equal(thumbSize(), 15);
+    assert.equal(thumbSize(), 16);
   });
 
   test('thumb is visible when isScrolling is true', async function(assert) {
@@ -135,17 +135,17 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     // when scrolled past top by 5
     this.simulateCallback(true, -5);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
-    assert.equal(thumbSize(), 994, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 995, 'thumb is slightly compressed');
 
     // when scrolled past bottom by 100
     this.simulateCallback(true, 100);
     assert.equal(thumbPosition(), 90, 'thumb is at bottom');
-    assert.equal(thumbSize(), 909, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 910, 'thumb is slightly compressed');
 
     // when scrolled past top by 100
     this.simulateCallback(true, -100);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
-    assert.equal(thumbSize(), 908, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 909, 'thumb is slightly compressed');
   });
 
   test('behavior when content is equal to scrollview height', async function(assert) {
@@ -157,22 +157,22 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     // when scrolled past bottom by 5
     this.simulateCallback(true, 5);
     assert.equal(thumbPosition(), 4, 'thumb is at bottom');
-    assert.equal(thumbSize(), 995, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 996, 'thumb is slightly compressed');
 
     // when scrolled past top by 5
     this.simulateCallback(true, -5);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
-    assert.equal(thumbSize(), 994, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 995, 'thumb is slightly compressed');
 
     // when scrolled past bottom by 100
     this.simulateCallback(true, 100);
     assert.equal(thumbPosition(), 90, 'thumb is at bottom');
-    assert.equal(thumbSize(), 909, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 910, 'thumb is slightly compressed');
 
     // when scrolled past top by 100
     this.simulateCallback(true, -100);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
-    assert.equal(thumbSize(), 908, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 909, 'thumb is slightly compressed');
   });
 
   test('behavior when content is slightly more than scrollview height', async function(assert) {
@@ -184,17 +184,17 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     // when scrolled past bottom by 1
     this.simulateCallback(true, 101);
     assert.equal(thumbPosition(), 90, 'thumb is at bottom');
-    assert.equal(thumbSize(), 809, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 810, 'thumb is slightly compressed');
 
     // when scrolled past top by 1
     this.simulateCallback(true, -1);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
-    assert.equal(thumbSize(), 809, 'thumb is slightly compressed');
+    assert.equal(thumbSize(), 810, 'thumb is slightly compressed');
 
     // when scrolled to center
     this.simulateCallback(true, 50);
     assert.equal(thumbPosition(), 45, 'thumb is in center');
-    assert.equal(thumbSize(), 810, 'thumb height is not compressed');
+    assert.equal(thumbSize(), 811, 'thumb height is not compressed');
 
     // when scrolled past bottom by 200
     this.simulateCallback(true, 300);
@@ -226,17 +226,17 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     // when scrolled to center
     this.simulateCallback(true, 750);
     assert.equal(thumbPosition(), 187, 'thumb is in center');
-    assert.equal(thumbSize(), 125, 'thumb height is not compressed');
+    assert.equal(thumbSize(), 126, 'thumb height is not compressed');
 
     // when scrolled past bottom by 100
     this.simulateCallback(true, 1600);
     assert.equal(thumbPosition(), 395, 'thumb is at bottom');
-    assert.equal(thumbSize(), 104, 'thumb is heavily compressed');
+    assert.equal(thumbSize(), 105, 'thumb is heavily compressed');
 
     // when scrolled past top by 100
     this.simulateCallback(true, -100);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
-    assert.equal(thumbSize(), 104, 'thumb is heavily compressed');
+    assert.equal(thumbSize(), 105, 'thumb is heavily compressed');
 
     // when scrolled past bottom by 500
     this.simulateCallback(true, 2000);
@@ -247,5 +247,22 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.simulateCallback(true, -500);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
     assert.equal(thumbSize(), 63, 'thumb is small');
+  });
+
+  test('calculations update when scrollerHeight changes', async function(assert) {
+    this.set('verticalPadding', 0);
+    this.set('contentHeight', 2000);
+    this.set('scrollerHeight', 500);
+    await this.render(EXAMPLE_1_HBS);
+
+    this.simulateCallback(true, 750);
+    assert.equal(thumbPosition(), 187, 'thumb is in center');
+    assert.equal(thumbSize(), 126, 'thumb height is not compressed');
+
+    this.set('scrollerHeight', 1000);
+
+    this.simulateCallback(true, 750);
+    assert.equal(thumbPosition(), 375, 'thumb is in center');
+    assert.equal(thumbSize(), 501, 'thumb height is not compressed');
   });
 });

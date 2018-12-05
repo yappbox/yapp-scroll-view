@@ -30,10 +30,21 @@ export default class VerticalScrollBar extends Component {
       this.element.offsetHeight !== 0
     );
 
-    this.trackHeight = this.element.offsetHeight;
     this.thumb = this.element.querySelector('[data-thumb]');
+    this.trackHeight = this.element.offsetHeight;
     this.updateThumbStyle();
     this.registerWithScrollView(this.updateScrollingParameters.bind(this));
+  }
+
+  didReceiveAttrs() {
+    this._super(...arguments);
+    if (this._lastScrollerHeight !== this.scrollerHeight) {
+      if (this.element) {
+        this.trackHeight = this.element.offsetHeight;
+        this.updateThumbStyle();
+      }
+      this._lastScrollerHeight = this.scrollerHeight;
+    }
   }
 
   updateScrollingParameters(isScrolling, scrollTop) {
