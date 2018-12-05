@@ -17,7 +17,10 @@ export default class ZyngaScrollerVerticalRecognizer extends Hammer.Pan {
 
   recognize(inputData) {
     let isOverElementThatPreventsScrollingInteraction = this.shouldPreventScrollingInteraction(inputData);
-    if (this.canEmit() && !isOverElementThatPreventsScrollingInteraction) {
+    // We want to be sure to delegate to the scroll component if this is a mousedown or touchstart.
+    // There are circumstances where this.canEmit() will return false because a "requireFail"'d recognizer
+    // has not yet reset.
+    if ((inputData.isFirst || this.canEmit()) && !isOverElementThatPreventsScrollingInteraction) {
       this.delegateToScrollComponent(inputData);
     }
     if (isOverElementThatPreventsScrollingInteraction) {
