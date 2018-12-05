@@ -28,6 +28,11 @@ export default class ZyngaScrollerVerticalRecognizer extends Hammer.Pan {
       return;
     }
     super.recognize(inputData);
+    if (inputData.isFinal) {
+      setTimeout(() => {
+        this.state = Hammer.STATE_POSSIBLE;
+      }, 0);
+    }
   }
 
   shouldPreventScrollingInteraction(inputData) {
