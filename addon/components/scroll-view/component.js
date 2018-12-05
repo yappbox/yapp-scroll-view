@@ -198,7 +198,7 @@ export default class ScrollView extends Component {
   }
 
   doTouchStart(touches, timeStamp) {
-    this.scroller.doTouchStart(touches, timeStamp)
+    this.scroller.doTouchStart(touches, timeStamp);
   }
 
   doTouchMove(touches, timeStamp, scale) {
@@ -239,8 +239,8 @@ export default class ScrollView extends Component {
     //
     // This method determines whether either of these cases apply.
     let isFinishingDragging = this.scroller.__isDragging;
-    let isAnimatingWithMomentum = Math.abs(this._decelerationVelocityY) > 2;
-    return isFinishingDragging || isAnimatingWithMomentum;
+    let wasAnimatingWithMomentum = Math.abs(this._decelerationVelocityY) > 2;
+    return isFinishingDragging || wasAnimatingWithMomentum;
   }
 
   handleWheel(e) {

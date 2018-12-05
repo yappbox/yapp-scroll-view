@@ -1,7 +1,7 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
-import { click, find, waitUntil } from '@ember/test-helpers';
+import { click, find, settled, waitUntil } from '@ember/test-helpers';
 import RSVP from 'rsvp';
 import { timeout } from 'ember-concurrency';
 import { scrollPosition, waitForOpacity, scrollDown } from '../../helpers/scrolling';
@@ -72,7 +72,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     await this.render(EXAMPLE_1_HBS);
     let scrollPromise = scrollDown('.ScrollView #element1');
     await waitForOpacity(SCROLLBAR_THUMB, '1');
-    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 228);
+    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 229);
     await scrollPromise;
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -190);
   });
@@ -304,7 +304,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     `;
     await this.render(template);
     await scrollDown('.ScrollView textarea');
-    assert.equal(find(SCROLLBAR_THUMB).style.opacity, '');
+    assert.equal(find(SCROLLBAR_THUMB).style.opacity, '0');
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
   });
 
@@ -351,11 +351,13 @@ module('Integration | Component | scroll-view', function(hooks) {
     await timeout(50);
     let newScrollPos = scrollPosition(find(SCROLL_CONTAINER));
     assert.ok(Math.abs(scrollPos - newScrollPos) < 5, 'scrolling should stop when clicked');
+    await timeout(50);
 
     let linkClicked = false;
     this.set('onClickLink', function(){
       linkClicked = true;
     });
+    await settled();
     await click('[data-test-link]');
     assert.ok(linkClicked, 'subsequent click should work');
   });

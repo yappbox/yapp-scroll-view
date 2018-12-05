@@ -60,7 +60,7 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
       amount: 400
     });
     await waitForOpacity(SCROLLBAR_THUMB, '1');
-    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 228);
+    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 229);
     await scrollPromise;
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -390);
     assert.dom(SCROLL_CONTAINER).containsText('Ten');

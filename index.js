@@ -16,8 +16,6 @@ module.exports = {
 
     this._super.included.apply(this, arguments);
 
-    app.import('vendor/fastclick/fastclick.js');
-    app.import('vendor/yapp-scroll-view-shims/shims.js');
     app.import('vendor/zynga-scroller/Animate.js');
     app.import('vendor/zynga-scroller/Scroller.js');
   }
