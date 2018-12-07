@@ -3,6 +3,17 @@
     @scrollTopOffset={{scrollTopOffset}}
     @initialScrollTop={{initialScrollTop}}
     @key={{key}}
+    @auxiliaryComponent={{if auxiliaryComponent
+      (component auxiliaryComponent
+          cell-layout=cell-layout
+          items=items
+          estimated-width=estimated-width
+          estimated-height=estimated-height
+          client-width=_clientWidth
+          client-height=_clientHeight
+          scroll-top=_scrollTop
+      )
+    }}
     @clientSizeChange={{action 'clientSizeChange'}}
     @scrollChange={{action 'scrollChange'}}
     @scrolledToTopChange={{action 'onScrolledToTopChange'}}
@@ -19,15 +30,3 @@
     }}
   {{/if}}
 </ScrollView>
-
-{{#if auxiliaryComponent}}
-  {{component auxiliaryComponent
-      cell-layout=cell-layout
-      items=items
-      estimated-width=estimated-width
-      estimated-height=estimated-height
-      client-width=_clientWidth
-      client-height=_clientHeight
-      scroll-top=_scrollTop
-  }}
-{{/if}}

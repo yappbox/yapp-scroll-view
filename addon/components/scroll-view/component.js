@@ -41,6 +41,7 @@ export default class ScrollView extends Component {
   @argument @type(optional('string')) key;
   @argument @type(optional('number')) scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
   @argument @type(optional('number')) initialScrollTop;
+  @argument @type(optional('any')) auxiliaryComponent;
   @argument @type(optional(ClosureAction)) clientSizeChange;
   @argument @type(optional(ClosureAction)) scrollChange;
   @argument @type(optional(ClosureAction)) scrolledToTopChange;
