@@ -336,6 +336,9 @@ export default class ScrollView extends Component {
   }
 
   get isInViewport() {
+    if (!this.element) {
+      return false;
+    }
     let rect = this.element.getBoundingClientRect();
     return rect.top >= 0 &&
            rect.left >= 0 &&
