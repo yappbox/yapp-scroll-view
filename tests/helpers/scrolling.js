@@ -14,9 +14,12 @@ export function waitForOpacity(selector, value) {
 }
 
 export function scrollDown(selector, options = {}) {
+  if (options.amount) {
+    options.amount = options.amount * -1;
+  }
   let defaultOpts = {
     position: [10, 50],
-    amount: 200,
+    amount: -200,
     duration: 400
   };
   options = Object.assign(defaultOpts, options);

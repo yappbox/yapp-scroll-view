@@ -174,7 +174,7 @@ module('Integration | Component | scroll-view', function(hooks) {
       return scrollPosition(find(SCROLL_CONTAINER)) <= -190;
      });
     assert.equal(find(SCROLLBAR_THUMB).style.opacity, '1', 'scrollbar visible while still touching');
-    await timeout(100);
+    await timeout(300);
     mouseUpDeferred.resolve();
     await waitForOpacity(SCROLLBAR_THUMB, '0');
     assert.equal(find(SCROLLBAR_THUMB).style.opacity, '0', 'scrollbar hides after no longer touching');
