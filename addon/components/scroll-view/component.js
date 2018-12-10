@@ -22,6 +22,21 @@ const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
 const MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN = 1000;
 
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this, args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
+}
+
 function getScrolledToTopChanged(currentTop, lastTop, offset) {
   let isAtTop = currentTop <= offset;
   let isAtTopChanged = false;
@@ -67,6 +82,8 @@ export default class ScrollView extends Component {
     if (!this.contentHeight) {
       this._shouldMeasureContent = true;
     }
+
+    this.debouncedOnScrollingComplete = debounce(this.onScrollingComplete, 500);
   }
 
   didReceiveAttrs() {
@@ -133,6 +150,11 @@ export default class ScrollView extends Component {
     if (+(new Date()) - this._lastMeasurement > MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN) {
       this.measureClientAndContent();
     }
+
+    // There are times when onScrollComplete is not called. This is due to subtleties
+    // In how the hammer recognizer pass events around. This debounced call will ensure
+    // scroll thumb is hidden 500ms after the last onScrollChange call
+    this.debouncedOnScrollingComplete()
   }
 
   applyScrollTop({ scrollTop, lastTop, isScrolling }) {
