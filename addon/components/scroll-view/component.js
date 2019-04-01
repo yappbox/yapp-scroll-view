@@ -435,6 +435,13 @@ export default class ScrollView extends Component {
     });
   }
 
+  unregisterScrollPositionCallback(scrollPositionCallback) {
+    let index = this._scrollPositionCallbacks.indexOf(scrollPositionCallback);
+    if (index > -1) {
+      this._scrollPositionCallbacks.splice(index, 1);
+    }
+  }
+
   registerScrollPositionCallback(scrollPositionCallback) {
     this._scrollPositionCallbacks.push(scrollPositionCallback);
   }

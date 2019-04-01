@@ -13,6 +13,7 @@ export default EmberObject.extend(Evented, {
     this.scheduleRefresh = _scrollComponent.scheduleRefresh.bind(_scrollComponent);
     this.getViewHeight = _scrollComponent.getViewHeight.bind(_scrollComponent);
     this.registerScrollPositionCallback = _scrollComponent.registerScrollPositionCallback.bind(_scrollComponent);
+    this.unregisterScrollPositionCallback = _scrollComponent.unregisterScrollPositionCallback.bind(_scrollComponent);
   },
   scrollingChanged(value) {
     this.trigger('isScrollingChanged', value);
