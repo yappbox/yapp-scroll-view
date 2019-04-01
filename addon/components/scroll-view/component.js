@@ -145,7 +145,8 @@ export default class ScrollView extends Component {
     this.applyScrollTop({
       scrollTop,
       lastTop: this._appliedScrollTop,
-      isScrolling: !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating)
+      isScrolling: !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating),
+  decelerationVelocityY: this._decelerationVelocityY
     });
     if (+(new Date()) - this._lastMeasurement > MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN) {
       this.measureClientAndContent();
@@ -157,14 +158,14 @@ export default class ScrollView extends Component {
     this.debouncedOnScrollingComplete()
   }
 
-  applyScrollTop({ scrollTop, lastTop, isScrolling }) {
+  applyScrollTop({ scrollTop, lastTop, isScrolling, decelerationVelocityY }) {
     let { isAtTop, isAtTopChanged } = getScrolledToTopChanged(scrollTop, lastTop, this.scrollTopOffset);
 
     if (this.contentElement) {
       translate(this.contentElement, 0, -1 * scrollTop);
     }
 
-    this.notifyScrollPosition(isScrolling, scrollTop, isAtTop);
+    this.notifyScrollPosition(isScrolling, scrollTop, isAtTop, decelerationVelocityY);
 
     if (this.scrollChange && scrollTop !== lastTop) {
       this.scrollChange(scrollTop);
@@ -182,7 +183,7 @@ export default class ScrollView extends Component {
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
-    this.notifyScrollPosition(false, this._appliedScrollTop, this._appliedScrollTop <= this.scrollTopOffset);
+    this.notifyScrollPosition(false, this._appliedScrollTop, this._appliedScrollTop <= this.scrollTopOffset, 0);
     if (DEBUG) {
       this._trackIsScrollingForWaiter(false);
     }
@@ -446,9 +447,9 @@ export default class ScrollView extends Component {
     this._scrollPositionCallbacks.push(scrollPositionCallback);
   }
 
-  notifyScrollPosition(isScrolling, scrollTop, isAtTop) {
+  notifyScrollPosition(isScrolling, scrollTop, isAtTop, velocityY) {
     this._scrollPositionCallbacks.forEach((callback) => {
-      callback(isScrolling, scrollTop, isAtTop);
+      callback(isScrolling, scrollTop, isAtTop, velocityY);
     });
   }
 
