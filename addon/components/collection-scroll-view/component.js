@@ -1,22 +1,33 @@
 import EmberCollection from 'ember-collection/components/ember-collection';
 import { classNames, layout } from '@ember-decorators/component';
 import template from './template';
-import { action } from '@ember-decorators/object';
+import { action } from '@ember/object';
 import { set } from '@ember/object';
-import { argument } from '@ember-decorators/argument';
-import { optional, type } from '@ember-decorators/argument/type';
-import { ClosureAction } from '@ember-decorators/argument/types';
+// import { argument } from '@ember-decorators/argument';
+// import { optional, type } from '@ember-decorators/argument/type';
+// import { ClosureAction } from '@ember-decorators/argument/types';
 
 /* An ember-collection subclass which integrates ScrollView */
 @layout(template)
 @classNames('CollectionScrollView')
 export default class CollectionScrollView extends EmberCollection {
-  @argument @type('any') auxiliaryComponent;
-  @argument @type(optional(ClosureAction)) scrolledToTopChange;
-  @argument @type(optional('number')) scrollTopOffset = 0;
-  @argument @type(optional('number')) initialScrollTop;
-  @argument @type(optional('string')) key;
-  @argument @type(optional('any')) revealService;
+  // @argument @type('any')
+  auxiliaryComponent;
+
+  // @argument @type(optional(ClosureAction))
+  scrolledToTopChange;
+
+  // @argument @type(optional('number'))
+  scrollTopOffset = 0;
+
+  // @argument @type(optional('number'))
+  initialScrollTop;
+
+  // @argument @type(optional('string'))
+  key;
+
+  //@argument @type(optional('any'))
+  revealService;
 
   @action
   scrollChange(scrollTop) {

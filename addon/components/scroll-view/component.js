@@ -2,11 +2,11 @@
 import Component from '@ember/component';
 import { classNames, layout } from '@ember-decorators/component';
 import template from './template';
-import { computed } from '@ember-decorators/object';
-import { service } from '@ember-decorators/service';
-import { argument } from '@ember-decorators/argument';
-import { optional, type } from '@ember-decorators/argument/type';
-import { ClosureAction } from '@ember-decorators/argument/types';
+import { computed } from '@ember/object';
+import { inject as service } from '@ember/service';
+// import { argument } from '@ember-decorators/argument';
+// import { optional, type } from '@ember-decorators/argument/type';
+// import { ClosureAction } from '@ember-decorators/argument/types';
 import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
 import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer'
@@ -52,14 +52,29 @@ function getScrolledToTopChanged(currentTop, lastTop, offset) {
 @layout(template)
 @classNames('ScrollView')
 export default class ScrollView extends Component {
-  @argument @type(optional('number')) contentHeight; // optional, when not provided, we measure the size
-  @argument @type(optional('string')) key;
-  @argument @type(optional('number')) scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
-  @argument @type(optional('number')) initialScrollTop;
-  @argument @type(optional('any')) auxiliaryComponent;
-  @argument @type(optional(ClosureAction)) clientSizeChange;
-  @argument @type(optional(ClosureAction)) scrollChange;
-  @argument @type(optional(ClosureAction)) scrolledToTopChange;
+  // @argument @type(optional('number'))
+  contentHeight; // optional, when not provided, we measure the size
+
+  // @argument @type(optional('string'))
+  key;
+
+  // @argument @type(optional('number'))
+  scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
+
+  // @argument @type(optional('number'))
+  initialScrollTop;
+
+  // @argument @type(optional('any'))
+  auxiliaryComponent;
+
+  // @argument @type(optional(ClosureAction))
+  clientSizeChange;
+
+  // @argument @type(optional(ClosureAction))
+  scrollChange;
+
+  // @argument @type(optional(ClosureAction))
+  scrolledToTopChange;
 
   _scrollTop = 0;
   _isAtTop;
@@ -68,7 +83,7 @@ export default class ScrollView extends Component {
   _appliedClientHeight;
   _appliedContentHeight;
   _appliedScrollTop;
-  _shouldMeasureContent = false;
+  _shouldMeasureContent = undefined;
   _isScrolling = false;
   _lastIsScrolling = false;
 
@@ -78,15 +93,14 @@ export default class ScrollView extends Component {
   constructor() {
     super(...arguments);
     this._scrollPositionCallbacks = [];
-
-    if (!this.contentHeight) {
-      this._shouldMeasureContent = true;
-    }
-
     this.debouncedOnScrollingComplete = debounce(this.onScrollingComplete, 500);
   }
 
   didReceiveAttrs() {
+    if (this._shouldMeasureContent === undefined) {
+      this._shouldMeasureContent = !this.contentHeight;
+    }
+
     if (!this._shouldMeasureContent && (this._appliedContentHeight !== this.contentHeight)) {
       this.measureClientAndContent();
     }

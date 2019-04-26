@@ -1,21 +1,21 @@
 import Component from '@ember/component';
 import { tagName } from '@ember-decorators/component';
 import { join } from '@ember/runloop';
-import { argument } from '@ember-decorators/argument';
-import { type } from '@ember-decorators/argument/type';
-import { ClosureAction } from '@ember-decorators/argument/types';
-import { required } from '@ember-decorators/argument/validation';
+// import { argument } from '@ember-decorators/argument';
+// import { type } from '@ember-decorators/argument/type';
+// import { ClosureAction } from '@ember-decorators/argument/types';
+// import { required } from '@ember-decorators/argument/validation';
 
 @tagName('')
 export default class EmitterAction extends Component {
 
-  @argument @required @type('any')
+  // @argument @required @type('any')
   emitter;
 
-  @argument @required @type('string')
+  // @argument @required @type('string')
   eventName;
 
-  @argument @required @type(ClosureAction)
+  // @argument @required @type(ClosureAction)
   action;
 
   didInsertElement() {
