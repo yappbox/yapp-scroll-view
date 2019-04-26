@@ -17,7 +17,7 @@ module.exports = function(environment) {
       }
     },
     '@ember-decorators/argument': {
-      ignoreComponentsWithoutValidations: true
+      argumentWhitelist: ['estimated-height', 'estimated-width', 'cell-layout']
     },
     APP: {
       // Here you can pass flags/options to your application instance

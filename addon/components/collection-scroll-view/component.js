@@ -28,6 +28,12 @@ export default class CollectionScrollView extends EmberCollection {
   @argument(optional('any'))
   revealService;
 
+  @argument('any')
+  items;
+
+  @argument(optional('any'))
+  buffer;
+
   @action
   scrollChange(scrollTop) {
     if (scrollTop !== this._scrollTop) {
