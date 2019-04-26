@@ -1,23 +1,22 @@
 import ScrollView from './scroll-view/component';
 import { classNames } from '@ember-decorators/component';
-// import { argument } from '@ember-decorators/argument';
-// import { type } from '@ember-decorators/argument/type';
-// import { ClosureAction } from '@ember-decorators/argument/types';
+import { argument } from '@ember-decorators/argument';
+import { Action } from '@ember-decorators/argument/types';
 
 const MAX_LOAD_MORE_FREQUENCY_MS = 1000;
 
 @classNames('LoadingScrollView')
 export default class LoadingScrollView extends ScrollView {
-  // @argument @type('boolean')
+  @argument('boolean')
   hasMore;
 
-  // @argument @type('boolean')
+  @argument('boolean')
   isLoadingMore;
 
-  // @argument @type(ClosureAction)
+  @argument(Action)
   loadMore;
 
-  // @argument @type('number')
+  @argument('number')
   threshold = 350;
 
   _lastLoadMoreCheck = +(new Date());

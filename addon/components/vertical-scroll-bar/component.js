@@ -1,23 +1,22 @@
 import Component from '@ember/component';
 import { classNames, layout } from '@ember-decorators/component';
 import template from './template';
-// import { argument } from '@ember-decorators/argument';
+import { argument } from '@ember-decorators/argument';
 import { assert } from '@ember/debug';
-// import { optional, type } from '@ember-decorators/argument/type';
-// import { ClosureAction } from '@ember-decorators/argument/types';
+import { Action, optional } from '@ember-decorators/argument/types';
 
 const MIN_THUMB_LENGTH = 15;
 
 @layout(template)
 @classNames('VerticalScrollBar')
 export default class VerticalScrollBar extends Component {
-  // @argument @type(optional('number'))
+  @argument(optional('number'))
   contentHeight;
 
-  // @argument @type(optional('number'))
+  @argument(optional('number'))
   scrollerHeight;
 
-  // @argument @type(ClosureAction)
+  @argument(Action)
   registerWithScrollView;
 
   _isScrolling = false;
