@@ -3,36 +3,36 @@ import { classNames, layout } from '@ember-decorators/component';
 import template from './template';
 import { action } from '@ember/object';
 import { set } from '@ember/object';
-import { argument } from '@ember-decorators/argument';
-import { Action, optional } from '@ember-decorators/argument/types';
+// import { argument } from '@ember-decorators/argument';
+// import { Action, optional } from '@ember-decorators/argument/types';
 
 /* An ember-collection subclass which integrates ScrollView */
 @layout(template)
 @classNames('CollectionScrollView')
 export default class CollectionScrollView extends EmberCollection {
-  @argument('any')
-  auxiliaryComponent;
+  // @argument('any')
+  // auxiliaryComponent;
+  //
+  // @argument(optional(Action))
+  // scrolledToTopChange;
+  //
+  // @argument(optional('number'))
+  scrollTopOffset = this.scrollTopOffset || 0;
 
-  @argument(optional(Action))
-  scrolledToTopChange;
-
-  @argument(optional('number'))
-  scrollTopOffset = 0;
-
-  @argument(optional('number'))
-  initialScrollTop;
-
-  @argument(optional('string'))
-  key;
-
-  @argument(optional('any'))
-  revealService;
-
-  @argument('any')
-  items;
-
-  @argument(optional('any'))
-  buffer;
+  // @argument(optional('number'))
+  // initialScrollTop;
+  //
+  // @argument(optional('string'))
+  // key;
+  //
+  // @argument(optional('any'))
+  // revealService;
+  //
+  // @argument('any')
+  // items;
+  //
+  // @argument(optional('any'))
+  // buffer;
 
   @action
   scrollChange(scrollTop) {
