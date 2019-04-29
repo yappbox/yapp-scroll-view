@@ -4,8 +4,8 @@ import { classNames, layout } from '@ember-decorators/component';
 import template from './template';
 import { computed } from '@ember/object';
 import { inject as service } from '@ember/service';
-import { argument } from '@ember-decorators/argument';
-import { Action, optional } from '@ember-decorators/argument/types';
+// import { argument } from '@ember-decorators/argument';
+// import { Action, optional } from '@ember-decorators/argument/types';
 import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
 import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer'
@@ -51,29 +51,29 @@ function getScrolledToTopChanged(currentTop, lastTop, offset) {
 @layout(template)
 @classNames('ScrollView')
 export default class ScrollView extends Component {
-  @argument(optional('number'))
-  contentHeight; // optional, when not provided, we measure the size
+  // @argument(optional('number'))
+  // contentHeight; // optional, when not provided, we measure the size
+  //
+  // @argument(optional('string'))
+  // key;
+  //
+  // @argument(optional('number'))
+  scrollTopOffset = this.scrollTopOffset || 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
 
-  @argument(optional('string'))
-  key;
-
-  @argument(optional('number'))
-  scrollTopOffset = 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
-
-  @argument(optional('number'))
-  initialScrollTop;
-
-  @argument(optional('any'))
-  auxiliaryComponent;
-
-  @argument(optional(Action))
-  clientSizeChange;
-
-  @argument(optional(Action))
-  scrollChange;
-
-  @argument(optional(Action))
-  scrolledToTopChange;
+  // @argument(optional('number'))
+  // initialScrollTop;
+  //
+  // @argument(optional('any'))
+  // auxiliaryComponent;
+  //
+  // @argument(optional(Action))
+  // clientSizeChange;
+  //
+  // @argument(optional(Action))
+  // scrollChange;
+  //
+  // @argument(optional(Action))
+  // scrolledToTopChange;
 
   _scrollTop = 0;
   _isAtTop;
