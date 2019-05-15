@@ -7,6 +7,7 @@ import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
 const SCROLLBAR_THUMB = '[data-test-scroll-bar] [data-test-thumb]';
+import { timeout } from 'ember-concurrency';
 
 module('Integration | Component | collection-scroll-view', function(hooks) {
   setupRenderingTest(hooks);
@@ -88,5 +89,15 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
     await waitFor('[data-list-item-id="8"]');
     assert.dom(SCROLL_CONTAINER).containsText('Eight');
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -100);
-  })
+  });
+
+  test('revealItemById does not scroll if source is within the CollectionScrollView', async function(assert) {
+    let fakeRevealService = EmberObject.extend(Evented).create();
+    this.set('revealService', fakeRevealService);
+    await this.render(EXAMPLE_1_HBS);
+    fakeRevealService.trigger('revealItemById', { id: '4', source: document.querySelector('[data-list-item-id="4"]') });
+    await timeout(200);
+    assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
+    assert.ok(scrollPosition(find(SCROLL_CONTAINER)) == 0);
+  });
 });

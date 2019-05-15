@@ -62,7 +62,7 @@ export default class CollectionScrollView extends EmberCollection {
   @action
   scrollToItem(scrollViewApi, revealItemPayload) {
     let { id, source } = revealItemPayload;
-    if (source && isChildComponent(this, source)) {
+    if (source && (isChildComponent(this, source) || isChildElement(this.element, source))) {
       return;
     }
     let itemIndex = this.items.indexOf(this.items.findBy('id', id));
@@ -79,6 +79,13 @@ function isChildComponent(component, candidateChildComponent) {
     if (parentView === component) {
       return true;
     }
+  }
+  return false;
+}
+
+function isChildElement(element, candidateChildElement) {
+  if (candidateChildElement.closest) {
+    return !!candidateChildElement.closest(`#${element.id}`);
   }
   return false;
 }
