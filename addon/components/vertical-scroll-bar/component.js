@@ -29,10 +29,6 @@ export default class VerticalScrollBar extends Component {
 
   didInsertElement() {
     this._super(...arguments);
-    assert(
-      'vertical-scroll-bar has zero height (missing CSS?)',
-      this.element.offsetHeight !== 0
-    );
 
     this.thumb = this.element.querySelector('[data-thumb]');
     this.trackHeight = this.element.offsetHeight;
