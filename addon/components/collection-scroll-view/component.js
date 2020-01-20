@@ -7,9 +7,10 @@ import { set } from '@ember/object';
 // import { Action, optional } from '@ember-decorators/argument/types';
 
 /* An ember-collection subclass which integrates ScrollView */
+export default
 @layout(template)
 @classNames('CollectionScrollView')
-export default class CollectionScrollView extends EmberCollection {
+class CollectionScrollView extends EmberCollection {
   // @argument('any')
   // auxiliaryComponent;
   //
