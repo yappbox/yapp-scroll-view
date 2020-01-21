@@ -5,8 +5,9 @@ import { classNames } from '@ember-decorators/component';
 
 const MAX_LOAD_MORE_FREQUENCY_MS = 1000;
 
+export default
 @classNames('LoadingScrollView')
-export default class LoadingScrollView extends ScrollView {
+class LoadingScrollView extends ScrollView {
   // @argument('boolean')
   // hasMore;
   //

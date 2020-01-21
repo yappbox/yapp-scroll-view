@@ -66,7 +66,7 @@ var Scroller;
 				provided that another scrolling action has not begun. Used to know
 				when to fade out a scrollbar. */
 			scrollingComplete: NOOP,
-			
+
 			/** This configures the amount of change applied to deceleration when reaching boundaries  **/
             penetrationDeceleration : 0.03,
 
@@ -435,7 +435,7 @@ var Scroller;
 
 			// Stop deceleration
 			if (self.__isDecelerating) {
-				core.effect.Animate.stop(self.__isDecelerating);
+				zyngaCore.effect.Animate.stop(self.__isDecelerating);
 				self.__isDecelerating = false;
 			}
 
@@ -511,7 +511,7 @@ var Scroller;
 
 			// Stop deceleration
 			if (self.__isDecelerating) {
-				core.effect.Animate.stop(self.__isDecelerating);
+				zyngaCore.effect.Animate.stop(self.__isDecelerating);
 				self.__isDecelerating = false;
 			}
 
@@ -642,14 +642,14 @@ var Scroller;
 
 			// Stop deceleration
 			if (self.__isDecelerating) {
-				core.effect.Animate.stop(self.__isDecelerating);
+				zyngaCore.effect.Animate.stop(self.__isDecelerating);
 				self.__isDecelerating = false;
 				self.__interruptedAnimation = true;
 			}
 
 			// Stop animation
 			if (self.__isAnimating) {
-				core.effect.Animate.stop(self.__isAnimating);
+				zyngaCore.effect.Animate.stop(self.__isAnimating);
 				self.__isAnimating = false;
 				self.__interruptedAnimation = true;
 			}
@@ -1031,7 +1031,7 @@ var Scroller;
 			// Remember whether we had an animation, then we try to continue based on the current "drive" of the animation
 			var wasAnimating = self.__isAnimating;
 			if (wasAnimating) {
-				core.effect.Animate.stop(wasAnimating);
+				zyngaCore.effect.Animate.stop(wasAnimating);
 				self.__isAnimating = false;
 			}
 
@@ -1084,7 +1084,7 @@ var Scroller;
 				};
 
 				// When continuing based on previous animation we choose an ease-out animation instead of ease-in-out
-				self.__isAnimating = core.effect.Animate.start(step, verify, completed, self.options.animationDuration, wasAnimating ? easeOutCubic : easeInOutCubic);
+				self.__isAnimating = zyngaCore.effect.Animate.start(step, verify, completed, self.options.animationDuration, wasAnimating ? easeOutCubic : easeInOutCubic);
 
 			} else {
 
@@ -1189,7 +1189,7 @@ var Scroller;
 			};
 
 			// Start animation and switch on flag
-			self.__isDecelerating = core.effect.Animate.start(step, verify, completed);
+			self.__isDecelerating = zyngaCore.effect.Animate.start(step, verify, completed);
 
 		},
 
@@ -1278,8 +1278,8 @@ var Scroller;
 				var scrollOutsideY = 0;
 
 				// This configures the amount of change applied to deceleration/acceleration when reaching boundaries
-				var penetrationDeceleration = self.options.penetrationDeceleration; 
-				var penetrationAcceleration = self.options.penetrationAcceleration; 
+				var penetrationDeceleration = self.options.penetrationDeceleration;
+				var penetrationAcceleration = self.options.penetrationAcceleration;
 
 				// Check limits
 				if (scrollLeft < self.__minDecelerationScrollLeft) {

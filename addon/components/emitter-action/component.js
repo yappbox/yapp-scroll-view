@@ -4,8 +4,9 @@ import { join } from '@ember/runloop';
 // import { argument } from '@ember-decorators/argument';
 // import { Action } from '@ember-decorators/argument/types';
 
+export default
 @tagName('')
-export default class EmitterAction extends Component {
+class EmitterAction extends Component {
 
   // @argument('any')
   // emitter;

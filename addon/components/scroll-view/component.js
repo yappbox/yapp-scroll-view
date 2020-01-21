@@ -48,9 +48,10 @@ function getScrolledToTopChanged(currentTop, lastTop, offset) {
   return { isAtTop, isAtTopChanged };
 }
 
+export default
 @layout(template)
 @classNames('ScrollView')
-export default class ScrollView extends Component {
+class ScrollView extends Component {
   // @argument(optional('number'))
   // contentHeight; // optional, when not provided, we measure the size
   //

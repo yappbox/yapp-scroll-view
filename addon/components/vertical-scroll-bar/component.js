@@ -7,9 +7,10 @@ import template from './template';
 
 const MIN_THUMB_LENGTH = 15;
 
+export default
 @layout(template)
 @classNames('VerticalScrollBar')
-export default class VerticalScrollBar extends Component {
+class VerticalScrollBar extends Component {
   // @argument(optional('number'))
   // contentHeight;
   //
