@@ -1,1 +1,1 @@
-export { default } from 'yapp-scroll-view/components/vertical-scroll-bar/component';
+export { default } from 'yapp-scroll-view/components/vertical-scroll-bar';

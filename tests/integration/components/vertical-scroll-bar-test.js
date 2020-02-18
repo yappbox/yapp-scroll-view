@@ -33,7 +33,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
         right: 2px;
       }
     </style>
-    <div style={{-html-safe (concat 'width:320px; height:' scrollerHeight 'px; position:relative; border: 1px solid blue')}}>
+    <div style={{html-safe (concat 'width:320px; height:' scrollerHeight 'px; position:relative; border: 1px solid blue')}}>
       <VerticalScrollBar
         @contentHeight={{contentHeight}}
         @scrollerHeight={{scrollerHeight}}
