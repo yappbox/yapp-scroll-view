@@ -23,11 +23,11 @@ module('Integration | Component | scroll-view', function(hooks) {
     this.set('initialScrollTop', null);
   });
   const EXAMPLE_1_HBS = hbs`
-    <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+    <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
       <ScrollView
-        @scrollChange={{scrollChange}}
-        @clientSizeChange={{clientSizeChange}}
-        @scrolledToTopChange={{scrolledToTopChange}}
+        @scrollChange={{optional scrollChange}}
+        @clientSizeChange={{optional clientSizeChange}}
+        @scrolledToTopChange={{optional scrolledToTopChange}}
        as |scrollViewApi|
       >
         <div id="element1" style="width:320px;height:200px">
@@ -39,7 +39,7 @@ module('Integration | Component | scroll-view', function(hooks) {
             Scroll to Bottom
           </button>
           <button
-            onclick={{action scrollViewApi.scrollToElement element3}}
+            onclick={{action (optional scrollViewApi.scrollToElement) element3}}
             data-test-scroll-to-element-button
           >
             Scroll to Element 3
@@ -47,18 +47,18 @@ module('Integration | Component | scroll-view', function(hooks) {
         </div>
         <div style="width:320px;height:200px">Two</div>
         <div id="element3" style="width:320px;height:200px">Three</div>
-        <a {{action onClickLink}} data-test-link style="display:block;width:320px;height:200px">Four</a>
+        <a {{action (optional onClickLink)}} data-test-link style="display:block;width:320px;height:200px">Four</a>
         <div style="width:320px;height:200px">
           Five
           <button
-            onclick={{action scrollViewApi.scrollToTop}}
+            onclick={{action (optional scrollViewApi.scrollToTop)}}
             data-test-scroll-to-top-button
           >
             Scroll to Top
           </button>
         </div>
       </ScrollView>
-      </div>
+    </div>
   `;
 
   test('it renders', async function(assert) {
@@ -117,7 +117,7 @@ module('Integration | Component | scroll-view', function(hooks) {
   test('it emits an action when scrolling to top, with scrollTopOffset set', async function(assert) {
     this.set('scrollTopOffset', 50);
     const template = hbs`
-      <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+      <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
         <ScrollView @scrollTopOffset={{scrollTopOffset}} @scrolledToTopChange={{scrolledToTopChange}}>
           <div style="width:320px;height:400px">One</div>
           <div style="width:320px;height:400px">Two</div>
@@ -153,7 +153,7 @@ module('Integration | Component | scroll-view', function(hooks) {
   test('it sets initial scrollTop to initialScrollTop value', async function(assert) {
     this.set('initialScrollTop', 50);
     const template = hbs`
-      <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+      <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
         <ScrollView @initialScrollTop={{initialScrollTop}}>
           <div style="width:320px;height:400px">One</div>
           <div style="width:320px;height:400px">Two</div>
@@ -289,7 +289,7 @@ module('Integration | Component | scroll-view', function(hooks) {
 
   test('swiping on a textarea does not cause scrolling', async function(assert) {
     let template = hbs`
-      <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+      <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
         <ScrollView as |scrollViewApi|>
           <div style="width:320px;height:200px">
             <textarea style="width:320px;height:200px">
@@ -310,7 +310,7 @@ module('Integration | Component | scroll-view', function(hooks) {
 
   test('remembers scroll position based on key attribute', async function(assert) {
     const template = hbs`
-      <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+      <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
         <ScrollView @key={{key}}>
           <div style="width:320px;height:400px">One</div>
           <div style="width:320px;height:400px">Two</div>

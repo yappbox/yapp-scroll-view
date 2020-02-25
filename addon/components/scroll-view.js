@@ -1,8 +1,7 @@
 /* global Ember, Scroller */
-import Component from '@ember/component';
-import { classNames, layout } from '@ember-decorators/component';
-import template from './template';
-import { computed } from '@ember/object';
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action, computed } from '@ember/object';
 import { inject as service } from '@ember/service';
 // import { argument } from '@ember-decorators/argument';
 // import { Action, optional } from '@ember-decorators/argument/types';
@@ -13,7 +12,7 @@ import { join, schedule } from '@ember/runloop';
 import { translate } from 'ember-collection/utils/translate';
 import { timeout } from 'ember-concurrency';
 import { task } from 'ember-concurrency-decorators';
-import ScrollViewApi from '../../utils/scroll-view-api';
+import ScrollViewApi from 'yapp-scroll-view/utils/scroll-view-api';
 import { DEBUG } from '@glimmer/env';
 import { registerWaiter, unregisterWaiter } from '@ember/test';
 
@@ -48,9 +47,6 @@ function getScrolledToTopChanged(currentTop, lastTop, offset) {
   return { isAtTop, isAtTopChanged };
 }
 
-export default
-@layout(template)
-@classNames('ScrollView')
 class ScrollView extends Component {
   // @argument(optional('number'))
   // contentHeight; // optional, when not provided, we measure the size
@@ -59,7 +55,7 @@ class ScrollView extends Component {
   // key;
   //
   // @argument(optional('number'))
-  scrollTopOffset = this.scrollTopOffset || 0; // optional, when provided, we treat "isAtTop" as anywhere before this offset
+  // scrollTopOffset; // when provided, we treat "isAtTop" as anywhere before this offset
 
   // @argument(optional('number'))
   // initialScrollTop;
@@ -80,8 +76,8 @@ class ScrollView extends Component {
   _isAtTop;
   _needsContentSizeUpdate = true;
   _appliedClientWidth;
-  _appliedClientHeight;
-  _appliedContentHeight;
+  @tracked _appliedClientHeight;
+  @tracked _appliedContentHeight;
   _appliedScrollTop;
   _shouldMeasureContent = undefined;
   _isScrolling = false;
@@ -96,41 +92,51 @@ class ScrollView extends Component {
     this.debouncedOnScrollingComplete = debounce(this.onScrollingComplete, 500);
   }
 
-  didReceiveAttrs() {
+  @action
+  onContentHeightChanged() {
     if (this._shouldMeasureContent === undefined) {
-      this._shouldMeasureContent = !this.contentHeight;
+      this._shouldMeasureContent = !this.args.contentHeight;
     }
 
-    if (!this._shouldMeasureContent && (this._appliedContentHeight !== this.contentHeight)) {
+    if (!this._shouldMeasureContent && (this._appliedContentHeight !== this.args.contentHeight)) {
       this.measureClientAndContent();
     }
   }
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.contentElement = this.element.firstElementChild;
+  @action
+  didInsert(element) {
+    this.scrollViewElement = element;
+    this.contentElement = element.firstElementChild;
     this.setupScroller();
     this.measurementTask.perform();
-    this.bindScrollerEvents();
+    this.bindScrollerEvents(element);
     if (DEBUG) {
       registerWaiter(this, this._isScrollingForWaiter);
     }
+    this.onKeyUpdated();
   }
 
-  didRender() {
-    let { key, _lastKey } = this;
-    if (key && key !== _lastKey) {
-      this.remember(_lastKey);
-      this._lastKey = key;
-      this.restore(key);
+  @action
+  onKeyUpdated() {
+    let { _lastKey } = this;
+    let { key } = this.args;
+    if (key !== _lastKey) {
+      if (_lastKey) {
+        this.remember(_lastKey);
+        this._lastKey = key;
+      }
+      if (key) {
+        this.restore(key);
+      }
     }
   }
 
-  willDestroyElement() {
-    super.willDestroyElement(...arguments);
-    this.unbindScrollerEvents();
+  @action
+  willDestroyEl(element) {
+    this.scrollViewElement = null;
+    this.unbindScrollerEvents(element);
     this._scrollPositionCallbacks = []
-    this.remember(this.key);
+    this.remember(this.args.key);
     if (DEBUG) {
       if (Ember.testing) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
@@ -181,11 +187,11 @@ class ScrollView extends Component {
 
     this.notifyScrollPosition(isScrolling, scrollTop, isAtTop, decelerationVelocityY);
 
-    if (this.scrollChange && scrollTop !== lastTop) {
-      this.scrollChange(scrollTop);
+    if (this.args.scrollChange && scrollTop !== lastTop) {
+      this.args.scrollChange(scrollTop);
     }
-    if (this.scrolledToTopChange && isAtTopChanged) {
-      this.scrolledToTopChange(isAtTop)
+    if (this.args.scrolledToTopChange && isAtTopChanged) {
+      this.args.scrolledToTopChange(isAtTop)
     }
     this._appliedScrollTop = scrollTop;
     if (DEBUG) {
@@ -209,26 +215,26 @@ class ScrollView extends Component {
     }
   }
 
-  bindScrollerEvents() {
-    this.hammer = new Hammer.Manager(this.element, {
+  bindScrollerEvents(element) {
+    this.hammer = new Hammer.Manager(element, {
       inputClass: Hammer.TouchMouseInput,
       recognizers: [
         [ZyngaScrollerVerticalRecognizer, { scrollComponent: this }]
       ]
     });
     this._boundHandleWheel = this.handleWheel.bind(this);
-    this.element.addEventListener(
+    element.addEventListener(
       normalizeWheel.getEventType(),
       this._boundHandleWheel,
       { passive: false }
     );
   }
 
-  unbindScrollerEvents() {
+  unbindScrollerEvents(element) {
     if (this.hammer) {
       this.hammer.destroy();
     }
-    this.element.removeEventListener(
+    element.removeEventListener(
       normalizeWheel.getEventType(),
       this._boundHandleWheel,
       false
@@ -253,14 +259,14 @@ class ScrollView extends Component {
   @task
   setupCaptureClickTask = function *() {
     try {
-      let { element } = this;
+      let { scrollViewElement } = this;
       let captureClick = (e) => {
         e.stopPropagation(); // Stop the click from being propagated.
-        element.removeEventListener('click', captureClick, true); // cleanup
+        scrollViewElement.removeEventListener('click', captureClick, true); // cleanup
       }
-      this.element.addEventListener('click', captureClick, true);
+      scrollViewElement.addEventListener('click', captureClick, true);
       yield timeout(0);
-      element.removeEventListener('click', captureClick, true);
+      scrollViewElement.removeEventListener('click', captureClick, true);
     } finally {
       this._decelerationVelocityY = null;
     }
@@ -307,7 +313,8 @@ class ScrollView extends Component {
     // and apply it after we determine and apply the size. The reason we need to do this
     // is that attempting to apply the scroll position before the scroller has size results
     // in a scroll position of [0,0].
-    let initialScrollTop = this.initialScrollTop !== undefined ? this.initialScrollTop : this.scrollTopOffset;
+    let initialScrollTop = this.args.initialScrollTop !== undefined ? this.args.initialScrollTop : this.scrollTopOffset;
+    this._shouldMeasureContent = !this.args.contentHeight;
     this.measureClientAndContent();
     this._initialSizeCheckCompleted = true;
     if (initialScrollTop) {
@@ -332,7 +339,7 @@ class ScrollView extends Component {
   }
 
   measureClientAndContent() {
-    if (!this.element) {
+    if (!this.scrollViewElement) {
       return;
     }
     this._lastMeasurement = +(new Date());
@@ -345,7 +352,8 @@ class ScrollView extends Component {
   }
 
   getCurrentClientAndContentSizes() {
-    let { contentHeight, element: { offsetWidth, offsetHeight }} = this;
+    let { scrollViewElement: { offsetWidth, offsetHeight }} = this;
+    let contentHeight = this.args.contentHeight;
     if (this._shouldMeasureContent) {
       contentHeight = this.contentElement.offsetHeight;
     }
@@ -359,24 +367,32 @@ class ScrollView extends Component {
 
   applyNewMeasurements(clientWidth, clientHeight, contentHeight) {
     this._appliedClientWidth = clientWidth;
-    this.set('_appliedClientHeight', clientHeight);
-    this.set('_appliedContentHeight', contentHeight);
+    this._appliedClientHeight = clientHeight;
+    this._appliedContentHeight = contentHeight;
     this.contentElement.style.minHeight = `${clientHeight}px`;
     this.updateScrollerDimensions();
-    if (this.clientSizeChange) {
-      this.clientSizeChange(clientWidth, clientHeight);
+    if (this.args.clientSizeChange) {
+      this.args.clientSizeChange(clientWidth, clientHeight);
     }
+  }
+
+  get extraCssClasses() { // for overriding by LoadingScrollView
+    return null;
   }
 
   get windowRef() { // need a way to reference `window` from hbs
     return window;
   }
 
+  get scrollTopOffset() {
+    return this.args.scrollTopOffset || 0;
+  }
+
   get isInViewport() {
-    if (!this.element) {
+    if (!this.scrollViewElement) {
       return false;
     }
-    let rect = this.element.getBoundingClientRect();
+    let rect = this.scrollViewElement.getBoundingClientRect();
     return rect.top >= 0 &&
            rect.left >= 0 &&
            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
@@ -384,7 +400,7 @@ class ScrollView extends Component {
   }
 
   scrollTo(yPos, animated=false) {
-    if (this.element) {
+    if (this.scrollViewElement) {
       return this.scroller.scrollTo(0, yPos, animated);
     }
   }
@@ -406,8 +422,8 @@ class ScrollView extends Component {
 
   scrollToElement(el, animated=false) {
     this.measureClientAndContent();
-    if (this.element) {
-      let yPos = this._yOffset(el) + (this.get('extraYOffsetForScrollToElement') || 0);
+    if (this.scrollViewElement) {
+      let yPos = this._yOffset(el);
       return this.scroller.scrollTo(0, yPos, animated);
     } else {
       return console.warn("scrollToElement called before scrollView is inDOM"); // eslint-disable-line
@@ -416,15 +432,12 @@ class ScrollView extends Component {
 
   _yOffset(el) {
     let top = el.offsetTop;
-    while (el !== this.element && (el = el.offsetParent)) {
+    while (el !== this.scrollViewElement && (el = el.offsetParent)) {
       top += el.offsetTop;
     }
     return top;
   }
 
-  scheduleRefresh(){
-    console.debug('scheduleRefresh is no longer needed. Hurray!'); // eslint-disable-line
-  }
   getViewHeight(){}
 
   remember(key) {
@@ -435,8 +448,8 @@ class ScrollView extends Component {
   }
 
   restore(key) {
-    let position = this.initialScrollTop || this.memory[key] || this.scrollTopOffset;
-    if (this.element) {
+    let position = this.args.initialScrollTop || this.memory[key] || this.scrollTopOffset;
+    if (this.scrollViewElement) {
       this.scrollTo(position);
     } else {
       schedule('afterRender', this, this.scrollTo, position);
@@ -475,3 +488,5 @@ class ScrollView extends Component {
     return !this._lastIsScrolling;
   }
 }
+
+export default ScrollView;

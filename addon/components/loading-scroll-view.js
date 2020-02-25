@@ -1,13 +1,10 @@
-import ScrollView from './scroll-view/component';
-import { classNames } from '@ember-decorators/component';
+import ScrollView from './scroll-view';
 // import { argument } from '@ember-decorators/argument';
 // import { Action } from '@ember-decorators/argument/types';
 
 const MAX_LOAD_MORE_FREQUENCY_MS = 1000;
 
-export default
-@classNames('LoadingScrollView')
-class LoadingScrollView extends ScrollView {
+export default class LoadingScrollView extends ScrollView {
   // @argument('boolean')
   // hasMore;
   //
@@ -18,7 +15,7 @@ class LoadingScrollView extends ScrollView {
   // loadMore;
   //
   // @argument('number')
-  threshold = this.threshold || 350;
+  // threshold;
 
   _lastLoadMoreCheck = +(new Date());
 
@@ -34,8 +31,16 @@ class LoadingScrollView extends ScrollView {
     this.conditionallyTriggerLoadMore();
   }
 
+  get extraCssClasses() { // for overriding by LoadingScrollView
+    return [super.extraCssClasses, 'LoadingScrollView'].filter(Boolean).join(' ');
+  }
+
   get canLoadMore() {
-    return (this.loadMore && this.hasMore && !this.isLoadingMore && !this.isDestroyed && !this.isDestroying);
+    return (this.args.loadMore && this.args.hasMore && !this.args.isLoadingMore && !this.isDestroyed && !this.isDestroying);
+  }
+
+  get threshold() {
+    return this.args.threshold || 350;
   }
 
   conditionallyTriggerLoadMore() {
@@ -52,7 +57,7 @@ class LoadingScrollView extends ScrollView {
       return;
     }
 
-    let loadMoreResult = this.loadMore();
+    let loadMoreResult = this.args.loadMore();
     if (loadMoreResult && loadMoreResult.then) {
       loadMoreResult.then(() => {
         this.measureClientAndContent();

@@ -30,7 +30,7 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
     this.set('revealService', null);
   });
   const EXAMPLE_1_HBS = hbs`
-    <div style={{-html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+    <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
       <CollectionScrollView
         @items={{items}}
         @estimated-width={{viewportWidth}}

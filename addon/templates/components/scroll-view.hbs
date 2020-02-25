@@ -1,0 +1,27 @@
+<div
+  class="ScrollView {{this.extraCssClasses}}"
+  ...attributes
+  {{did-insert this.didInsert}}
+  {{will-destroy this.willDestroyEl}}
+  {{did-update this.onContentHeightChanged @contentHeight}}
+  {{did-update this.onKeyUpdated @key}}
+>
+  <div data-test-scroll-container>
+    {{yield this.scrollViewApi}}
+  </div>
+  {{#if @auxiliaryComponent}}
+    {{component @auxiliaryComponent}}
+  {{/if}}
+  <VerticalScrollBar
+      data-test-scroll-bar
+      class="ScrollView-scrollBar"
+      @contentHeight={{this._appliedContentHeight}}
+      @scrollerHeight={{this._appliedClientHeight}}
+      @registerWithScrollView={{action this.scrollViewApi.registerScrollPositionCallback}}
+  />
+  {{emitter-action
+      emitter=this.windowRef
+      eventName="requestScrollToTop"
+      action=this.scrollViewApi.scrollToTopIfInViewport
+  }}
+</div>

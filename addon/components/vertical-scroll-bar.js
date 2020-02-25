@@ -1,16 +1,8 @@
-import Component from '@ember/component';
-import { classNames, layout } from '@ember-decorators/component';
-import template from './template';
-// import { argument } from '@ember-decorators/argument';
-// import { assert } from '@ember/debug';
-// import { Action, optional } from '@ember-decorators/argument/types';
-
+import Component from '@glimmer/component';
 const MIN_THUMB_LENGTH = 15;
+import { action } from '@ember/object';
 
-export default
-@layout(template)
-@classNames('VerticalScrollBar')
-class VerticalScrollBar extends Component {
+export default class VerticalScrollBar extends Component {
   // @argument(optional('number'))
   // contentHeight;
   //
@@ -23,28 +15,27 @@ class VerticalScrollBar extends Component {
   _isScrolling = false;
   _scrollTop = 0;
 
-  init() {
-    super.init(...arguments);
+  constructor() {
+    super(...arguments);
     this.trackHeight = this.clientHeight;
   }
 
-  didInsertElement() {
-    this._super(...arguments);
-
-    this.thumb = this.element.querySelector('[data-thumb]');
-    this.trackHeight = this.element.offsetHeight;
+  @action
+  didInsert(element) {
+    this.thumb = element.querySelector('[data-thumb]');
+    this.trackHeight = element.offsetHeight;
     this.updateThumbStyle();
-    this.registerWithScrollView(this.updateScrollingParameters.bind(this));
+    this.args.registerWithScrollView(this.updateScrollingParameters.bind(this));
   }
 
-  didReceiveAttrs() {
-    this._super(...arguments);
-    if (this._lastScrollerHeight !== this.scrollerHeight) {
-      if (this.element) {
-        this.trackHeight = this.element.offsetHeight;
+  @action
+  didUpdateScrollerHeight(element) {
+    if (this._lastScrollerHeight !== this.args.scrollerHeight) {
+      if (element) {
+        this.trackHeight = element.offsetHeight;
         this.updateThumbStyle();
       }
-      this._lastScrollerHeight = this.scrollerHeight;
+      this._lastScrollerHeight = this.args.scrollerHeight;
     }
   }
 
@@ -56,10 +47,11 @@ class VerticalScrollBar extends Component {
   }
 
   updateThumbStyle() {
-    let { scrollerHeight, trackHeight, contentRatio, scrollTopRatio, _isScrolling } = this;
+    let { scrollerHeight } = this.args;
     if (!scrollerHeight) {
       return;
     }
+    let { trackHeight, contentRatio, scrollTopRatio, _isScrolling } = this;
     if (!_isScrolling) {
       this.thumb.style.opacity = '0';
       return;
@@ -87,12 +79,12 @@ class VerticalScrollBar extends Component {
   }
 
   get contentRatio() {
-    let ratioBeforeOverscrollAdjustment = this.scrollerHeight / this.effectiveContentHeight;
-    return this.scrollerHeight / (this.effectiveContentHeight + (this.overscrollAmount * (1/ratioBeforeOverscrollAdjustment)));
+    let ratioBeforeOverscrollAdjustment = this.args.scrollerHeight / this.effectiveContentHeight;
+    return this.args.scrollerHeight / (this.effectiveContentHeight + (this.overscrollAmount * (1/ratioBeforeOverscrollAdjustment)));
   }
 
   get effectiveContentHeight() {
-    return Math.max(this.scrollerHeight + 1, this.contentHeight);
+    return Math.max(this.args.scrollerHeight + 1, this.args.contentHeight);
   }
 
   get scrollTopRatio() {
@@ -111,6 +103,6 @@ class VerticalScrollBar extends Component {
   }
 
   get scrollAreaSize() {
-    return this.effectiveContentHeight - this.scrollerHeight;
+    return this.effectiveContentHeight - this.args.scrollerHeight;
   }
 }
