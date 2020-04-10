@@ -401,6 +401,7 @@ class ScrollView extends Component {
 
   scrollTo(yPos, animated=false) {
     if (this.scrollViewElement) {
+      this.measureClientAndContent();
       return this.scroller.scrollTo(0, yPos, animated);
     }
   }
@@ -416,7 +417,6 @@ class ScrollView extends Component {
   }
 
   scrollToBottom() {
-    this.measureClientAndContent();
     return this.scrollTo(this._appliedContentHeight - this._appliedClientHeight, true);
   }
 
