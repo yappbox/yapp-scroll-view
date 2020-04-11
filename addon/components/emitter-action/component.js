@@ -1,12 +1,10 @@
-import Component from '@ember/component';
-import { tagName } from '@ember-decorators/component';
+import Component from '@glimmer/component';
+import { action } from '@ember/object';
 import { join } from '@ember/runloop';
 // import { argument } from '@ember-decorators/argument';
 // import { Action } from '@ember-decorators/argument/types';
 
-export default
-@tagName('')
-class EmitterAction extends Component {
+export default class extends Component {
 
   // @argument('any')
   // emitter;
@@ -17,39 +15,39 @@ class EmitterAction extends Component {
   // @argument(Action)
   // action;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  constructor() {
+    super(...arguments);
     this.addListener();
   }
 
-  willDestroyElement() {
-    super.didInsertElement(...arguments);
+  willDestroy() {
+    super.willDestroy(...arguments);
     this.removeListener();
   }
 
   addListener() {
-    let { emitter, eventName, _action } = this;
+    let { _action, args: { emitter, eventName } } = this;
     if (emitter.on) {
       emitter.on(eventName, this, _action);
     } else {
-      this._boundAction = _action.bind(this);
-      emitter.addEventListener(eventName, this._boundAction);
+      emitter.addEventListener(eventName, _action);
     }
   }
 
   removeListener() {
-    let { emitter, eventName, _action } = this;
+    let { _action, args: { emitter, eventName } } = this;
     if (emitter.off) {
       emitter.off(eventName, this, _action);
     } else {
-      emitter.removeEventListener(eventName, this._boundAction);
+      emitter.removeEventListener(eventName, this._action);
     }
   }
 
+  @action
   _action() {
     let args = arguments;
     join(() => {
-      this.action(...args);
+      this.args.action(...args);
     });
   }
 }
