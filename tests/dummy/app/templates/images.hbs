@@ -10,7 +10,7 @@ Item Width: {{itemWidth}}
 </p>
 <hr />
 
-<div class="simple-list" style={{{concat 'position:relative;width:' containerWidth 'px;height:' containerHeight 'px;'}}}>
+<div class="simple-list" style={{html-safe (concat 'position:relative;width:' containerWidth 'px;height:' containerHeight 'px;')}}>
   <CollectionScrollView
     @items={{model}}
     @estimated-height={{containerHeight}}

@@ -47,7 +47,7 @@ module('Integration | Component | scroll-view', function(hooks) {
         </div>
         <div style="width:320px;height:200px">Two</div>
         <div id="element3" style="width:320px;height:200px">Three</div>
-        <a {{action (optional onClickLink)}} data-test-link style="display:block;width:320px;height:200px">Four</a>
+        <a style={{html-safe "display:block;width:320px;height:200px"}} data-test-link {{action (optional onClickLink)}}>Four</a>
         <div style="width:320px;height:200px">
           Five
           <button

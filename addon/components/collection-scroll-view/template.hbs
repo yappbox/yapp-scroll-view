@@ -20,7 +20,7 @@
   as |scrollViewApi|
 >
   {{~#each _cells as |cell|~}}
-    <div style={{{cell.style}}}>{{yield cell.item cell.index}}</div>
+    <div style={{html-safe cell.style}}>{{yield cell.item cell.index}}</div>
   {{~/each~}}
   {{#if revealService}}
     {{emitter-action
