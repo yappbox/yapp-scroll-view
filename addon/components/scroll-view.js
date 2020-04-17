@@ -123,11 +123,11 @@ class ScrollView extends Component {
     if (key !== _lastKey) {
       if (_lastKey) {
         this.remember(_lastKey);
-        this._lastKey = key;
       }
       if (key) {
         this.restore(key);
       }
+      this._lastKey = key;
     }
   }
 
@@ -136,7 +136,7 @@ class ScrollView extends Component {
     this.scrollViewElement = null;
     this.unbindScrollerEvents(element);
     this._scrollPositionCallbacks = []
-    this.remember(this.args.key);
+    this.remember(this._lastKey);
     if (DEBUG) {
       if (Ember.testing) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
