@@ -28,6 +28,9 @@ export default class LoadingScrollView extends ScrollView {
 
   onScrollingComplete() {
     super.onScrollingComplete();
+    if (this.isDestroyed || this.isDestroying) {
+      return;
+    }
     this.conditionallyTriggerLoadMore();
   }
 
