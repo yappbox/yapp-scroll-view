@@ -39,7 +39,10 @@ export default class LoadingScrollView extends ScrollView {
   }
 
   get canLoadMore() {
-    return (this.args.loadMore && this.args.hasMore && !this.args.isLoadingMore && !this.isDestroyed && !this.isDestroying);
+    if (this.isDestroyed || this.isDestroying) {
+      return false;
+    }
+    return this.args.loadMore && this.args.hasMore && !this.args.isLoadingMore;
   }
 
   get threshold() {
