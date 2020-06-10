@@ -5176,14 +5176,14 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@^2.0.1:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-2.0.5.tgz#b5a105429a6bce4f7c9c97b667e3b8926e31397f"
-  integrity sha512-3f3PAxdnQ/fhQa8XP/3z4RLRgLHxV8j4Ln75aHbRdemOCjBa048KxL9l+acRLhCulbGQCMnLiIUIC89PAzLrcA==
+ember-cli-htmlbars@^3.0.1:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-3.1.0.tgz#87806c2a0bca2ab52d4fb8af8e2215c1ca718a99"
+  integrity sha512-cgvRJM73IT0aePUG7oQ/afB7vSRBV3N0wu9BrWhHX2zkR7A7cUBI7KC9VPk6tbctCXoM7BRGsCC4aIjF7yrfXA==
   dependencies:
-    broccoli-persistent-filter "^1.4.3"
-    hash-for-dep "^1.2.3"
-    json-stable-stringify "^1.0.0"
+    broccoli-persistent-filter "^2.3.1"
+    hash-for-dep "^1.5.1"
+    json-stable-stringify "^1.0.1"
     strip-bom "^3.0.0"
 
 ember-cli-htmlbars@^4.2.2:
@@ -5440,13 +5440,13 @@ ember-cli@~3.16.0:
     watch-detector "^1.0.0"
     yam "^1.0.0"
 
-ember-collection@1.0.0-alpha.9:
-  version "1.0.0-alpha.9"
-  resolved "https://registry.yarnpkg.com/ember-collection/-/ember-collection-1.0.0-alpha.9.tgz#30fa340a58f4154cef1cda54f11041c5a2cd2e6c"
-  integrity sha512-q6hp8tGvdgETeYLsmb+3ocw5jbY56janWhNYyS83NGmfuOoKo6UYXGo0g6lPkP2umb6y6QOyKQUQqlSBmSVVVw==
+ember-collection@1.0.0-rc.0:
+  version "1.0.0-rc.0"
+  resolved "https://registry.yarnpkg.com/ember-collection/-/ember-collection-1.0.0-rc.0.tgz#c02c31ba513e04d6aaeb8f8261f4995526244f28"
+  integrity sha512-eaMFfn3QoMeO/KUsI7WVFEtE25Q5QTOnOnEu5dyl2Hav5BO4P7MkR/iOY6YI9zjtN8o64sebe0j4L6uc0N/f2Q==
   dependencies:
-    ember-cli-babel "^6.8.2"
-    ember-cli-htmlbars "^2.0.1"
+    ember-cli-babel "^7.7.3"
+    ember-cli-htmlbars "^3.0.1"
     layout-bin-packer "^1.4.0"
 
 ember-compatibility-helpers@^1.1.2, ember-compatibility-helpers@^1.2.0:

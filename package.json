@@ -51,7 +51,7 @@
     "ember-cli-sass": "^8.0.1",
     "ember-cli-sri": "^2.1.1",
     "ember-cli-uglify": "^3.0.0",
-    "ember-collection": "1.0.0-alpha.9",
+    "ember-collection": "1.0.0-rc.0",
     "ember-decorators-polyfill": "^1.1.1",
     "ember-disable-prototype-extensions": "^1.1.3",
     "ember-export-application-global": "^2.0.1",
