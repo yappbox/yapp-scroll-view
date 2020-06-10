@@ -1,3 +1,11 @@
+## v5.1.1 (2020-06-10)
+
+#### :house: Internal
+* [#39](https://github.com/yappbox/yapp-scroll-view/pull/39) Dependency updates ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v5.1.0 (2020-06-03)
 
 #### :rocket: Enhancement
