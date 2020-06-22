@@ -1,3 +1,11 @@
+## v5.1.3 (2020-06-22)
+
+#### :house: Internal
+* [#40](https://github.com/yappbox/yapp-scroll-view/pull/40) Update ember-concurrency ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v5.1.2 (2020-06-11)
 
 ## v5.1.1 (2020-06-10)
