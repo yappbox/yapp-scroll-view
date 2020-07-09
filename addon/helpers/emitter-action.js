@@ -8,11 +8,11 @@ export default class extends Helper {
     assert('[emitter-action helper] Must specify an emitter', emitter);
     assert('[emitter-action helper] Must specify an eventName', eventName);
     assert('[emitter-action helper] Must specify an action', action);
+    this.stopListening();
     this.emitter = emitter;
     this.eventName = eventName;
     this.handler = action;
 
-    this.stopListening();
     this.startListening();
   }
 
