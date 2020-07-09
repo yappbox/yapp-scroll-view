@@ -1,3 +1,11 @@
+## v5.2.1 (2020-07-09)
+
+#### :bug: Bug Fix
+* [#42](https://github.com/yappbox/yapp-scroll-view/pull/42) When recomputing {{emitter-action}} call stopListening *before* overwriting local properties ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v5.2.0 (2020-07-06)
 
 #### :rocket: Enhancement
