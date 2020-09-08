@@ -1,3 +1,11 @@
+## v5.3.0 (2020-09-08)
+
+#### :rocket: Enhancement
+* [#46](https://github.com/yappbox/yapp-scroll-view/pull/46) Add support for configuration to suppress exports of components to app directory ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v5.2.1 (2020-07-09)
 
 #### :bug: Bug Fix
