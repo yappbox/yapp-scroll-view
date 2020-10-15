@@ -1,2 +1,2 @@
-import Component from 'yapp-scroll-view/components/collection-scroll-view/component';
+import Component from 'yapp-scroll-view/components/collection-scroll-view';
 export default Component;

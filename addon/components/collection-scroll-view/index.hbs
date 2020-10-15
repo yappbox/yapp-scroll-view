@@ -1,0 +1,58 @@
+<ScrollView
+    class="CollectionScrollView"
+    @contentHeight={{this.scrollHeight}}
+    @scrollTopOffset={{this.scrollTopOffset}}
+    @initialScrollTop={{@initialScrollTop}}
+    @key={{@key}}
+    @auxiliaryComponent={{if @auxiliaryComponent
+      (component @auxiliaryComponent
+          cell-layout=this.cellLayout
+          items=@items
+          estimated-width=@estimated-width
+          estimated-height=@estimated-height
+          client-width=this.clientWidth
+          client-height=this.clientHeight
+          scroll-top=this.scrollTop
+      )
+    }}
+    @clientSizeChange={{this.clientSizeChange}}
+    @scrollChange={{this.scrollChange}}
+    @scrolledToTopChange={{this.onScrolledToTopChange}}
+    {{ref this 'element'}}
+    ...attributes
+  as |scrollViewApi|
+>
+
+  {{#if (has-block 'header')}}
+    <div {{on-resize (fn this.updateHeaderDimensions scrollViewApi)}}>
+      {{yield to="header"}}
+    </div>
+  {{/if}}
+
+  {{#unless (and (has-block 'header') (is-empty this.headerDimensions))}}
+    <div data-test-collection-items-container style={{html-safe (concat "position:relative;height:" this.contentSize.height "px;width:" this.contentSize.width "px")}}>
+      <CollectionScrollView::CollectionItems
+        @clientSize={{this.collectionClientSize}}
+        @scrollTop={{this.collectionScrollTop}}
+        @estimatedSize={{hash width=@estimated-width height=@estimated-height}}
+        @items={{@items}}
+        @buffer={{@buffer}}
+        @cellLayout={{this.cellLayout}}
+        @onContentSizeUpdated={{this.updateContentSizeAfterRender}}
+        as |cells|
+      >
+        {{~#each cells as |cell|~}}
+          <div style={{html-safe cell.style}}>{{yield cell.item cell.index scrollViewApi to="row"}}</div>
+        {{~/each~}}
+      </CollectionScrollView::CollectionItems>
+    </div>
+  {{/unless}}
+
+  {{#if @revealService}}
+    {{emitter-action
+        emitter=@revealService
+        eventName="revealItemById"
+        action=(fn this.scrollToItem scrollViewApi)
+    }}
+  {{/if}}
+</ScrollView>
