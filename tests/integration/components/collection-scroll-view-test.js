@@ -5,9 +5,25 @@ import { find, waitFor, waitUntil } from '@ember/test-helpers';
 import { scrollPosition, scrollDown, waitForOpacity } from '../../helpers/scrolling';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
+import { timeout } from 'ember-concurrency';
+
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
 const SCROLLBAR_THUMB = '[data-test-scroll-bar] [data-test-thumb]';
-import { timeout } from 'ember-concurrency';
+const ITEMS_CONTAINER = '[data-test-collection-items-container]';
+
+function assertDoNotOverlap(assert, selector1, selector2) {
+  let rect1 = document.querySelector(selector1).getBoundingClientRect();
+  let rect2 = document.querySelector(selector2).getBoundingClientRect();
+  let overlaps = rect1.right > rect2.left &&
+                 rect1.left < rect2.right &&
+                 rect1.bottom > rect2.top &&
+                 rect1.top < rect2.bottom;
+  assert.ok(!overlaps, `Expected element at ${selector1} to NOT overlap element at ${selector2} but it does`);
+}
+
+function waitUntilText(text) {
+  return waitUntil(() => find(SCROLL_CONTAINER).textContent.includes(text));
+}
 
 module('Integration | Component | collection-scroll-view', function(hooks) {
   setupRenderingTest(hooks);
@@ -38,11 +54,12 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
         @buffer={{1}}
         @cell-layout={{fixed-grid-layout 320 100}}
         @revealService={{revealService}}
-       as |item index|
       >
-        <div class="list-item" data-list-item-id={{item.id}}>
-          {{item.name}}
-        </div>
+        <:row as |item index|>
+          <div class="list-item" data-list-item-id={{item.id}}>
+            {{item.name}}
+          </div>
+        </:row>
       </CollectionScrollView>
     </div>
   `;
@@ -57,12 +74,14 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
 
   test('it scrolls with a swipe', async function(assert) {
     await this.render(EXAMPLE_1_HBS);
+    await waitUntilText('One');
     let scrollPromise = scrollDown(SCROLL_CONTAINER, {
       amount: 400
     });
     await waitForOpacity(SCROLLBAR_THUMB, '1');
     assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 230);
     await scrollPromise;
+    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) <= -390);
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -390);
     assert.dom(SCROLL_CONTAINER).containsText('Ten');
     assert.dom(SCROLL_CONTAINER).containsText('Four');
@@ -99,5 +118,104 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
     await timeout(200);
     assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) == 0);
+  });
+
+  module('providing a header', function(/* hooks */) {
+    const HBS_WITH_HEADER = hbs`
+    <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+      <CollectionScrollView
+        @items={{items}}
+        @estimated-width={{viewportWidth}}
+        @estimated-height={{viewportHeight}}
+        @buffer={{1}}
+        @cell-layout={{fixed-grid-layout 320 100}}
+        @revealService={{revealService}}
+        @initialScrollTop={{initialScrollTop}}
+      >
+        <:header>
+          <h1 style={{html-safe (concat "color:black;border:5px dotted red;margin-top:0px;margin-bottom:10px;font-size:1.5rem;height:" this.h1Height "px;")}}>
+            This list is <em>fancy</em>!
+          </h1>
+        </:header>
+
+        <:row as |item index|>
+          <div class="list-item" data-list-item-id={{item.id}}>
+            {{item.name}}
+          </div>
+        </:row>
+      </CollectionScrollView>
+    </div>
+    `;
+    hooks.beforeEach(function() {
+      this.set('h1Height', 180);
+    });
+
+    test('it renders the header and part of the collection at scrollTop zero', async function(assert) {
+      this.set('initialScrollTop', 0);
+      await this.render(HBS_WITH_HEADER);
+      assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
+      await waitUntilText('One');
+      assert.dom(SCROLL_CONTAINER).containsText('One');
+      assertDoNotOverlap(assert, `${SCROLL_CONTAINER} h1`, `[data-list-item-id="${this.items[0].id}"]`);
+      assert.dom(SCROLL_CONTAINER).containsText('Three');
+      assert.dom(SCROLL_CONTAINER).containsText('Four');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Seven');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
+      assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
+    });
+
+    test('it renders the end of the collection at scrollTop 720', async function(assert) {
+      this.set('initialScrollTop', 720);
+      await this.render(HBS_WITH_HEADER);
+      await waitUntilText('Ten');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('One');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Two');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Three');
+      assert.dom(SCROLL_CONTAINER).containsText('Six');
+      assert.dom(SCROLL_CONTAINER).containsText('Seven');
+      assert.dom(SCROLL_CONTAINER).containsText('Eight');
+      assert.dom(SCROLL_CONTAINER).containsText('Nine');
+      assert.dom(SCROLL_CONTAINER).containsText('Ten');
+      assert.equal(scrollPosition(find(SCROLL_CONTAINER)), -720);
+    });
+
+    test('it renders part of the header and the beginning of the collection at scrollTop 180', async function(assert) {
+      this.set('initialScrollTop', 180);
+      await this.render(HBS_WITH_HEADER);
+      assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
+      await waitUntilText('One');
+      assert.dom(SCROLL_CONTAINER).containsText('One');
+      assertDoNotOverlap(assert, `${SCROLL_CONTAINER} h1`, `[data-list-item-id="${this.items[0].id}"]`);
+      assert.dom(SCROLL_CONTAINER).containsText('Three');
+      assert.dom(SCROLL_CONTAINER).containsText('Four');
+      assert.dom(SCROLL_CONTAINER).containsText('Five');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Nine');
+      await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) === -180);
+      assert.equal(scrollPosition(find(SCROLL_CONTAINER)), -180);
+    });
+
+    test('it adjusts when the headerHeight changes', async function(assert) {
+      this.set('initialScrollTop', 0);
+      this.set('h1Height', 380);
+      await this.render(HBS_WITH_HEADER);
+      assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
+      await waitFor(ITEMS_CONTAINER);
+      assert.equal(find(ITEMS_CONTAINER).getBoundingClientRect().height, 1000);
+      assertDoNotOverlap(assert, `${SCROLL_CONTAINER} h1`, `[data-list-item-id="${this.items[0].id}"]`);
+      assert.dom(SCROLL_CONTAINER).containsText('One');
+      assert.dom(SCROLL_CONTAINER).containsText('Three');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Four');
+      this.set('h1Height', 80);
+      assertDoNotOverlap(assert, `${SCROLL_CONTAINER} h1`, `[data-list-item-id="${this.items[0].id}"]`);
+      assert.equal(find(ITEMS_CONTAINER).getBoundingClientRect().height, 1000);
+      assert.dom(SCROLL_CONTAINER).containsText('One');
+      assert.dom(SCROLL_CONTAINER).containsText('Three');
+      await waitUntilText('Four');
+      assert.dom(SCROLL_CONTAINER).containsText('Four');
+      assert.dom(SCROLL_CONTAINER).containsText('Five');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Seven');
+      assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
+    });
   });
 });
