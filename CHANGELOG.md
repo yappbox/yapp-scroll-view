@@ -1,3 +1,11 @@
+## v6.0.0 (2020-10-18)
+
+#### :rocket: Enhancement
+* [#47](https://github.com/yappbox/yapp-scroll-view/pull/47) Add header support to <CollectionScrollView> ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v5.3.0 (2020-09-08)
 
 #### :rocket: Enhancement
