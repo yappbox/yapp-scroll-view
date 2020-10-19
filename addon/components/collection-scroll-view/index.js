@@ -137,5 +137,5 @@ function isChildComponent(component, candidateChildComponent) {
 }
 
 function isChildElement(element, candidateChildElement) {
-  return element.contains(candidateChildElement);
+  return  element && (candidateChildElement instanceof HTMLElement) && element.contains(candidateChildElement);
 }
