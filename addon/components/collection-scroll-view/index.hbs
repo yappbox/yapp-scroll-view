@@ -24,9 +24,12 @@
 >
 
   {{#if (has-block 'header')}}
-    <div {{on-resize (fn this.updateHeaderDimensions scrollViewApi)}}>
-      {{yield to="header"}}
-    </div>
+    {{yield (fn this.updateHeaderDimensions scrollViewApi) to="header"}}
+    {{!-- Usage:
+        <:header as |measure|>
+          <h1 {{on-resize measure}}>Hello, world!</h1>
+        </:header>
+     --}}
   {{/if}}
 
   {{#unless (and (has-block 'header') (is-empty this.headerDimensions))}}

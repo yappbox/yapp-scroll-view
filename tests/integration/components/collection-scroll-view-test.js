@@ -132,8 +132,11 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
         @revealService={{revealService}}
         @initialScrollTop={{initialScrollTop}}
       >
-        <:header>
-          <h1 style={{html-safe (concat "color:black;border:5px dotted red;margin-top:0px;margin-bottom:10px;font-size:1.5rem;height:" this.h1Height "px;")}}>
+        <:header as |measure|>
+          <h1
+            style={{html-safe (concat "color:black;border:5px dotted red;margin-top:0px;margin-bottom:10px;font-size:1.5rem;height:" this.h1Height "px;")}}
+            {{on-resize measure}}
+          >
             This list is <em>fancy</em>!
           </h1>
         </:header>
