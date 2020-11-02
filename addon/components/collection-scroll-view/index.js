@@ -72,6 +72,11 @@ export default class CollectionScrollView extends Component {
     return Math.max(0, scrollTop - headerHeight);
   }
 
+  get visibleHeaderHeight() {
+    let { headerHeight, scrollTop } = this;
+    return Math.max(0, headerHeight - scrollTop);
+  }
+
   @action updateHeaderDimensions(scrollViewApi, entry) {
     let isFirstMeasure = !this.headerDimensions;
     this.headerDimensions = { width: entry.contentRect.width, height: entry.contentRect.height };

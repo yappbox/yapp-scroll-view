@@ -6,13 +6,11 @@
     @key={{@key}}
     @auxiliaryComponent={{if @auxiliaryComponent
       (component @auxiliaryComponent
-          cell-layout=this.cellLayout
-          items=@items
-          estimated-width=@estimated-width
-          estimated-height=@estimated-height
-          client-width=this.clientWidth
-          client-height=this.clientHeight
-          scroll-top=this.scrollTop
+        cellLayout=this.cellLayout
+        items=@items
+        clientSize=this.collectionClientSize
+        scrollTop=this.collectionScrollTop
+        verticalOffset=this.visibleHeaderHeight
       )
     }}
     @clientSizeChange={{this.clientSizeChange}}
@@ -50,9 +48,9 @@
 
   {{#if @revealService}}
     {{emitter-action
-        emitter=@revealService
-        eventName="revealItemById"
-        action=(fn this.scrollToItem scrollViewApi)
+      emitter=@revealService
+      eventName="revealItemById"
+      action=(fn this.scrollToItem scrollViewApi)
     }}
   {{/if}}
 </ScrollView>
