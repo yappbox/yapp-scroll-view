@@ -1,3 +1,11 @@
+## v7.0.0 (2020-11-03)
+
+#### :boom: Breaking Change
+* [#49](https://github.com/yappbox/yapp-scroll-view/pull/49) Pass verticalOffset to auxiliaryComponent in CollectionScrollView ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v6.0.1 (2020-10-19)
 
 ## v6.0.0 (2020-10-18)
