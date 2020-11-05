@@ -5395,6 +5395,16 @@ ember-render-helpers@^0.1.1:
     ember-cli-babel "^7.12.0"
     ember-cli-typescript "^3.1.1"
 
+ember-resize-observer-polyfill@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/ember-resize-observer-polyfill/-/ember-resize-observer-polyfill-0.0.1.tgz#2293ec1f64f28a4669dba6e7434a47869ec1952a"
+  integrity sha512-8rKUXhvya+E5zeIO+7fNeIi3mN19UT0Spj0B9o7grURtHuoyPuUWMrESKoEOH2RlhLImLDI578s5YV0dHGHP/A==
+  dependencies:
+    ember-auto-import "^1.5.3"
+    ember-cli-babel "^7.18.0"
+    ember-cli-htmlbars "^4.2.3"
+    resize-observer-polyfill "^1.5.1"
+
 ember-resize-observer-service@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/ember-resize-observer-service/-/ember-resize-observer-service-0.3.0.tgz#69b6e29bd6d742001ebe0ec70249f20f46fedc4a"
@@ -10388,6 +10398,11 @@ reselect@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/reselect/-/reselect-4.0.0.tgz#f2529830e5d3d0e021408b246a206ef4ea4437f7"
   integrity sha512-qUgANli03jjAyGlnbYVAV5vvnOmJnODyABz51RdBN7M4WaVu8mecZWgyQNkG8Yqe3KRGRt0l4K4B3XVEULC4CA==
+
+resize-observer-polyfill@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/resize-observer-polyfill/-/resize-observer-polyfill-1.5.1.tgz#0e9020dd3d21024458d4ebd27e23e40269810464"
+  integrity sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==
 
 resolve-alpn@^1.0.0:
   version "1.0.0"
