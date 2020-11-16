@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 import { reads } from 'macro-decorators';
-import { tracked } from '@glimmer/tracking';
+import { cached, tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { next, schedule } from '@ember/runloop';
 
@@ -40,7 +40,6 @@ export default class CollectionScrollView extends Component {
   @tracked scrollTop = 0;
   @tracked clientWidth;
   @tracked clientHeight;
-  @tracked measuredClientSize;
   @tracked contentSize;
 
   @reads('headerDimensions.height', 0) headerHeight;
@@ -102,11 +101,23 @@ export default class CollectionScrollView extends Component {
 
   @action
   clientSizeChange(clientWidth, clientHeight) {
-    this.measuredClientSize = {
-      width: clientWidth,
-      height: clientHeight
-    };
-    // this._needsRevalidate();
+    next(() => {
+      if (!this.isDestroyed) {
+        this.clientWidth = clientWidth;
+        this.clientHeight = clientHeight;
+      }
+    })
+  }
+
+  @cached
+  get measuredClientSize() {
+    if (this.clientWidth && this.clientHeight) {
+      return {
+        width: this.clientWidth,
+        height: this.clientHeight
+      };
+    }
+    return null;
   }
 
   @action
