@@ -47,7 +47,7 @@ export default class ZyngaScrollerVerticalRecognizer extends Hammer.Pan {
     if (inputData.isFirst) {
       this.options.scrollComponent.doTouchStart(inputData.pointers, inputData.timeStamp);
     } else if (inputData.isFinal) {
-      this.options.scrollComponent.doTouchEnd(inputData.pointers, inputData.timeStamp);
+      this.options.scrollComponent.doTouchEnd(inputData.pointers, inputData.timeStamp, inputData.srcEvent);
     } else {
       this.options.scrollComponent.doTouchMove(inputData.pointers, inputData.timeStamp, inputData.scale);
     }

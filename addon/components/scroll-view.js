@@ -249,30 +249,21 @@ class ScrollView extends Component {
     this.scroller.doTouchMove(touches, timeStamp, scale)
   }
 
-  doTouchEnd(touches, timeStamp) {
-    if (this.needsCaptureClick()) {
-      this.setupCaptureClickTask.perform();
-    }
-    this.scroller.doTouchEnd(timeStamp);
-  }
+  doTouchEnd(touches, timeStamp, event) {
+    let preventClick = this.needsPreventClick()
 
-  @task
-  setupCaptureClickTask = function *() {
-    try {
-      let { scrollViewElement } = this;
-      let captureClick = (e) => {
-        e.stopPropagation(); // Stop the click from being propagated.
-        scrollViewElement.removeEventListener('click', captureClick, true); // cleanup
-      }
-      scrollViewElement.addEventListener('click', captureClick, true);
-      yield timeout(0);
-      scrollViewElement.removeEventListener('click', captureClick, true);
-    } finally {
+    if (preventClick) {
+      event.preventDefault();
+    }
+
+    this.scroller.doTouchEnd(timeStamp);
+
+    if (preventClick) {
       this._decelerationVelocityY = null;
     }
   }
 
-  needsCaptureClick() {
+  needsPreventClick() {
     // There are two cases where we want to prevent the click that normally follows a mouseup/touchend.
     //
     // 1) when the user is just finishing a purposeful scroll (i.e. dragging scroll view beyond a threshold)
