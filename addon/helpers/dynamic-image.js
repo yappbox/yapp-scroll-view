@@ -30,6 +30,7 @@ export default function dynamicImage([imageSrc], hash) {
       img.setAttribute('class', className);
     }
     img.src = imageSrc;
+    img.draggable = false;
     return img;
   }
 }
