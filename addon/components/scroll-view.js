@@ -47,6 +47,11 @@ function getScrolledToTopChanged(currentTop, lastTop, offset) {
   return { isAtTop, isAtTopChanged };
 }
 
+function captureClick(e) {
+  e.stopPropagation();
+  window.removeEventListener('click', captureClick, true);
+}
+
 class ScrollView extends Component {
   // @argument(optional('number'))
   // contentHeight; // optional, when not provided, we measure the size
@@ -155,18 +160,20 @@ class ScrollView extends Component {
     );
   }
 
-  onScrollChange(left, top) {
+  onScrollChange(_left, top) {
     let scrollTop = top|0;
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
     let { scroller } = this;
+    let isScrolling = !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating);
+    this._isScrolling = isScrolling;
     this._decelerationVelocityY = scroller.__decelerationVelocityY;
     this.applyScrollTop({
       scrollTop,
       lastTop: this._appliedScrollTop,
-      isScrolling: !!(scroller.__isDragging || scroller.__isDecelerating || scroller.__isAnimating),
-  decelerationVelocityY: this._decelerationVelocityY
+      isScrolling,
+      decelerationVelocityY: this._decelerationVelocityY
     });
     if (+(new Date()) - this._lastMeasurement > MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN) {
       this.measureClientAndContent();
@@ -242,6 +249,7 @@ class ScrollView extends Component {
   }
 
   doTouchStart(touches, timeStamp) {
+    this._wasScrollingAtTouchStart = this._isScrolling;
     this.scroller.doTouchStart(touches, timeStamp);
   }
 
@@ -249,18 +257,20 @@ class ScrollView extends Component {
     this.scroller.doTouchMove(touches, timeStamp, scale)
   }
 
-  doTouchEnd(touches, timeStamp, event) {
+  doTouchEnd(_touches, timeStamp, event) {
     let preventClick = this.needsPreventClick()
-
+ 
     if (preventClick) {
-      event.preventDefault();
+      // A touchend event can prevent a follow-on click event by calling preventDefault.
+      // However, a mouseup event cannot do this so we need to capture the upcoming click instead.
+      if (event instanceof MouseEvent) {
+        window.addEventListener('click', captureClick, true);
+      } else {
+        event.preventDefault();
+      }
     }
 
     this.scroller.doTouchEnd(timeStamp);
-
-    if (preventClick) {
-      this._decelerationVelocityY = null;
-    }
   }
 
   needsPreventClick() {
@@ -274,7 +284,7 @@ class ScrollView extends Component {
     //
     // This method determines whether either of these cases apply.
     let isFinishingDragging = this.scroller.__isDragging;
-    let wasAnimatingWithMomentum = Math.abs(this._decelerationVelocityY) > 2;
+    let wasAnimatingWithMomentum = this._wasScrollingAtTouchStart && Math.abs(this._decelerationVelocityY) > 2;
     return isFinishingDragging || wasAnimatingWithMomentum;
   }
 
