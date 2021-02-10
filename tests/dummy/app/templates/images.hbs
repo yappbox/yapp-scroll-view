@@ -17,11 +17,12 @@ Item Width: {{itemWidth}}
     @estimated-width={{containerWidth}}
     @buffer={{1}}
     @cell-layout={{fixed-grid-layout itemWidth itemHeight}}
-   as |item index|
   >
-    <div class="list-item">
-      {{dynamic-image item.imageSrc width=50 height=50}}
-      {{item.name}}
-    </div>
+    <:row as |item index|>
+      <div class="list-item">
+        {{dynamic-image item.imageSrc width=50 height=50}}
+        {{item.name}}
+      </div>
+    </:row>
   </CollectionScrollView>
 </div>
