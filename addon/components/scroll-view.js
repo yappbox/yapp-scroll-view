@@ -49,7 +49,9 @@ function getScrolledToTopChanged(currentTop, lastTop, offset) {
 
 function captureClick(e) {
   e.stopPropagation();
-  window.removeEventListener('click', captureClick, true);
+  e.target
+    .closest('.ScrollView')
+    .removeEventListener('click', captureClick, true);
 }
 
 class ScrollView extends Component {
@@ -264,9 +266,10 @@ class ScrollView extends Component {
       // A touchend event can prevent a follow-on click event by calling preventDefault.
       // However, a mouseup event cannot do this so we need to capture the upcoming click instead.
       if (event instanceof MouseEvent) {
-        window.addEventListener('click', captureClick, true);
+        this.scrollViewElement.addEventListener('click', captureClick, true);
       } else {
         event.preventDefault();
+        event.stopPropagation();
       }
     }
 
