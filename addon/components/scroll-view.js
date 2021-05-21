@@ -1,7 +1,7 @@
-/* global Ember, Scroller */
+/* global Scroller */
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import { action, computed } from '@ember/object';
+import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
 // import { argument } from '@ember-decorators/argument';
 // import { Action, optional } from '@ember-decorators/argument/types';
@@ -14,7 +14,11 @@ import { timeout } from 'ember-concurrency';
 import { task } from 'ember-concurrency-decorators';
 import ScrollViewApi from 'yapp-scroll-view/utils/scroll-view-api';
 import { DEBUG } from '@glimmer/env';
-import { registerWaiter, unregisterWaiter } from '@ember/test';
+import { buildWaiter } from '@ember/test-waiters';
+import Ember from 'ember';
+import { cached } from 'ember-cached-decorator-polyfill';
+
+let waiter = buildWaiter('yapp-scroll-view:scrolling');
 
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
@@ -121,9 +125,6 @@ class ScrollView extends Component {
     this.setupScroller();
     this.measurementTask.perform();
     this.bindScrollerEvents(element);
-    if (DEBUG) {
-      registerWaiter(this, this._isScrollingForWaiter);
-    }
     this.onKeyUpdated();
   }
 
@@ -152,7 +153,6 @@ class ScrollView extends Component {
       if (Ember.testing) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
       }
-      unregisterWaiter(this, this._isScrollingForWaiter);
     }
   }
 
@@ -534,7 +534,7 @@ class ScrollView extends Component {
     }
   }
 
-  @computed
+  @cached
   get scrollViewApi() {
     return ScrollViewApi.create({
       _scrollComponent: this,
@@ -558,7 +558,14 @@ class ScrollView extends Component {
     });
   }
 
+  _waiterToken;
   _trackIsScrollingForWaiter(isScrolling) {
+    if (isScrolling && !this._waiterToken) {
+      this._waiterToken = waiter.beginAsync();
+    } else if (!isScrolling && this._waiterToken) {
+      waiter.endAsync(this._waiterToken);
+      this._waiterToken = undefined;
+    }
     this._lastIsScrolling = isScrolling;
   }
 

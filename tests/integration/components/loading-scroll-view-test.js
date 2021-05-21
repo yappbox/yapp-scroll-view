@@ -1,7 +1,7 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
-import { find, settled, waitFor } from '@ember/test-helpers';
+import { find, render, settled, waitFor } from '@ember/test-helpers';
 import { scrollPosition, scrollDown } from '../../helpers/scrolling';
 import RSVP from 'rsvp';
 
@@ -18,18 +18,18 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     this.set('loadMore', function(){});
   });
   const EXAMPLE_1_HBS = hbs`
-    <div style={{html-safe (concat "width:320px; height:" viewportHeight "px; position:relative")}}>
+    <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
       <LoadingScrollView
-          @hasMore={{hasMore}}
-          @isLoadingMore={{isLoadingMore}}
-          @loadMore={{loadMore}}
+          @hasMore={{this.hasMore}}
+          @isLoadingMore={{this.isLoadingMore}}
+          @loadMore={{this.loadMore}}
       >
         <div id="element1" style="width:320px;height:200px">One</div>
         <div style="width:320px;height:200px">Two</div>
         <div style="width:320px;height:200px">Three</div>
         <div style="width:320px;height:200px">Four</div>
         <div style="width:320px;height:200px">Five</div>
-        {{#if isMoreLoaded}}
+        {{#if this.isMoreLoaded}}
           <div id="element6" style="width:320px;height:200px">Six</div>
           <div style="width:320px;height:200px">Seven</div>
           <div style="width:320px;height:200px">Eight</div>
@@ -41,7 +41,7 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
   `;
 
   test('it renders', async function(assert) {
-    this.render(EXAMPLE_1_HBS);
+    render(EXAMPLE_1_HBS);
     await waitFor('.ScrollView');
     assert.dom(SCROLL_CONTAINER).containsText('Five');
     assert.dom(SCROLL_CONTAINER).doesNotContainText('Six');
@@ -54,7 +54,7 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     this.set('loadMore', function() {
       assert.ok(false, 'should not invoke loadMore');
     });
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     await scrollDown('.ScrollView #element1', {
       amount: 500,
       duration: 300
@@ -67,7 +67,7 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
       this.set('isMoreLoaded', true);
       return RSVP.resolve();
     });
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     await scrollDown('.ScrollView #element1', {
       amount: 500,
       duration: 750
@@ -92,7 +92,7 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
       loadMoreInvocationCount++;
       this.set('isLoadingMore', true);
     });
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     await scrollDown('.ScrollView #element1', {
       amount: 500,
       duration: 300

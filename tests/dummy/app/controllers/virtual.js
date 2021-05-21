@@ -1,5 +1,7 @@
 import Controller from '@ember/controller';
 import makeModel from '../utils/make-model';
+import { action } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
 
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex ;
@@ -20,57 +22,57 @@ function shuffle(array) {
   return array;
 }
 
-export default Controller.extend({
-  itemWidth: 100,
-  itemHeight: 100,
-  containerWidth: 300,
-  containerHeight: 600,
+export default class extends Controller {
+  @tracked itemWidth = 100;
+  @tracked itemHeight = 100;
+  @tracked containerWidth = 300;
+  @tracked containerHeight = 600;
 
-  actions: {
-    updateContainerWidth: function(value) {
-      this.set('containerWidth', parseInt(value, 10));
-    },
-
-    updateContainerHeight: function(value) {
-      this.set('containerHeight', parseInt(value, 10));
-    },
-
-    shuffle: function() {
-        this.set('model', shuffle(this.get('model').slice(0)));
-    },
-
-    makeSquare: function() {
-      this.setProperties({
-        itemWidth: 100,
-        itemHeight: 100,
-      });
-    },
-
-    makeRow: function() {
-      this.setProperties({
-        itemWidth: 300,
-        itemHeight: 100
-      });
-    },
-
-    makeLongRect: function() {
-      this.setProperties({
-        itemWidth: 100,
-        itemHeight: 50
-      });
-    },
-
-    makeTallRect: function() {
-      this.setProperties({
-        itemWidth: 50,
-        itemHeight: 100
-      });
-    },
-    _isFullLengthCollection: true,
-    swapCollection: function() {
-      this.toggleProperty('_isFullLengthCollection');
-      const numItems = this.get('_isFullLengthCollection') ? 1000 : 500;
-      this.set('model', makeModel(numItems)());
-    }
+  @action
+  updateContainerWidth(value) {
+    this.containerWidth = parseInt(value, 10);
   }
-});
+
+  @action
+  updateContainerHeight(value) {
+    this.containerHeight = parseInt(value, 10);
+  }
+
+  @action
+  shuffle() {
+    this.model = shuffle(this.model.slice(0));
+  }
+
+  @action
+  makeSquare() {
+    this.itemWidth = 100;
+    this.itemHeight = 100;
+  }
+
+  @action
+  makeRow() {
+    this.itemWidth = 300;
+    this.itemHeight = 100;
+  }
+
+  @action
+  makeLongRect() {
+    this.itemWidth = 100;
+    this.itemHeight = 50;
+  }
+
+  @action
+  makeTallRect() {
+    this.itemWidth = 50;
+    this.itemHeight = 100;
+  }
+
+  _isFullLengthCollection = true;
+
+  @action
+  swapCollection() {
+    this._isFullLengthCollection = !this._isFullLengthCollection;
+    const numItems = this._isFullLengthCollection ? 1000 : 500;
+    this.model = makeModel(numItems)();
+  }
+}

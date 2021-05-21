@@ -1,6 +1,6 @@
 import Route from '@ember/routing/route';
 import makeModel from '../utils/make-model';
 
-export default Route.extend({
-  model: makeModel(1000)
-});
+export default class extends Route {
+  model = makeModel(1000)
+}

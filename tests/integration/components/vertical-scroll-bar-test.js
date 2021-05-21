@@ -1,7 +1,7 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
-import { find } from '@ember/test-helpers';
+import { find, render } from '@ember/test-helpers';
 import { scrollPosition, waitForOpacity } from '../../helpers/scrolling';
 
 module('Integration | Component | vertical-scroll-bar', function(hooks) {
@@ -27,17 +27,17 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     <style>
       .VerticalScrollBar {
         position: absolute;
-        bottom: {{verticalPadding}}px;
-        top: {{verticalPadding}}px;
+        bottom: {{this.verticalPadding}}px;
+        top: {{this.verticalPadding}}px;
         width: 5px;
         right: 2px;
       }
     </style>
-    <div style={{html-safe (concat 'width:320px; height:' scrollerHeight 'px; position:relative; border: 1px solid blue')}}>
+    <div style={{html-safe (concat 'width:320px; height:' this.scrollerHeight 'px; position:relative; border: 1px solid blue')}}>
       <VerticalScrollBar
-        @contentHeight={{contentHeight}}
-        @scrollerHeight={{scrollerHeight}}
-        @registerWithScrollView={{registerCallback}}
+        @contentHeight={{this.contentHeight}}
+        @scrollerHeight={{this.scrollerHeight}}
+        @registerWithScrollView={{this.registerCallback}}
       />
     </div>
   `;
@@ -52,7 +52,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
   }
 
   test('it renders with a thumb size proportional to content ratio', async function(assert) {
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 100);
     assert.equal(thumbSize(), 234);
     assert.equal(thumbPosition(), 48);
@@ -61,7 +61,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
 
   test('it renders full-size when contentHeight is less than scrollerHeight', async function(assert) {
     this.set('contentHeight', 100);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 5);
     this.simulateCallback(true, 0);
     assert.equal(thumbSize(), 481);
@@ -70,19 +70,19 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
   });
 
   test('it has 0 opacity when not scrolling', async function(assert) {
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     assert.equal(find(THUMB).style.opacity, "0");
   });
 
   test('it has a minimum scrollbar length', async function(assert) {
     this.set('contentHeight', 100000);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 100);
     assert.equal(thumbSize(), 17);
   });
 
   test('thumb is visible when isScrolling is true', async function(assert) {
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 10);
     assert.equal(find(THUMB).style.opacity, "1");
     this.simulateCallback(false, 10);
@@ -92,14 +92,14 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
   });
 
   test('compresses scrollbar when overscrolled at top', async function(assert) {
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, -100);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
     assert.equal(thumbSize(), 195, 'thumb height is compressed');
   });
 
   test('compresses scrollbar when overscrolled at bottom', async function(assert) {
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 650);
     assert.equal(thumbSize(), 184, 'thumb height is compressed');
     assert.equal(thumbPosition(), 298, 'thumb is at bottom');
@@ -107,7 +107,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
 
   test('compresses scrollbar when overscrolled at top, short content', async function(assert) {
     this.set('contentHeight', 300);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, -100);
     assert.equal(thumbPosition(), 0, 'thumb is at top');
     assert.equal(thumbSize(), 399, 'thumb height is compressed');
@@ -115,7 +115,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
 
   test('compresses scrollbar when overscrolled at bottom, short content', async function(assert) {
     this.set('contentHeight', 300);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 400);
     assert.equal(thumbSize(), 265, 'thumb height is compressed');
     assert.equal(thumbPosition(), 217, 'thumb is at bottom');
@@ -125,7 +125,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('verticalPadding', 0);
     this.set('contentHeight', 900);
     this.set('scrollerHeight', 1000);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
 
     // when scrolled past bottom by 5
     this.simulateCallback(true, 105);
@@ -152,7 +152,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('verticalPadding', 0);
     this.set('contentHeight', 1000);
     this.set('scrollerHeight', 1000);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
 
     // when scrolled past bottom by 5
     this.simulateCallback(true, 5);
@@ -179,7 +179,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('verticalPadding', 0);
     this.set('contentHeight', 1000);
     this.set('scrollerHeight', 900);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
 
     // when scrolled past bottom by 1
     this.simulateCallback(true, 101);
@@ -211,7 +211,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('verticalPadding', 0);
     this.set('contentHeight', 2000);
     this.set('scrollerHeight', 500);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
 
     // when scrolled past bottom by 5
     this.simulateCallback(true, 1505);
@@ -253,7 +253,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
     this.set('verticalPadding', 0);
     this.set('contentHeight', 2000);
     this.set('scrollerHeight', 500);
-    await this.render(EXAMPLE_1_HBS);
+    await render(EXAMPLE_1_HBS);
 
     this.simulateCallback(true, 750);
     assert.equal(thumbPosition(), 187, 'thumb is in center');
