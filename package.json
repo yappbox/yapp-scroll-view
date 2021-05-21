@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ember/render-modifiers": "^1.0.2",
+    "@ember/test-waiters": "^2.4.4",
     "@glimmer/tracking": "^1.0.4",
     "broccoli-stew": "^3.0.0",
     "ember-auto-import": "^1.6.0",
@@ -50,7 +51,6 @@
     "@babel/core": "^7.14.3",
     "@ember/optional-features": "^2.0.0",
     "@ember/test-helpers": "^2.2.5",
-    "@ember/test-waiters": "^2.4.4",
     "@glimmer/component": "^1.0.4",
     "babel-eslint": "^10.1.0",
     "broccoli-asset-rev": "^3.0.0",
