@@ -1,4 +1,6 @@
 import Controller from '@ember/controller';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
 
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex ;
@@ -19,23 +21,24 @@ function shuffle(array) {
   return array;
 }
 
-export default Controller.extend({
-  itemWidth: 200,
-  itemHeight: 100,
-  containerWidth: 300,
-  containerHeight: 600,
+export default class extends Controller {
+  @tracked itemWidth = 200;
+  @tracked itemHeight = 100;
+  @tracked containerWidth = 300;
+  @tracked containerHeight = 600;
 
-  actions: {
-    updateContainerWidth: function(value) {
-      this.set('containerWidth', parseInt(value, 10));
-    },
-
-    updateContainerHeight: function(value) {
-      this.set('containerHeight', parseInt(value, 10));
-    },
-
-    shuffle: function() {
-        this.set('model', shuffle(this.get('model').slice(0)));
-    }
+  @action
+  updateContainerWidth(value) {
+    this.containerWidth = parseInt(value, 10);
   }
-});
+  
+  @action
+  updateContainerHeight(value) {
+    this.containerHeight = parseInt(value, 10);
+  }
+
+  @action
+  shuffle() {
+    this.model = shuffle(this.model.slice(0));
+  }
+}

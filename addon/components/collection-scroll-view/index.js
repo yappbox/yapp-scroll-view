@@ -1,39 +1,12 @@
 import Component from '@glimmer/component';
 import { reads } from 'macro-decorators';
-import { cached, tracked } from '@glimmer/tracking';
+import { cached } from 'ember-cached-decorator-polyfill';
+import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { next, schedule } from '@ember/runloop';
 
-// import { argument } from '@ember-decorators/argument';
-// import { Action, optional } from '@ember-decorators/argument/types';
-
 /* A component which integrates a ScrollView with ember-collection */
 export default class CollectionScrollView extends Component {
-  // @argument('any')
-  // auxiliaryComponent;
-  //
-  // @argument(optional(Action))
-  // scrolledToTopChange;
-  //
-  // @argument(optional('number'))
-  // scrollTopOffset;
-  @reads('args.scrollTopOffset', 0) scrollTopOffset;
-
-  // @argument(optional('number'))
-  // initialScrollTop;
-  //
-  // @argument(optional('string'))
-  // key;
-  //
-  // @argument(optional('any'))
-  // revealService;
-  //
-  // @argument('any')
-  // items;
-  //
-  // @argument(optional('any'))
-  // buffer;
-
   element;
 
   @tracked headerDimensions;
@@ -76,7 +49,8 @@ export default class CollectionScrollView extends Component {
     return Math.max(0, headerHeight - scrollTop);
   }
 
-  @action updateHeaderDimensions(scrollViewApi, entry) {
+  @action
+  updateHeaderDimensions(scrollViewApi, entry) {
     let isFirstMeasure = !this.headerDimensions;
     this.headerDimensions = { width: entry.contentRect.width, height: entry.contentRect.height };
 

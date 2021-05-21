@@ -1,3 +1,4 @@
+/* eslint-disable ember/no-classic-classes */
 import Evented from '@ember/object/evented';
 import EmberObject from '@ember/object';
 

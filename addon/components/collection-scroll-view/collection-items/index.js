@@ -1,3 +1,5 @@
+/* eslint-disable ember/no-component-lifecycle-hooks */
+/* eslint-disable ember/no-side-effects */
 import { A } from '@ember/array';
 import Component from '@glimmer/component';
 import identity from 'ember-collection/utils/identity';
