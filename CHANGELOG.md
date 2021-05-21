@@ -1,3 +1,11 @@
+## v8.0.0 (2021-05-21)
+
+#### :house: Internal
+* [#61](https://github.com/yappbox/yapp-scroll-view/pull/61) Update dependencies ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v7.0.5 (2021-02-12)
 
 ## v7.0.4 (2021-02-10)
