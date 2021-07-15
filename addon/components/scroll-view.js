@@ -292,11 +292,22 @@ class ScrollView extends Component {
     if (preventClick) {
       // A touchend event can prevent a follow-on click event by calling preventDefault.
       // However, a mouseup event cannot do this so we need to capture the upcoming click instead.
+      // THIS COMMENT NEEDS UPDATING - hammer can emit the click event too
       if (event instanceof MouseEvent) {
         this.scrollViewElement.addEventListener('click', captureClick, true);
       } else {
         event.preventDefault();
         event.stopPropagation();
+        let captureHammerClick = function (e, f) {
+          if (e.target === event.target) {
+            e.stopPropagation();
+            e.target
+              .closest('.ScrollView')
+              .removeEventListener('click', f, true);
+          }
+        }
+        this.scrollViewElement.addEventListener('click', captureHammerClick, true);
+        setTimeout(() => this.scrollViewElement.removeEventListener('click', captureHammerClick, true), 1000);
       }
     }
 
