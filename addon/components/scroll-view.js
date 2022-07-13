@@ -93,6 +93,7 @@ class ScrollView extends Component {
   _appliedScrollTop;
   _shouldMeasureContent = undefined;
   _isScrolling = false;
+  _touchStartTimeStamp = null;
   _lastIsScrolling = false;
 
   @service('scroll-position-memory')
@@ -279,6 +280,7 @@ class ScrollView extends Component {
 
   doTouchStart(touches, timeStamp) {
     this._wasScrollingAtTouchStart = this._isScrolling;
+    this._touchStartTimeStamp = timeStamp;
     this.scroller.doTouchStart(touches, timeStamp);
   }
 
@@ -287,7 +289,7 @@ class ScrollView extends Component {
   }
 
   doTouchEnd(_touches, timeStamp, event) {
-    let preventClick = this.needsPreventClick();
+    let preventClick = this.needsPreventClick(timeStamp - this._touchStartTimeStamp);
 
     if (preventClick) {
       // A touchend event can prevent a follow-on click event by calling preventDefault.
@@ -300,24 +302,27 @@ class ScrollView extends Component {
       }
     }
 
+    this._touchStartTimeStamp = null;
     this.scroller.doTouchEnd(timeStamp);
   }
 
-  needsPreventClick() {
-    // There are two cases where we want to prevent the click that normally follows a mouseup/touchend.
+  needsPreventClick(touchDuration) {
+    // There are three cases where we want to prevent the click that normally follows a mouseup/touchend.
     //
     // 1) when the user is just finishing a purposeful scroll (i.e. dragging scroll view beyond a threshold)
     // 2) when animating with "momentum", a tap should stop the movement rather than
     //    trigger an interactive element that may be under the tap. Zynga scroller
     //    takes care of stopping the movement, but we need to capture the click
     //    and stop propagation.
+    // 3) when the user does a long press (> 500 ms)
     //
     // This method determines whether either of these cases apply.
     let isFinishingDragging = this.scroller.__isDragging;
     let wasAnimatingWithMomentum =
       this._wasScrollingAtTouchStart &&
       Math.abs(this._decelerationVelocityY) > 2;
-    return isFinishingDragging || wasAnimatingWithMomentum;
+    let isLongPress = touchDuration > 500
+    return isFinishingDragging || wasAnimatingWithMomentum || isLongPress;
   }
 
   handleWheel(e) {
