@@ -23,6 +23,24 @@ let waiter = buildWaiter('yapp-scroll-view:scrolling');
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
 const MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN = 1000;
+const LONG_PRESS_DELAY = 500;
+const GHOST_CLICK_DELAY = 100;
+
+const isIPhone = /iPhone|iPod|iPad/i.test(navigator.appVersion);
+
+let timeoutID = 0;
+function addCaptureClick(domElement) {
+  if(timeoutID) {
+    clearTimeout(timeoutID);
+  } else {
+    domElement.addEventListener('click', captureClick, true);
+  }
+  let cancelCaptureClick = () => {
+    timeoutID = 0;
+    domElement.removeEventListener('click', captureClick, true);
+  }
+  timeoutID = setTimeout(cancelCaptureClick, GHOST_CLICK_DELAY)
+}
 
 function debounce(func, wait, immediate) {
   var timeout;
@@ -93,6 +111,7 @@ class ScrollView extends Component {
   _appliedScrollTop;
   _shouldMeasureContent = undefined;
   _isScrolling = false;
+  _touchStartTimeStamp = null;
   _lastIsScrolling = false;
 
   @service('scroll-position-memory')
@@ -279,6 +298,7 @@ class ScrollView extends Component {
 
   doTouchStart(touches, timeStamp) {
     this._wasScrollingAtTouchStart = this._isScrolling;
+    this._touchStartTimeStamp = timeStamp;
     this.scroller.doTouchStart(touches, timeStamp);
   }
 
@@ -287,37 +307,46 @@ class ScrollView extends Component {
   }
 
   doTouchEnd(_touches, timeStamp, event) {
-    let preventClick = this.needsPreventClick();
+    let preventClick = this.needsPreventClick(timeStamp - this._touchStartTimeStamp);
 
     if (preventClick) {
       // A touchend event can prevent a follow-on click event by calling preventDefault.
-      // However, a mouseup event cannot do this so we need to capture the upcoming click instead.
-      if (event instanceof MouseEvent) {
-        this.scrollViewElement.addEventListener('click', captureClick, true);
-      } else {
-        event.preventDefault();
-        event.stopPropagation();
+      // On Android, it works well.
+      // On iOS, we see a click event being triggered after a touchend event,
+      // even when `preventDefault` and `stopPropagation` were called. However, phantom clicks
+      // are not triggered consistently. In order to avoid capturing legit click events,
+      // we only try to capture phantom clicks if they happen less than 100ms after a touchend event.
+      // On desktop browsers, a mouseup event cannot do this so we need to capture the upcoming click instead.
+
+      if (isIPhone || (event instanceof MouseEvent)) {
+        addCaptureClick(this.scrollViewElement);
       }
+      event.preventDefault();
+      event.stopPropagation();
     }
 
+    this._touchStartTimeStamp = null;
     this.scroller.doTouchEnd(timeStamp);
   }
 
-  needsPreventClick() {
-    // There are two cases where we want to prevent the click that normally follows a mouseup/touchend.
+  needsPreventClick(touchDuration) {
+    // There are three cases where we want to prevent the click that normally follows a mouseup/touchend.
     //
     // 1) when the user is just finishing a purposeful scroll (i.e. dragging scroll view beyond a threshold)
+    //    This is only true on a desktop.
     // 2) when animating with "momentum", a tap should stop the movement rather than
     //    trigger an interactive element that may be under the tap. Zynga scroller
     //    takes care of stopping the movement, but we need to capture the click
     //    and stop propagation.
+    // 3) when the user does a long press (> 500 ms)
     //
     // This method determines whether either of these cases apply.
     let isFinishingDragging = this.scroller.__isDragging;
     let wasAnimatingWithMomentum =
       this._wasScrollingAtTouchStart &&
       Math.abs(this._decelerationVelocityY) > 2;
-    return isFinishingDragging || wasAnimatingWithMomentum;
+    let isLongPress = touchDuration > LONG_PRESS_DELAY;
+    return isFinishingDragging || wasAnimatingWithMomentum || isLongPress;
   }
 
   handleWheel(e) {
