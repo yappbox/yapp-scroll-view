@@ -307,7 +307,11 @@ class ScrollView extends Component {
   }
 
   doTouchEnd(_touches, timeStamp, event) {
-    let preventClick = this.needsPreventClick(timeStamp - this._touchStartTimeStamp);
+    // In most cases, `doTouchStart` is being called before `doTouchEnd`, allowing to set `_touchStartTimeStamp`
+    // It is not true when the event occurs on some elements (`input`, `textarea`, or `select`) which can be scrolled.
+    // In this case, `ZyngaScrollerVerticalOrganizer` will not call `doTouchStart`
+    let touchDuration = this._touchStartTimeStamp ? (timeStamp - this._touchStartTimeStamp) : 0;
+    let preventClick = this.needsPreventClick(touchDuration);
 
     if (preventClick) {
       // A touchend event can prevent a follow-on click event by calling preventDefault.
