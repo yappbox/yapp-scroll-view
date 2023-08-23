@@ -4,10 +4,11 @@ import { cached } from 'ember-cached-decorator-polyfill';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { next, schedule } from '@ember/runloop';
+import { ref } from 'ember-ref-bucket';
 
 /* A component which integrates a ScrollView with ember-collection */
 export default class CollectionScrollView extends Component {
-  element;
+  @ref("element") element; 
 
   @tracked headerDimensions;
   @tracked scrollTop = 0;
@@ -108,7 +109,7 @@ export default class CollectionScrollView extends Component {
       return;
     }
     let { items } = this.args;
-    let itemIndex = items.indexOf(items.findBy('id', id));
+    let itemIndex = items.indexOf(items.find(i => i.id === id));
     if (itemIndex >= 0) {
       let { y } = this.cellLayout.positionAt(itemIndex);
       scrollViewApi.scrollTo(y + this.headerHeight, true);

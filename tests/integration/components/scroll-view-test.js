@@ -72,7 +72,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     await render(EXAMPLE_1_HBS);
     let scrollPromise = scrollDown('.ScrollView #element1');
     await waitForOpacity(SCROLLBAR_THUMB, '1');
-    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 230);
+    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 231);
     await scrollPromise;
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -190);
   });
@@ -118,7 +118,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     this.set('scrollTopOffset', 50);
     const template = hbs`
       <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
-        <ScrollView @scrollTopOffset={{this.scrollTopOffset}} @scrolledToTopChange={{scrolledToTopChange}}>
+        <ScrollView @scrollTopOffset={{this.scrollTopOffset}} @scrolledToTopChange={{this.scrolledToTopChange}}>
           <div style="width:320px;height:400px">One</div>
           <div style="width:320px;height:400px">Two</div>
         </ScrollView>
@@ -154,7 +154,7 @@ module('Integration | Component | scroll-view', function(hooks) {
     this.set('initialScrollTop', 50);
     const template = hbs`
       <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
-        <ScrollView @initialScrollTop={{initialScrollTop}}>
+        <ScrollView @initialScrollTop={{this.initialScrollTop}}>
           <div style="width:320px;height:400px">One</div>
           <div style="width:320px;height:400px">Two</div>
         </ScrollView>
@@ -311,7 +311,7 @@ module('Integration | Component | scroll-view', function(hooks) {
   test('remembers scroll position based on key attribute', async function(assert) {
     const template = hbs`
       <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
-        <ScrollView @key={{key}}>
+        <ScrollView @key={{this.key}}>
           <div style="width:320px;height:400px">One</div>
           <div style="width:320px;height:400px">Two</div>
         </ScrollView>

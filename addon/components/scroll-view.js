@@ -162,17 +162,18 @@ class ScrollView extends Component {
     }
   }
 
-  @action
-  willDestroyEl(element) {
+  willDestroy() {
+    this.unbindScrollerEvents(this.scrollViewElement);
     this.scrollViewElement = null;
-    this.unbindScrollerEvents(element);
     this._scrollPositionCallbacks = [];
     this.remember(this._lastKey);
     if (DEBUG) {
       if (Ember.testing) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
       }
+      this._trackIsScrollingForWaiter(false);
     }
+    super.willDestroy(...arguments);
   }
 
   setupScroller() {
@@ -569,7 +570,7 @@ class ScrollView extends Component {
 
   @cached
   get scrollViewApi() {
-    return ScrollViewApi.create({
+    return new ScrollViewApi({
       _scrollComponent: this,
     });
   }
