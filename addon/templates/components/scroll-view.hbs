@@ -14,8 +14,8 @@
   <VerticalScrollBar
       data-test-scroll-bar
       class="ScrollView-scrollBar"
-      @contentHeight={{this._appliedContentHeight}}
-      @scrollerHeight={{this._appliedClientHeight}}
+      @contentHeight={{this.scrollBarContentHeight}}
+      @scrollerHeight={{this.scrollBarClientHeight}}
       @registerWithScrollView={{action this.scrollViewApi.registerScrollPositionCallback}}
   />
   {{emitter-action

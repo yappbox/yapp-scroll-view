@@ -10,7 +10,7 @@ import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer';
 import { join, schedule } from '@ember/runloop';
 import { translate } from 'ember-collection/utils/translate';
-import { timeout } from 'ember-concurrency';
+import { timeout, waitForQueue } from 'ember-concurrency';
 import { task } from 'ember-concurrency-decorators';
 import ScrollViewApi from 'yapp-scroll-view/utils/scroll-view-api';
 import { DEBUG } from '@glimmer/env';
@@ -106,8 +106,10 @@ class ScrollView extends Component {
   _isAtTop;
   _needsContentSizeUpdate = true;
   _appliedClientWidth;
-  @tracked _appliedClientHeight;
-  @tracked _appliedContentHeight;
+  _appliedClientHeight;
+  _appliedContentHeight;
+  @tracked scrollBarClientHeight;
+  @tracked scrollBarContentHeight;
   _appliedScrollTop;
   _shouldMeasureContent = undefined;
   _isScrolling = false;
@@ -473,10 +475,18 @@ class ScrollView extends Component {
     this._appliedClientHeight = clientHeight;
     this._appliedContentHeight = contentHeight;
     this.contentElement.style.minHeight = `${clientHeight}px`;
+    this.updateScrollBarDimensionsTask.perform();
     this.updateScrollerDimensions();
     if (this.args.clientSizeChange) {
       this.args.clientSizeChange(clientWidth, clientHeight);
     }
+  }
+
+  @task
+  *updateScrollBarDimensionsTask() {
+    yield waitForQueue('afterRender');
+    this.scrollBarClientHeight = this._appliedClientHeight;
+    this.scrollBarContentHeight = this._appliedContentHeight;
   }
 
   get extraCssClasses() {
