@@ -1,11 +1,12 @@
-/* eslint-disable ember/no-classic-classes */
-import Evented from '@ember/object/evented';
 import EmberObject from '@ember/object';
+import EventEmitter from 'eventemitter3';
+import { action } from '@ember/object';
 
-export default EmberObject.extend(Evented, {
-  init(){
-    this._super(...arguments);
-    let { _scrollComponent } = this;
+export default class extends EmberObject {
+  events = new EventEmitter();
+  constructor(args){
+    super(...arguments);
+    let _scrollComponent = this._scrollComponent = args._scrollComponent;
     this.scrollToBottom = _scrollComponent.scrollToBottom.bind(_scrollComponent);
     this.scrollToElement = _scrollComponent.scrollToElement.bind(_scrollComponent);
     this.scrollToTop = _scrollComponent.scrollToTop.bind(_scrollComponent);
@@ -14,8 +15,16 @@ export default EmberObject.extend(Evented, {
     this.getViewHeight = _scrollComponent.getViewHeight.bind(_scrollComponent);
     this.registerScrollPositionCallback = _scrollComponent.registerScrollPositionCallback.bind(_scrollComponent);
     this.unregisterScrollPositionCallback = _scrollComponent.unregisterScrollPositionCallback.bind(_scrollComponent);
-  },
-  scrollingChanged(value) {
-    this.trigger('isScrollingChanged', value);
   }
-});
+  scrollingChanged(value) {
+    this.events.emit('isScrollingChanged', value);
+  }
+  @action
+  addEventListener() {
+    this.events.addListener(...arguments);
+  }
+  @action
+  removeEventListener() {
+    this.events.removeListener(...arguments);
+  }
+}

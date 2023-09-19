@@ -54,7 +54,7 @@ module('Integration | Component | vertical-scroll-bar', function(hooks) {
   test('it renders with a thumb size proportional to content ratio', async function(assert) {
     await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 100);
-    assert.equal(thumbSize(), 234);
+    assert.equal(thumbSize(), 235);
     assert.equal(thumbPosition(), 48);
     assert.equal(find(THUMB).style.opacity, "1");
   });

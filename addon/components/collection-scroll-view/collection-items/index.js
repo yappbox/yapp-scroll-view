@@ -21,8 +21,6 @@ class Cell {
   }
 }
 
-function noop() {}
-
 export default class CollectionScrollViewCollectionItems extends Component {
   _contentSize;
   cells = A();
@@ -33,6 +31,7 @@ export default class CollectionScrollViewCollectionItems extends Component {
   @reads('args.scrollTop', 0) scrollTop;
   @reads('args.estimatedSize', { width: 0, height: 0 }) estimatedSize;
   @reads('args.cellLayout') cellLayout;
+  @reads('args.items', []) items; // args.items should be a TrackedArray if you want it this component to update when it changes
 
   get clientWidth() {
     let { clientSize, estimatedSize } = this.args;
@@ -47,41 +46,6 @@ export default class CollectionScrollViewCollectionItems extends Component {
   safeRerender(){
     if (this.isDestroyed || this.isDestroying) {return;}
     this.rerender();
-  }
-
-  willDestroyElement() {
-    let { items } = this;
-    if (items && items.removeArrayObserver) {
-      items.removeArrayObserver(this, {
-        willChange: noop,
-        didChange: 'safeRerender'
-      });
-    }
-  }
-
-  get items(){
-    let rawItems = this.args.items;
-
-    if (this._rawItems !== rawItems) {
-      this._rawItems = rawItems;
-      if (this._items && this._items.removeArrayObserver) {
-        this._items.removeArrayObserver(this, {
-          willChange: noop,
-          didChange: 'safeRerender'
-        });
-      }
-      let items = A(rawItems);
-      this._items = items;
-
-      if (items && items.addArrayObserver) {
-        items.addArrayObserver(this, {
-          willChange: noop,
-          didChange: 'safeRerender'
-        });
-      }
-      return items;
-    }
-    return this._items;
   }
 
   get contentSize() {
@@ -101,7 +65,6 @@ export default class CollectionScrollViewCollectionItems extends Component {
 
   get renderCells() {
     let { cellLayout, cells, items, scrollLeft, scrollTop, clientWidth, clientHeight } = this;
-    if (!items) { return []; }
     const numItems = items.length;
     if (cellLayout.length !== numItems) {
       cellLayout.length = numItems;
@@ -122,7 +85,7 @@ export default class CollectionScrollViewCollectionItems extends Component {
 
     for (i=0; i<count; i++) {
       itemIndex = index+i;
-      itemKey = identity(items.objectAt(itemIndex));
+      itemKey = identity(items[itemIndex]);
       if (priorMap) {
         cell = priorMap[itemKey];
       }
@@ -143,7 +106,7 @@ export default class CollectionScrollViewCollectionItems extends Component {
       if (!cellMap[cell.key]) {
         if (newItems.length) {
           itemIndex = newItems.pop();
-          let item = items.objectAt(itemIndex);
+          let item = items[itemIndex];
           itemKey = identity(item);
           style = cellLayout.formatItemStyle(itemIndex, clientWidth, clientHeight);
           cell.style = style;
@@ -161,7 +124,7 @@ export default class CollectionScrollViewCollectionItems extends Component {
 
     for (i = 0; i < newItems.length; i++) {
       itemIndex = newItems[i];
-      let item = items.objectAt(itemIndex);
+      let item = items[itemIndex];
       itemKey = identity(item);
       style = cellLayout.formatItemStyle(itemIndex, clientWidth, clientHeight);
       cell = new Cell(itemKey, item, itemIndex, style);

@@ -21,17 +21,9 @@ export default class extends Helper {
     super.willDestroy(...arguments);
   }
 
-  get useEventedApi() {
-    return this.emitter.on && this.emitter.off;
-  }
-
   startListening() {
     let { handler, emitter, eventName } = this;
-    if (this.useEventedApi) {
-      emitter.on(eventName, this, handler);
-    } else {
-      emitter.addEventListener(eventName, handler);
-    }
+    emitter.addEventListener(eventName, handler);
     this.isListening = true;
   }
 
@@ -40,11 +32,7 @@ export default class extends Helper {
     if (!isListening) {
       return;
     }
-    if (this.useEventedApi) {
-      emitter.off(eventName, this, handler);
-    } else {
-      emitter.removeEventListener(eventName, handler);
-    }
+    emitter.removeEventListener(eventName, handler);
     this.isListening = false;
   }
 }

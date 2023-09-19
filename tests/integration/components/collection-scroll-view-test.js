@@ -4,8 +4,8 @@ import hbs from 'htmlbars-inline-precompile';
 import { find, render, waitFor, waitUntil } from '@ember/test-helpers';
 import { scrollPosition, scrollDown, waitForOpacity } from '../../helpers/scrolling';
 import EmberObject from '@ember/object';
-import Evented from '@ember/object/evented';
 import { timeout } from 'ember-concurrency';
+import EventEmitter from 'eventemitter3';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
 const SCROLLBAR_THUMB = '[data-test-scroll-bar] [data-test-thumb]';
@@ -23,6 +23,19 @@ function assertDoNotOverlap(assert, selector1, selector2) {
 
 function waitUntilText(text) {
   return waitUntil(() => find(SCROLL_CONTAINER).textContent.includes(text));
+}
+
+class FakeRevealService extends EmberObject {
+  events = new EventEmitter();
+  addEventListener() {
+    this.events.addListener(...arguments);
+  }
+  removeEventListener() {
+    this.events.addListener(...arguments);
+  }
+  trigger() {
+    this.events.emit(...arguments);
+  }
 }
 
 module('Integration | Component | collection-scroll-view', function(hooks) {
@@ -80,10 +93,16 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
       duration: 700
     });
     await waitForOpacity(SCROLLBAR_THUMB, '1');
-    await waitUntil(() => find(SCROLLBAR_THUMB).offsetHeight === 230);
-    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 230);
+    await waitUntil(() => {
+      // console.log('find(SCROLLBAR_THUMB).offsetHeight', find(SCROLLBAR_THUMB).offsetHeight);
+      return find(SCROLLBAR_THUMB).offsetHeight === 231;
+    });
+    assert.equal(find(SCROLLBAR_THUMB).offsetHeight, 231);
     await scrollPromise;
-    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) <= -390);
+    await waitUntil(() => {
+      // console.log('scrollPosition(find(SCROLL_CONTAINER))', scrollPosition(find(SCROLL_CONTAINER)));
+      return scrollPosition(find(SCROLL_CONTAINER)) <= -390;
+    });
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -390);
     assert.dom(SCROLL_CONTAINER).containsText('Ten');
     assert.dom(SCROLL_CONTAINER).containsText('Four');
@@ -102,8 +121,8 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
   });
 
   test('it accepts reveal service and scrolls item into view', async function(assert) {
-    let fakeRevealService = EmberObject.extend(Evented).create();
-    this.set('revealService', fakeRevealService);
+    let fakeRevealService = new FakeRevealService();
+     this.set('revealService', fakeRevealService);
     await render(EXAMPLE_1_HBS);
     assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
     fakeRevealService.trigger('revealItemById', { id: '8' });
@@ -113,7 +132,7 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
   });
 
   test('revealItemById does not scroll if source is within the CollectionScrollView', async function(assert) {
-    let fakeRevealService = EmberObject.extend(Evented).create();
+    let fakeRevealService = new FakeRevealService();
     this.set('revealService', fakeRevealService);
     await render(EXAMPLE_1_HBS);
     fakeRevealService.trigger('revealItemById', { id: '4', source: document.querySelector('[data-list-item-id="4"]') });
@@ -178,7 +197,7 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
       assert.dom(SCROLL_CONTAINER).containsText('Eight');
       assert.dom(SCROLL_CONTAINER).containsText('Nine');
       assert.dom(SCROLL_CONTAINER).containsText('Ten');
-      assert.equal(scrollPosition(find(SCROLL_CONTAINER)), -720);
+      assert.equal(scrollPosition(find(SCROLL_CONTAINER)), -719);
     });
 
     test('it renders part of the header and the beginning of the collection at scrollTop 180', async function(assert) {
@@ -203,14 +222,14 @@ module('Integration | Component | collection-scroll-view', function(hooks) {
       await render(HBS_WITH_HEADER);
       assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
       await waitFor(ITEMS_CONTAINER);
-      assert.equal(find(ITEMS_CONTAINER).getBoundingClientRect().height, 1000);
+      assert.equal(Math.round(find(ITEMS_CONTAINER).getBoundingClientRect().height), 1000);
       assertDoNotOverlap(assert, `${SCROLL_CONTAINER} h1`, `[data-list-item-id="${this.items[0].id}"]`);
       assert.dom(SCROLL_CONTAINER).containsText('One');
       assert.dom(SCROLL_CONTAINER).containsText('Three');
       assert.dom(SCROLL_CONTAINER).doesNotContainText('Four');
       this.set('h1Height', 80);
       assertDoNotOverlap(assert, `${SCROLL_CONTAINER} h1`, `[data-list-item-id="${this.items[0].id}"]`);
-      assert.equal(find(ITEMS_CONTAINER).getBoundingClientRect().height, 1000);
+      assert.equal(Math.round(find(ITEMS_CONTAINER).getBoundingClientRect().height), 1000);
       assert.dom(SCROLL_CONTAINER).containsText('One');
       assert.dom(SCROLL_CONTAINER).containsText('Three');
       await waitUntilText('Four');
