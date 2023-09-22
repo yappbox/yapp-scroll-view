@@ -12,15 +12,19 @@ export default class ZyngaScrollerVerticalRecognizer extends Hammer.Pan {
     event: 'pan',
     threshold: 10,
     pointers: 1,
-    direction: Hammer.DIRECTION_VERTICAL
+    direction: Hammer.DIRECTION_VERTICAL,
   };
 
   recognize(inputData) {
-    let isOverElementThatPreventsScrollingInteraction = this.shouldPreventScrollingInteraction(inputData);
+    let isOverElementThatPreventsScrollingInteraction =
+      this.shouldPreventScrollingInteraction(inputData);
     // We want to be sure to delegate to the scroll component if this is a mousedown or touchstart.
     // There are circumstances where this.canEmit() will return false because a "requireFail"'d recognizer
     // has not yet reset.
-    if ((inputData.isFirst || this.canEmit()) && !isOverElementThatPreventsScrollingInteraction) {
+    if (
+      (inputData.isFirst || this.canEmit()) &&
+      !isOverElementThatPreventsScrollingInteraction
+    ) {
       this.delegateToScrollComponent(inputData);
     }
     if (isOverElementThatPreventsScrollingInteraction) {
@@ -37,19 +41,31 @@ export default class ZyngaScrollerVerticalRecognizer extends Hammer.Pan {
 
   shouldPreventScrollingInteraction(inputData) {
     let { target } = inputData;
-    return inputData.isFirst
-      && (target && target.tagName.match(FIELD_REGEXP)
-          || target && target.hasAttribute('data-prevent-scrolling')
-         );
+    return (
+      inputData.isFirst &&
+      ((target && target.tagName.match(FIELD_REGEXP)) ||
+        (target && target.hasAttribute('data-prevent-scrolling')))
+    );
   }
 
   delegateToScrollComponent(inputData) {
     if (inputData.isFirst) {
-      this.options.scrollComponent.doTouchStart(inputData.pointers, inputData.timeStamp);
+      this.options.scrollComponent.doTouchStart(
+        inputData.pointers,
+        inputData.timeStamp
+      );
     } else if (inputData.isFinal) {
-      this.options.scrollComponent.doTouchEnd(inputData.pointers, inputData.timeStamp, inputData.srcEvent);
+      this.options.scrollComponent.doTouchEnd(
+        inputData.pointers,
+        inputData.timeStamp,
+        inputData.srcEvent
+      );
     } else {
-      this.options.scrollComponent.doTouchMove(inputData.pointers, inputData.timeStamp, inputData.scale);
+      this.options.scrollComponent.doTouchMove(
+        inputData.pointers,
+        inputData.timeStamp,
+        inputData.scale
+      );
     }
   }
 }

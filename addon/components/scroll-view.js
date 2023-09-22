@@ -30,7 +30,7 @@ const isIPhone = /iPhone|iPod|iPad/i.test(navigator.appVersion);
 
 let timeoutID = 0;
 function addCaptureClick(domElement) {
-  if(timeoutID) {
+  if (timeoutID) {
     clearTimeout(timeoutID);
   } else {
     domElement.addEventListener('click', captureClick, true);
@@ -38,8 +38,8 @@ function addCaptureClick(domElement) {
   let cancelCaptureClick = () => {
     timeoutID = 0;
     domElement.removeEventListener('click', captureClick, true);
-  }
-  timeoutID = setTimeout(cancelCaptureClick, GHOST_CLICK_DELAY)
+  };
+  timeoutID = setTimeout(cancelCaptureClick, GHOST_CLICK_DELAY);
 }
 
 function debounce(func, wait, immediate) {
@@ -314,7 +314,9 @@ class ScrollView extends Component {
     // In most cases, `doTouchStart` is being called before `doTouchEnd`, allowing to set `_touchStartTimeStamp`
     // It is not true when the event occurs on some elements (`input`, `textarea`, or `select`) which can be scrolled.
     // In this case, `ZyngaScrollerVerticalOrganizer` will not call `doTouchStart`
-    let touchDuration = this._touchStartTimeStamp ? (timeStamp - this._touchStartTimeStamp) : 0;
+    let touchDuration = this._touchStartTimeStamp
+      ? timeStamp - this._touchStartTimeStamp
+      : 0;
     let preventClick = this.needsPreventClick(touchDuration);
 
     if (preventClick) {
@@ -326,7 +328,7 @@ class ScrollView extends Component {
       // we only try to capture phantom clicks if they happen less than 100ms after a touchend event.
       // On desktop browsers, a mouseup event cannot do this so we need to capture the upcoming click instead.
 
-      if (isIPhone || (event instanceof MouseEvent)) {
+      if (isIPhone || event instanceof MouseEvent) {
         addCaptureClick(this.scrollViewElement);
       }
       event.preventDefault();
@@ -423,11 +425,8 @@ class ScrollView extends Component {
       return;
     }
     this._lastMeasurement = +new Date();
-    let {
-      clientWidth,
-      clientHeight,
-      contentHeight,
-    } = this.getCurrentClientAndContentSizes();
+    let { clientWidth, clientHeight, contentHeight } =
+      this.getCurrentClientAndContentSizes();
 
     if (
       !this.hasClientOrContentSizeChanged(

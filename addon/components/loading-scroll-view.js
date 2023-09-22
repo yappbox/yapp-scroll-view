@@ -17,11 +17,14 @@ export default class LoadingScrollView extends ScrollView {
   // @argument('number')
   // threshold;
 
-  _lastLoadMoreCheck = +(new Date());
+  _lastLoadMoreCheck = +new Date();
 
   onScrollChange(scrollLeft, scrollTop) {
     super.onScrollChange(scrollLeft, scrollTop);
-    if (this.canLoadMore && ((+(new Date()) - this._lastLoadMoreCheck) > MAX_LOAD_MORE_FREQUENCY_MS)) {
+    if (
+      this.canLoadMore &&
+      +new Date() - this._lastLoadMoreCheck > MAX_LOAD_MORE_FREQUENCY_MS
+    ) {
       this.conditionallyTriggerLoadMore();
     }
   }
@@ -34,8 +37,11 @@ export default class LoadingScrollView extends ScrollView {
     this.conditionallyTriggerLoadMore();
   }
 
-  get extraCssClasses() { // for overriding by LoadingScrollView
-    return [super.extraCssClasses, 'LoadingScrollView'].filter(Boolean).join(' ');
+  get extraCssClasses() {
+    // for overriding by LoadingScrollView
+    return [super.extraCssClasses, 'LoadingScrollView']
+      .filter(Boolean)
+      .join(' ');
   }
 
   get canLoadMore() {
@@ -50,7 +56,7 @@ export default class LoadingScrollView extends ScrollView {
   }
 
   conditionallyTriggerLoadMore() {
-    this._lastLoadMoreCheck = +(new Date());
+    this._lastLoadMoreCheck = +new Date();
 
     if (!this.canLoadMore) {
       return;

@@ -7,15 +7,15 @@ import RSVP from 'rsvp';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
 
-module('Integration | Component | loading-scroll-view', function(hooks) {
+module('Integration | Component | loading-scroll-view', function (hooks) {
   setupRenderingTest(hooks);
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     this.set('viewportHeight', 480);
     this.set('isMoreLoaded', false);
     this.set('isLoadingMore', false);
     this.set('hasMore', false);
-    this.set('loadMore', function(){});
+    this.set('loadMore', function () {});
   });
   const EXAMPLE_1_HBS = hbs`
     <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
@@ -40,7 +40,7 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     </div>
   `;
 
-  test('it renders', async function(assert) {
+  test('it renders', async function (assert) {
     render(EXAMPLE_1_HBS);
     await waitFor('.ScrollView');
     assert.dom(SCROLL_CONTAINER).containsText('Five');
@@ -48,20 +48,20 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
   });
 
-  test('it does not load more when scrolled down if hasMore is false', async function(assert) {
+  test('it does not load more when scrolled down if hasMore is false', async function (assert) {
     assert.expect(0);
     this.set('hasMore', false);
-    this.set('loadMore', function() {
+    this.set('loadMore', function () {
       assert.ok(false, 'should not invoke loadMore');
     });
     await render(EXAMPLE_1_HBS);
     await scrollDown('.ScrollView #element1', {
       amount: 500,
-      duration: 300
+      duration: 300,
     });
   });
 
-  test('it loads more when scrolled down if hasMore is true', async function(assert) {
+  test('it loads more when scrolled down if hasMore is true', async function (assert) {
     this.set('hasMore', true);
     this.set('loadMore', () => {
       this.set('isMoreLoaded', true);
@@ -70,14 +70,14 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     await render(EXAMPLE_1_HBS);
     await scrollDown('.ScrollView #element1', {
       amount: 500,
-      duration: 750
+      duration: 750,
     });
     assert.dom(SCROLL_CONTAINER).containsText('Five');
     await settled();
     assert.dom(SCROLL_CONTAINER).containsText('Ten');
     await scrollDown('.ScrollView #element6', {
       amount: 800,
-      duration: 500
+      duration: 500,
     });
     assert.ok(
       scrollPosition(find(SCROLL_CONTAINER)) < -1000,
@@ -85,7 +85,7 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     );
   });
 
-  test('it does not reinvoke loadMore when isLoadingMore is true', async function(assert) {
+  test('it does not reinvoke loadMore when isLoadingMore is true', async function (assert) {
     this.set('hasMore', true);
     let loadMoreInvocationCount = 0;
     this.set('loadMore', () => {
@@ -95,17 +95,17 @@ module('Integration | Component | loading-scroll-view', function(hooks) {
     await render(EXAMPLE_1_HBS);
     await scrollDown('.ScrollView #element1', {
       amount: 500,
-      duration: 300
+      duration: 300,
     });
     await settled();
     await scrollDown('.ScrollView #element1', {
       amount: -500,
-      duration: 300
+      duration: 300,
     });
     await settled();
     await scrollDown('.ScrollView #element1', {
       amount: 500,
-      duration: 300
+      duration: 300,
     });
     await settled();
     assert.equal(loadMoreInvocationCount, 1, 'only invokes loadMore once');

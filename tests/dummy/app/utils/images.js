@@ -8,7 +8,7 @@ var images = [
   'images/tomdale.jpg',
   'images/trek.jpg',
   'images/wagenet.jpg',
-  'images/wycats.jpg'
+  'images/wycats.jpg',
 ];
 
 var smallImages = [
@@ -31,13 +31,13 @@ var smallImages = [
   'images/small/Shamisen.gif',
   'images/small/Shodou_Calligraphy.gif',
   'images/small/Torii.gif',
-  'images/small/Tsukubai_Water_Basin.gif'
+  'images/small/Tsukubai_Water_Basin.gif',
 ];
 
 var strangeRatios = [
   'images/strange-ratios/horizontal-rectangle.jpg',
   'images/strange-ratios/square.jpg',
-  'images/strange-ratios/vertical-rectangle.jpg'
+  'images/strange-ratios/vertical-rectangle.jpg',
 ];
 
 var remoteImages = [
@@ -79,7 +79,7 @@ var remoteImages = [
   'http://placekitten.com/50/66',
   'http://placekitten.com/50/67',
   'http://placekitten.com/50/68',
-  'http://placekitten.com/50/69'
+  'http://placekitten.com/50/69',
 ];
 
 export default { images, smallImages, strangeRatios, remoteImages };

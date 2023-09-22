@@ -1,5 +1,5 @@
 <h3>Images</h3>
-<button {{on 'click' this.shuffle}}>Shuffle</button>
+<button type="button" {{on 'click' this.shuffle}}>Shuffle</button>
 <p>
   Container Width: <input type='range' min=200 max=1000 value={{this.containerWidth}} oninput={{action 'updateContainerWidth' value='target.value'}}> {{this.containerWidth}}
   Container Height: <input type='range' min=200 max=1000 value={{this.containerHeight}} oninput={{action 'updateContainerHeight' value='target.value'}}> {{this.containerHeight}}

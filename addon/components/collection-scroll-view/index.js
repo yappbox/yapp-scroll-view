@@ -8,7 +8,7 @@ import { ref } from 'ember-ref-bucket';
 
 /* A component which integrates a ScrollView with ember-collection */
 export default class CollectionScrollView extends Component {
-  @ref("element") element; 
+  @ref('element') element;
 
   @tracked headerDimensions;
   @tracked scrollTop = 0;
@@ -23,12 +23,19 @@ export default class CollectionScrollView extends Component {
 
   get scrollHeight() {
     let { contentSize, clientSize, headerHeight } = this;
-    contentSize = contentSize || this.cellLayout.contentSize(clientSize.width, clientSize.height);
+    contentSize =
+      contentSize ||
+      this.cellLayout.contentSize(clientSize.width, clientSize.height);
     return contentSize.height + headerHeight;
   }
 
   get clientSize() {
-    return this.measuredClientSize || { width: this.estimatedWidth, height: this.estimatedHeight };
+    return (
+      this.measuredClientSize || {
+        width: this.estimatedWidth,
+        height: this.estimatedHeight,
+      }
+    );
   }
 
   get collectionClientSize() {
@@ -53,7 +60,10 @@ export default class CollectionScrollView extends Component {
   @action
   updateHeaderDimensions(scrollViewApi, entry) {
     let isFirstMeasure = !this.headerDimensions;
-    this.headerDimensions = { width: entry.contentRect.width, height: entry.contentRect.height };
+    this.headerDimensions = {
+      width: entry.contentRect.width,
+      height: entry.contentRect.height,
+    };
 
     // If an initialScrollTop was set we need to apply it after the collections rows render
     if (isFirstMeasure && this.args.initialScrollTop) {
@@ -63,7 +73,9 @@ export default class CollectionScrollView extends Component {
 
   @action
   updateContentSizeAfterRender(contentSize) {
-    schedule('afterRender', this, () => { this.contentSize = contentSize; });
+    schedule('afterRender', this, () => {
+      this.contentSize = contentSize;
+    });
   }
 
   @action
@@ -81,7 +93,7 @@ export default class CollectionScrollView extends Component {
         this.clientWidth = clientWidth;
         this.clientHeight = clientHeight;
       }
-    })
+    });
   }
 
   @cached
@@ -89,7 +101,7 @@ export default class CollectionScrollView extends Component {
     if (this.clientWidth && this.clientHeight) {
       return {
         width: this.clientWidth,
-        height: this.clientHeight
+        height: this.clientHeight,
       };
     }
     return null;
@@ -105,11 +117,14 @@ export default class CollectionScrollView extends Component {
   @action
   scrollToItem(scrollViewApi, revealItemPayload) {
     let { id, source } = revealItemPayload;
-    if (source && (isChildComponent(this, source) || isChildElement(this.element, source))) {
+    if (
+      source &&
+      (isChildComponent(this, source) || isChildElement(this.element, source))
+    ) {
       return;
     }
     let { items } = this.args;
-    let itemIndex = items.indexOf(items.find(i => i.id === id));
+    let itemIndex = items.indexOf(items.find((i) => i.id === id));
     if (itemIndex >= 0) {
       let { y } = this.cellLayout.positionAt(itemIndex);
       scrollViewApi.scrollTo(y + this.headerHeight, true);
@@ -118,8 +133,9 @@ export default class CollectionScrollView extends Component {
 }
 
 function isChildComponent(component, candidateChildComponent) {
-  let parentView  = candidateChildComponent;
-  while (parentView = parentView.parentView) { // eslint-disable-line no-cond-assign
+  let parentView = candidateChildComponent;
+  while ((parentView = parentView.parentView)) {
+    // eslint-disable-line no-cond-assign
     if (parentView === component) {
       return true;
     }
@@ -128,5 +144,9 @@ function isChildComponent(component, candidateChildComponent) {
 }
 
 function isChildElement(element, candidateChildElement) {
-  return  element && (candidateChildElement instanceof HTMLElement) && element.contains(candidateChildElement);
+  return (
+    element &&
+    candidateChildElement instanceof HTMLElement &&
+    element.contains(candidateChildElement)
+  );
 }
