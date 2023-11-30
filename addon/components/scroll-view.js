@@ -291,6 +291,7 @@ class ScrollView extends Component {
   unbindScrollerEvents(element) {
     if (this.hammer) {
       this.hammer.destroy();
+      this.hammer = null;
     }
     element.removeEventListener(
       normalizeWheel.getEventType(),
