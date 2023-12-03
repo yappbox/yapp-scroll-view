@@ -25,11 +25,14 @@ module.exports = {
 
     this._super.included.apply(this, arguments);
 
-    if (app.options.yappScrollView && app.options.yappScrollView.doNotExportComponents) {
+    if (
+      app.options.yappScrollView &&
+      app.options.yappScrollView.doNotExportComponents
+    ) {
       this.doNotExportComponents = true;
     }
 
     app.import('vendor/zynga-scroller/Animate.js');
     app.import('vendor/zynga-scroller/Scroller.js');
-  }
+  },
 };

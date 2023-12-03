@@ -27,7 +27,7 @@
     </div>
   {{/if}}
 
-  {{#unless (and (has-block 'header') (is-empty this.headerDimensions))}}
+  {{#if (not (and (has-block 'header') (is-empty this.headerDimensions)))}}
     <div data-test-collection-items-container style={{html-safe (concat "position:relative;height:" this.contentSize.height "px;width:" this.contentSize.width "px")}}>
       <CollectionScrollView::CollectionItems
         @clientSize={{this.collectionClientSize}}
@@ -44,7 +44,7 @@
         {{~/each~}}
       </CollectionScrollView::CollectionItems>
     </div>
-  {{/unless}}
+  {{/if}}
 
   {{#if @revealService}}
     {{emitter-action

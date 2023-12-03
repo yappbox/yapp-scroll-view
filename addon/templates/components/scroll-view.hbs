@@ -16,11 +16,11 @@
       class="ScrollView-scrollBar"
       @contentHeight={{this.scrollBarContentHeight}}
       @scrollerHeight={{this.scrollBarClientHeight}}
-      @registerWithScrollView={{action this.scrollViewApi.registerScrollPositionCallback}}
+      @registerWithScrollView={{this.scrollViewApi.registerScrollPositionCallback}}
   />
   {{emitter-action
-      emitter=this.windowRef
-      eventName="requestScrollToTop"
-      action=this.scrollViewApi.scrollToTopIfInViewport
+    emitter=this.windowRef
+    eventName="requestScrollToTop"
+    action=this.scrollViewApi.scrollToTopIfInViewport
   }}
 </div>

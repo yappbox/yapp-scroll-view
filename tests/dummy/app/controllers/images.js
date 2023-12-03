@@ -3,11 +3,12 @@ import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 
 function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex ;
+  var currentIndex = array.length,
+    temporaryValue,
+    randomIndex;
 
   // While there remain elements to shuffle...
   while (0 !== currentIndex) {
-
     // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
@@ -28,13 +29,13 @@ export default class extends Controller {
   @tracked containerHeight = 600;
 
   @action
-  updateContainerWidth(value) {
-    this.containerWidth = parseInt(value, 10);
+  updateContainerWidth(ev) {
+    this.containerWidth = parseInt(ev.target.value, 10);
   }
-  
+
   @action
-  updateContainerHeight(value) {
-    this.containerHeight = parseInt(value, 10);
+  updateContainerHeight(ev) {
+    this.containerHeight = parseInt(ev.target.value, 10);
   }
 
   @action

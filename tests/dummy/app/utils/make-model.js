@@ -6,8 +6,8 @@ export default function makeModel(count = 1000, imageArrayName = 'images') {
     var result = [];
     for (var i = 0; i < count; i++) {
       result.push({
-        name: `Item ${i+1}`,
-        imageSrc: imagesArray[i%imagesArray.length]
+        name: `Item ${i + 1}`,
+        imageSrc: imagesArray[i % imagesArray.length],
       });
     }
     return result;

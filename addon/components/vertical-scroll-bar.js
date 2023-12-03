@@ -74,13 +74,18 @@ export default class VerticalScrollBar extends Component {
     Object.assign(this.thumb.style, {
       opacity: '1',
       height: `${thumbHeight}px`,
-      transform: `translateY(${thumbY}px)`
+      transform: `translateY(${thumbY}px)`,
     });
   }
 
   get contentRatio() {
-    let ratioBeforeOverscrollAdjustment = this.args.scrollerHeight / this.effectiveContentHeight;
-    return this.args.scrollerHeight / (this.effectiveContentHeight + (this.overscrollAmount * (1/ratioBeforeOverscrollAdjustment)));
+    let ratioBeforeOverscrollAdjustment =
+      this.args.scrollerHeight / this.effectiveContentHeight;
+    return (
+      this.args.scrollerHeight /
+      (this.effectiveContentHeight +
+        this.overscrollAmount * (1 / ratioBeforeOverscrollAdjustment))
+    );
   }
 
   get effectiveContentHeight() {

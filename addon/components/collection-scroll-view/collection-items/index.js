@@ -43,13 +43,17 @@ export default class CollectionScrollViewCollectionItems extends Component {
     return clientSize ? clientSize.height : estimatedSize.height;
   }
 
-  safeRerender(){
-    if (this.isDestroyed || this.isDestroying) {return;}
+  safeRerender() {
+    if (this.isDestroyed || this.isDestroying) {
+      return;
+    }
     this.rerender();
   }
 
   get contentSize() {
-    this._contentSize = this._contentSize || this.cellLayout.contentSize(this.clientWidth, this.clientHeight);
+    this._contentSize =
+      this._contentSize ||
+      this.cellLayout.contentSize(this.clientWidth, this.clientHeight);
     return this._contentSize;
   }
 
@@ -64,7 +68,15 @@ export default class CollectionScrollViewCollectionItems extends Component {
   }
 
   get renderCells() {
-    let { cellLayout, cells, items, scrollLeft, scrollTop, clientWidth, clientHeight } = this;
+    let {
+      cellLayout,
+      cells,
+      items,
+      scrollLeft,
+      scrollTop,
+      clientWidth,
+      clientHeight,
+    } = this;
     const numItems = items.length;
     if (cellLayout.length !== numItems) {
       cellLayout.length = numItems;
@@ -73,8 +85,18 @@ export default class CollectionScrollViewCollectionItems extends Component {
     let priorMap = this.cellMap;
     let cellMap = Object.create(null);
 
-    let index = cellLayout.indexAt(scrollLeft, scrollTop, clientWidth, clientHeight);
-    let count = cellLayout.count(scrollLeft, scrollTop, clientWidth, clientHeight);
+    let index = cellLayout.indexAt(
+      scrollLeft,
+      scrollTop,
+      clientWidth,
+      clientHeight
+    );
+    let count = cellLayout.count(
+      scrollLeft,
+      scrollTop,
+      clientWidth,
+      clientHeight
+    );
     let bufferBefore = Math.min(index, this.buffer);
     index -= bufferBefore;
     count += bufferBefore;
@@ -83,14 +105,18 @@ export default class CollectionScrollViewCollectionItems extends Component {
 
     let newItems = [];
 
-    for (i=0; i<count; i++) {
-      itemIndex = index+i;
+    for (i = 0; i < count; i++) {
+      itemIndex = index + i;
       itemKey = identity(items[itemIndex]);
       if (priorMap) {
         cell = priorMap[itemKey];
       }
       if (cell) {
-        style = cellLayout.formatItemStyle(itemIndex, clientWidth, clientHeight);
+        style = cellLayout.formatItemStyle(
+          itemIndex,
+          clientWidth,
+          clientHeight
+        );
         cell.style = style;
         cell.hidden = false;
         cell.key = itemKey;
@@ -101,14 +127,18 @@ export default class CollectionScrollViewCollectionItems extends Component {
       }
     }
 
-    for (i=0; i < cells.length; i++) {
+    for (i = 0; i < cells.length; i++) {
       cell = cells[i];
       if (!cellMap[cell.key]) {
         if (newItems.length) {
           itemIndex = newItems.pop();
           let item = items[itemIndex];
           itemKey = identity(item);
-          style = cellLayout.formatItemStyle(itemIndex, clientWidth, clientHeight);
+          style = cellLayout.formatItemStyle(
+            itemIndex,
+            clientWidth,
+            clientHeight
+          );
           cell.style = style;
           cell.key = itemKey;
           cell.index = itemIndex;
