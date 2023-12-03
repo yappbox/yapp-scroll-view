@@ -24,6 +24,7 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
     this.set('verticalPadding', 2);
   });
   const EXAMPLE_1_HBS = hbs`
+    {{!-- template-lint-disable no-forbidden-elements --}}
     <style>
       .VerticalScrollBar {
         position: absolute;

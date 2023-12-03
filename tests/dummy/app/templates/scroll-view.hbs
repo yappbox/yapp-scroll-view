@@ -1,10 +1,11 @@
-<button type="button" {{action 'toggleIsShort'}}>Toggle short content</button>
+{{!-- template-lint-disable no-inline-styles require-input-label --}}
+<button type="button" {{on 'click' this.toggleIsShort}}>Toggle short content</button>
 <div style="height:640px; width: 320px; overflow: hidden; position: relative; border: 1px solid gray">
-  <ScrollView as |scrollViewApi|>
+  <ScrollView>
     <p>
     Accumsan augue ac vehicula convallis sed nam lacus sociosqu ex sapien penatibus, cursus nisi mauris facilisi lectus facilisis sem luctus pharetra. Duis montes tincidunt egestas vitae ultricies habitant eleifend molestie, litora natoque maximus purus tristique magna semper, aliquam eu parturient cras quam consectetur class. Quis ornare ut pulvinar malesuada semper non sollicitudin mattis consectetur, hendrerit tristique placerat ante tincidunt vel eleifend netus amet praesent, lorem curabitur auctor sit sed ad quam class. Montes vehicula proin aptent faucibus a est tellus potenti semper class, hendrerit integer adipiscing torquent magna quisque parturient aliquam dictum nascetur, magnis pharetra varius et etiam maecenas enim porttitor elit. Praesent nam in sit montes est curabitur mauris, congue phasellus augue proin non tortor suspendisse vulputate, nulla inceptos potenti commodo sollicitudin laoreet. Lacus curae class auctor ullamcorper sociosqu proin ut, nostra venenatis aenean vitae sit dis tempus, ornare consectetur sodales malesuada magna praesent.
     </p>
-    {{#unless isShort}}
+    {{#unless this.isShort}}
       <p>
       Turpis in a dolor vivamus bibendum vel, maximus quam laoreet accumsan imperdiet ac lacus, sodales felis montes nullam lorem. Volutpat duis vivamus integer lorem feugiat bibendum suspendisse pretium in eu, vestibulum morbi hac dapibus facilisi leo ut blandit vulputate. Turpis urna at phasellus sociosqu imperdiet nec taciti primis, justo purus duis penatibus aliquam ligula cras maecenas magna, tristique mollis aptent dolor dictumst id nisi. Rhoncus sagittis per a pretium dapibus cubilia laoreet, velit placerat inceptos eleifend quisque lacus libero, cras aliquam hac arcu scelerisque mus. Rhoncus orci consequat ullamcorper arcu quis vivamus commodo integer facilisis, pharetra suspendisse erat enim ad non etiam maecenas, viverra ante consectetur imperdiet amet tincidunt sit conubia. Sollicitudin tempus platea fames penatibus conubia porta suspendisse condimentum bibendum aliquam nunc ex enim, placerat aliquet efficitur amet habitant iaculis ultricies finibus in nibh luctus inceptos. Egestas vel cursus commodo congue ridiculus rhoncus platea tristique praesent leo, sapien morbi ac metus magnis arcu nec mollis placerat magna vestibulum, fusce eros nisl risus lorem iaculis feugiat litora augue.
       </p>

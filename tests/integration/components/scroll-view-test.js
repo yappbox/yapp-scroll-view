@@ -27,6 +27,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     this.set('initialScrollTop', null);
   });
   const EXAMPLE_1_HBS = hbs`
+    {{!-- template-lint-disable no-inline-styles --}}
     <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
       <ScrollView
         @scrollChange={{optional this.scrollChange}}
@@ -38,12 +39,14 @@ module('Integration | Component | scroll-view', function (hooks) {
           One
           <button
             {{on 'click' scrollViewApi.scrollToBottom}}
+            type="button"
             data-test-scroll-to-bottom-button
           >
             Scroll to Bottom
           </button>
           <button
             {{on 'click' (fn (optional scrollViewApi.scrollToElement) this.element3)}}
+            type="button"
             data-test-scroll-to-element-button
           >
             Scroll to Element 3
@@ -51,11 +54,12 @@ module('Integration | Component | scroll-view', function (hooks) {
         </div>
         <div style="width:320px;height:200px">Two</div>
         <div id="element3" style="width:320px;height:200px">Three</div>
-        <a style={{html-safe "display:block;width:320px;height:200px"}} data-test-link {{on 'click' (fn (optional this.onClickLink))}}>Four</a>
+        <a href="#" style={{html-safe "display:block;width:320px;height:200px"}} data-test-link {{on 'click' (fn (optional this.onClickLink))}}>Four</a>
         <div style="width:320px;height:200px">
           Five
           <button
             {{on 'click' (fn (optional scrollViewApi.scrollToTop))}}
+            type="button"
             data-test-scroll-to-top-button
           >
             Scroll to Top
@@ -137,6 +141,7 @@ module('Integration | Component | scroll-view', function (hooks) {
   test('it emits an action when scrolling to top, with scrollTopOffset set', async function (assert) {
     this.set('scrollTopOffset', 50);
     const template = hbs`
+      {{!-- template-lint-disable no-inline-styles --}}
       <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
         <ScrollView @scrollTopOffset={{this.scrollTopOffset}} @scrolledToTopChange={{this.scrolledToTopChange}}>
           <div style="width:320px;height:400px">One</div>
@@ -189,6 +194,7 @@ module('Integration | Component | scroll-view', function (hooks) {
   test('it sets initial scrollTop to initialScrollTop value', async function (assert) {
     this.set('initialScrollTop', 50);
     const template = hbs`
+      {{!-- template-lint-disable no-inline-styles --}}
       <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
         <ScrollView @initialScrollTop={{this.initialScrollTop}}>
           <div style="width:320px;height:400px">One</div>
@@ -230,6 +236,7 @@ module('Integration | Component | scroll-view', function (hooks) {
 
   test('it renders content with height less than the height of the scroll container OK', async function (assert) {
     await render(hbs`
+      {{!-- template-lint-disable no-inline-styles --}}
       <div style="width:320px; height:480px; position:relative">
         <ScrollView>
           <div style="width:320px;height:200px">One</div>
@@ -355,8 +362,9 @@ module('Integration | Component | scroll-view', function (hooks) {
 
   test('swiping on a textarea does not cause scrolling', async function (assert) {
     let template = hbs`
+      {{!-- template-lint-disable no-inline-styles require-input-label --}}
       <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
-        <ScrollView as |scrollViewApi|>
+        <ScrollView>
           <div style="width:320px;height:200px">
             <textarea style="width:320px;height:200px">
             </textarea>
@@ -376,6 +384,7 @@ module('Integration | Component | scroll-view', function (hooks) {
 
   test('remembers scroll position based on key attribute', async function (assert) {
     const template = hbs`
+      {{!-- template-lint-disable no-inline-styles --}}
       <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
         <ScrollView @key={{this.key}}>
           <div style="width:320px;height:400px">One</div>

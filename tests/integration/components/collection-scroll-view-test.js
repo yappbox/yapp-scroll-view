@@ -76,7 +76,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
         @cell-layout={{fixed-grid-layout 320 100}}
         @revealService={{this.revealService}}
       >
-        <:row as |item index|>
+        <:row as |item|>
           <div class="list-item" data-list-item-id={{item.id}}>
             {{item.name}}
           </div>
@@ -174,7 +174,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
           </h1>
         </:header>
 
-        <:row as |item index|>
+        <:row as |item|>
           <div class="list-item" data-list-item-id={{item.id}}>
             {{item.name}}
           </div>

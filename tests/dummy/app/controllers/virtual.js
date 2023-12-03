@@ -30,13 +30,13 @@ export default class extends Controller {
   @tracked containerHeight = 600;
 
   @action
-  updateContainerWidth(value) {
-    this.containerWidth = parseInt(value, 10);
+  updateContainerWidth(ev) {
+    this.containerWidth = parseInt(ev.target.value, 10);
   }
 
   @action
-  updateContainerHeight(value) {
-    this.containerHeight = parseInt(value, 10);
+  updateContainerHeight(ev) {
+    this.containerHeight = parseInt(ev.target.value, 10);
   }
 
   @action

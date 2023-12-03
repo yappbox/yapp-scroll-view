@@ -1,3 +1,4 @@
+{{!-- template-lint-disable require-input-label --}}
 <h3>Simple Virtual</h3>
 <button type="button" {{on 'click' this.makeSquare}}>Square</button>
 <button type="button" {{on 'click' this.makeRow}}>Row</button>
@@ -6,8 +7,8 @@
 <button type="button" {{on 'click' this.shuffle}}>Shuffle</button>
 <button type="button" {{on 'click' this.swapCollection}}>Swap for another collection half the length</button>
 <p>
-  Container Width: <input type='range' min=200 max=1000 value={{this.containerWidth}} oninput={{action 'updateContainerWidth' value='target.value'}}> {{this.containerWidth}}
-  Container Height: <input type='range' min=200 max=1000 value={{this.containerHeight}} oninput={{action 'updateContainerHeight' value='target.value'}}> {{this.containerHeight}}
+  Container Width: <input type='range' min="200" max="1000" value={{this.containerWidth}} oninput={{this.updateContainerWidth}}> {{this.containerWidth}}
+  Container Height: <input type='range' min="200" max="1000" value={{this.containerHeight}} oninput={{this.updateContainerHeight}}> {{this.containerHeight}}
 </p>
 <p>
 Item Height: {{this.itemHeight}}
@@ -23,7 +24,7 @@ Item Width: {{this.itemWidth}}
      @buffer={{1}}
      @cell-layout={{fixed-grid-layout this.itemWidth this.itemHeight}}
   >
-    <:row as |item index|>
+    <:row as |item|>
       <div class="list-item">
         {{item.name}}
       </div>

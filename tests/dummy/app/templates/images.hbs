@@ -1,8 +1,9 @@
+{{!-- template-lint-disable require-input-label --}}
 <h3>Images</h3>
 <button type="button" {{on 'click' this.shuffle}}>Shuffle</button>
 <p>
-  Container Width: <input type='range' min=200 max=1000 value={{this.containerWidth}} oninput={{action 'updateContainerWidth' value='target.value'}}> {{this.containerWidth}}
-  Container Height: <input type='range' min=200 max=1000 value={{this.containerHeight}} oninput={{action 'updateContainerHeight' value='target.value'}}> {{this.containerHeight}}
+  Container Width: <input type='range' min="200" max="1000" value={{this.containerWidth}} oninput={{this.updateContainerWidth}}> {{this.containerWidth}}
+  Container Height: <input type='range' min="200" max="1000" value={{this.containerHeight}} oninput={{this.updateContainerHeight}}> {{this.containerHeight}}
 </p>
 <p>
 Item Height: {{this.itemHeight}}
@@ -18,7 +19,7 @@ Item Width: {{this.itemWidth}}
     @buffer={{1}}
     @cell-layout={{fixed-grid-layout this.itemWidth this.itemHeight}}
   >
-    <:row as |item index|>
+    <:row as |item|>
       <div class="list-item">
         {{dynamic-image item.imageSrc width=50 height=50}}
         {{item.name}}

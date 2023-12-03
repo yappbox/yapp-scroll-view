@@ -18,6 +18,7 @@ module('Integration | Component | loading-scroll-view', function (hooks) {
     this.set('loadMore', function () {});
   });
   const EXAMPLE_1_HBS = hbs`
+    {{!-- template-lint-disable no-inline-styles --}}
     <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
       <LoadingScrollView
           @hasMore={{this.hasMore}}
