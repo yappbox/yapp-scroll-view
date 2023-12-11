@@ -1,4 +1,20 @@
 
+
+## v11.0.1 (2023-12-11)
+
+#### :boom: Breaking Change
+* [#82](https://github.com/yappbox/yapp-scroll-view/pull/82) [BREAKING] Avoid deprecated APIs in Ember 3.24 ([@lukemelia](https://github.com/lukemelia))
+
+#### :rocket: Enhancement
+* [#82](https://github.com/yappbox/yapp-scroll-view/pull/82) [BREAKING] Avoid deprecated APIs in Ember 3.24 ([@lukemelia](https://github.com/lukemelia))
+
+#### :house: Internal
+* [#83](https://github.com/yappbox/yapp-scroll-view/pull/83) Update ember-cli-deploy ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 2
+- Jason Bekolay ([@jasonbekolay](https://github.com/jasonbekolay))
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v11.0.0 (2023-12-03)
 
 ## v10.0.1 (2023-11-30)
