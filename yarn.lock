@@ -7924,10 +7924,10 @@ ember-qunit@^5.1.5:
     silent-error "^1.1.1"
     validate-peer-dependencies "^1.2.0"
 
-ember-ref-bucket@^5.0.6:
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/ember-ref-bucket/-/ember-ref-bucket-5.0.6.tgz#da0aec87822b7c276e41023416d1eb1b095ecc25"
-  integrity sha512-YmavSzQECbETuhrSZHXQjzMG1BZKteFsMGaL7mmV/wxNQNMDRp/Bz5e2SjC4P/Y0foawfu2wM2pROO5dicTbCg==
+ember-ref-bucket@^5.0.7:
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/ember-ref-bucket/-/ember-ref-bucket-5.0.7.tgz#927e66ce85b0b7ce9e5c025d6373a395be4bdb1a"
+  integrity sha512-O9UednDVYAOJTuCaHrJww7c7ch9QnE2c+Z7IQoYOOiouVREH1Ns78T5Afhbwn293jCUcz2rdaRv89BPtTj1A0w==
   dependencies:
     ember-auto-import "^2.5.0"
     ember-cli-babel "^7.26.11"
