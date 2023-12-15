@@ -1,5 +1,14 @@
 
 
+
+## v11.0.3 (2023-12-15)
+
+#### :bug: Bug Fix
+* [#88](https://github.com/yappbox/yapp-scroll-view/pull/88) Avoid error when tearing down component if scrollViewElement is not set ([@lukemelia](https://github.com/lukemelia))
+
+#### Committers: 1
+- Luke Melia ([@lukemelia](https://github.com/lukemelia))
+
 ## v11.0.2 (2023-12-13)
 
 ## v11.0.1 (2023-12-11)
