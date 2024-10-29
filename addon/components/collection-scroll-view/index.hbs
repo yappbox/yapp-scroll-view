@@ -37,11 +37,9 @@
         @buffer={{@buffer}}
         @cellLayout={{this.cellLayout}}
         @onContentSizeUpdated={{this.updateContentSizeAfterRender}}
-        as |cells|
+        as |cell|
       >
-        {{~#each cells as |cell|~}}
-          <div style={{html-safe cell.style}}>{{yield cell.item cell.index scrollViewApi to="row"}}</div>
-        {{~/each~}}
+        <div style={{html-safe cell.style}}>{{yield cell.item cell.index scrollViewApi to="row"}}</div>
       </CollectionScrollView::CollectionItems>
     </div>
   {{/if}}
