@@ -40,7 +40,7 @@
         as |cells|
       >
         {{~#each cells as |cell|~}}
-          <div style={{html-safe cell.style}}>{{yield cell.item cell.index scrollViewApi to="row"}}</div>
+          <div style={{html-safe cell.style}} data-collection-scroll-view-cell-container-id={{cell.containerId}}>{{yield cell.item cell.index scrollViewApi to="row"}}</div>
         {{~/each~}}
       </CollectionScrollView::CollectionItems>
     </div>

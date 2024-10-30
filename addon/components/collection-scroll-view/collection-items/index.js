@@ -5,12 +5,27 @@ import Component from '@glimmer/component';
 import identity from 'ember-collection/utils/identity';
 import { tracked } from '@glimmer/tracking';
 import { reads } from 'macro-decorators';
+import { schedule } from '@ember/runloop';
+
+function isElementInViewport (el) {
+    var rect = el.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
+let scrollViewCollectionItemsCellCounter = 0;
 
 class Cell {
   @tracked hidden;
   @tracked item;
   @tracked index;
   @tracked style;
+  @tracked containerId;
+  needsReflow = false;
 
   constructor(key, item, index, style) {
     this.key = key;
@@ -18,6 +33,7 @@ class Cell {
     this.item = item;
     this.index = index;
     this.style = style;
+    this.containerId = scrollViewCollectionItemsCellCounter++;
   }
 }
 
@@ -41,13 +57,6 @@ export default class CollectionScrollViewCollectionItems extends Component {
   get clientHeight() {
     let { clientSize, estimatedSize } = this.args;
     return clientSize ? clientSize.height : estimatedSize.height;
-  }
-
-  safeRerender() {
-    if (this.isDestroyed || this.isDestroying) {
-      return;
-    }
-    this.rerender();
   }
 
   get contentSize() {
@@ -101,18 +110,18 @@ export default class CollectionScrollViewCollectionItems extends Component {
     index -= bufferBefore;
     count += bufferBefore;
     count = Math.min(count + this.buffer, items.length - index);
-    let i, style, itemIndex, itemKey, cell;
 
     let newItems = [];
 
-    for (i = 0; i < count; i++) {
-      itemIndex = index + i;
-      itemKey = identity(items[itemIndex]);
+    for (let i = 0; i < count; i++) {
+      let cell;
+      let itemIndex = index + i;
+      let itemKey = identity(items[itemIndex]);
       if (priorMap) {
         cell = priorMap[itemKey];
       }
       if (cell) {
-        style = cellLayout.formatItemStyle(
+        let style = cellLayout.formatItemStyle(
           itemIndex,
           clientWidth,
           clientHeight
@@ -127,14 +136,14 @@ export default class CollectionScrollViewCollectionItems extends Component {
       }
     }
 
-    for (i = 0; i < cells.length; i++) {
-      cell = cells[i];
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i];
       if (!cellMap[cell.key]) {
         if (newItems.length) {
-          itemIndex = newItems.pop();
+          let itemIndex = newItems.pop();
           let item = items[itemIndex];
-          itemKey = identity(item);
-          style = cellLayout.formatItemStyle(
+          let itemKey = identity(item);
+          let style = cellLayout.formatItemStyle(
             itemIndex,
             clientWidth,
             clientHeight
@@ -145,6 +154,9 @@ export default class CollectionScrollViewCollectionItems extends Component {
           cell.item = item;
           cell.hidden = false;
           cellMap[itemKey] = cell;
+          if (window.SCROLL_VIEW_FORCE_REFLOW) {
+            cell.needsReflow = true;
+          }
         } else {
           cell.hidden = true;
           cell.style = 'height: 0; display: none;';
@@ -152,17 +164,37 @@ export default class CollectionScrollViewCollectionItems extends Component {
       }
     }
 
-    for (i = 0; i < newItems.length; i++) {
-      itemIndex = newItems[i];
+    for (let i = 0; i < newItems.length; i++) {
+      let itemIndex = newItems[i];
       let item = items[itemIndex];
-      itemKey = identity(item);
-      style = cellLayout.formatItemStyle(itemIndex, clientWidth, clientHeight);
-      cell = new Cell(itemKey, item, itemIndex, style);
+      let itemKey = identity(item);
+      let style = cellLayout.formatItemStyle(itemIndex, clientWidth, clientHeight);
+      const cell = new Cell(itemKey, item, itemIndex, style);
       cellMap[itemKey] = cell;
       cells.pushObject(cell);
     }
     this.cellMap = cellMap;
     this.contentSize = cellLayout.contentSize(clientWidth, clientHeight);
+
+    // Workaround for bug in Android System WebView 130. Cells that are updated when outside
+    // viewport aren't rerendered. When they are scrolled into view, access offsetHeight to
+    // force a reflow.
+    if (window.SCROLL_VIEW_FORCE_REFLOW) {
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        if (cell.needsReflow) {
+          let element = document.querySelector(`[data-collection-scroll-view-cell-container-id="${cell.containerId}"]`);
+          if (element && isElementInViewport(element)) {
+            let display = element.style.display;
+            element.style.display = 'none';
+            element.offsetHeight;
+            element.style.display = display;
+            cell.needsReflow = false;
+          }
+        }
+      }
+    }
+
     return cells;
   }
 }
