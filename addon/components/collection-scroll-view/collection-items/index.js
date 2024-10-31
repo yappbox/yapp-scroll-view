@@ -5,16 +5,12 @@ import Component from '@glimmer/component';
 import identity from 'ember-collection/utils/identity';
 import { tracked } from '@glimmer/tracking';
 import { reads } from 'macro-decorators';
-import { schedule } from '@ember/runloop';
 
 function isElementInViewport (el) {
-    var rect = el.getBoundingClientRect();
-    return (
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
+    let rect = el.getBoundingClientRect();
+    let windowHeight = (window.innerHeight || document.documentElement.clientHeight);
+    return (rect.top > 0 && rect.top < windowHeight) ||
+      (rect.bottom > 0 && rect.bottom < windowHeight);
 }
 
 let scrollViewCollectionItemsCellCounter = 0;
