@@ -4,6 +4,7 @@ import { cached } from 'ember-cached-decorator-polyfill';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { next, schedule } from '@ember/runloop';
+import { assert as emberAssert } from '@ember/debug';
 import { ref } from 'ember-ref-bucket';
 
 /* A component which integrates a ScrollView with ember-collection */
@@ -128,6 +129,8 @@ export default class CollectionScrollView extends Component {
     if (itemIndex >= 0) {
       let { y } = this.cellLayout.positionAt(itemIndex);
       scrollViewApi.scrollTo(y + this.headerHeight, true);
+    } else {
+      emberAssert(`item with ID ${id} not found`, false);
     }
   }
 }
