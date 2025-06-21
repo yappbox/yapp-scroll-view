@@ -10,8 +10,7 @@ import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer';
 import { join, schedule } from '@ember/runloop';
 import { translate } from 'ember-collection/utils/translate';
-import { timeout, waitForQueue } from 'ember-concurrency';
-import { task } from 'ember-concurrency-decorators';
+import { task, timeout, waitForQueue } from 'ember-concurrency';
 import ScrollViewApi from 'yapp-scroll-view/utils/scroll-view-api';
 import { DEBUG } from '@glimmer/env';
 import { buildWaiter } from '@ember/test-waiters';
@@ -381,8 +380,7 @@ class ScrollView extends Component {
     e.stopPropagation();
   }
 
-  @task
-  measurementTask = function* () {
+  measurementTask = task(async () => {
     // Before we check the size for the first time, we capture the intended scroll position
     // and apply it after we determine and apply the size. The reason we need to do this
     // is that attempting to apply the scroll position before the scroller has size results
@@ -408,7 +406,7 @@ class ScrollView extends Component {
     let lastIsInViewport = true;
     while (true) {
       // eslint-disable-line no-constant-condition
-      yield timeout(
+      await timeout(
         lastIsInViewport
           ? MEASUREMENT_INTERVAL
           : MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN
@@ -418,7 +416,7 @@ class ScrollView extends Component {
         this.measureClientAndContent();
       }
     }
-  };
+  });
 
   measureClientAndContent() {
     if (!this.scrollViewElement) {
@@ -481,13 +479,11 @@ class ScrollView extends Component {
       this.args.clientSizeChange(clientWidth, clientHeight);
     }
   }
-
-  @task
-  *updateScrollBarDimensionsTask() {
-    yield waitForQueue('afterRender');
+  updateScrollBarDimensionsTask = task(async () => {
+    await waitForQueue('afterRender');
     this.scrollBarClientHeight = this._appliedClientHeight;
     this.scrollBarContentHeight = this._appliedContentHeight;
-  }
+  });
 
   get extraCssClasses() {
     // for overriding by LoadingScrollView
