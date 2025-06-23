@@ -7,6 +7,14 @@ module.exports = {
     return true;
   },
 
+  options: {
+    babel: {
+      plugins: [
+        require.resolve('ember-concurrency/async-arrow-task-transform'),
+      ],
+    },
+  },
+
   treeForApp() {
     let tree = this._super.treeForApp.apply(this, arguments);
     if (this.doNotExportComponents) {
