@@ -18,6 +18,7 @@ import { isTesting } from '@embroider/macros';
 import { cached } from '@glimmer/tracking';
 
 let waiter = buildWaiter('yapp-scroll-view:scrolling');
+let measurementWaiter = buildWaiter('yapp-scroll-view:measurement');
 
 const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
@@ -118,6 +119,7 @@ class ScrollView extends Component {
   _touchStartWasDecelerating = false;
   _touchStartWasDragging = false;
   _preventClickWhileDecelerating = false;
+  _measurementWaiterToken = null;
 
   @service('scroll-position-memory')
   memory;
@@ -481,29 +483,34 @@ class ScrollView extends Component {
   });
 
   measureClientAndContent() {
-    if (!this.scrollViewElement) {
-      return;
-    }
-    this._lastMeasurement = +new Date();
-    let { clientWidth, clientHeight, contentHeight } =
-      this.getCurrentClientAndContentSizes();
+    this._beginMeasurementWaiter();
+    try {
+      if (!this.scrollViewElement) {
+        return;
+      }
+      this._lastMeasurement = +new Date();
+      let { clientWidth, clientHeight, contentHeight } =
+        this.getCurrentClientAndContentSizes();
 
-    if (
-      !this.hasClientOrContentSizeChanged(
+      if (
+        !this.hasClientOrContentSizeChanged(
+          clientWidth,
+          clientHeight,
+          contentHeight,
+        )
+      ) {
+        return;
+      }
+      join(
+        this,
+        this.applyNewMeasurements,
         clientWidth,
         clientHeight,
         contentHeight,
-      )
-    ) {
-      return;
+      );
+    } finally {
+      this._endMeasurementWaiter();
     }
-    join(
-      this,
-      this.applyNewMeasurements,
-      clientWidth,
-      clientHeight,
-      contentHeight,
-    );
   }
 
   getCurrentClientAndContentSizes() {
@@ -673,6 +680,19 @@ class ScrollView extends Component {
 
   _isScrollingForWaiter() {
     return !this._lastIsScrolling;
+  }
+
+  _beginMeasurementWaiter() {
+    if (!this._measurementWaiterToken) {
+      this._measurementWaiterToken = measurementWaiter.beginAsync();
+    }
+  }
+
+  _endMeasurementWaiter() {
+    if (this._measurementWaiterToken) {
+      measurementWaiter.endAsync(this._measurementWaiterToken);
+      this._measurementWaiterToken = null;
+    }
   }
 }
 

@@ -2,8 +2,9 @@ import Component from '@glimmer/component';
 import { reads } from 'macro-decorators';
 import { cached, tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
-import { next, schedule } from '@ember/runloop';
+import { next, schedule, run } from '@ember/runloop';
 import { ref } from 'ember-ref-bucket';
+import { invokeResizeCallback } from 'yapp-scroll-view/utils/resize-observer-waiter';
 
 /* A component which integrates a ScrollView with ember-collection */
 export default class CollectionScrollView extends Component {
@@ -58,16 +59,24 @@ export default class CollectionScrollView extends Component {
 
   @action
   updateHeaderDimensions(scrollViewApi, entry) {
-    let isFirstMeasure = !this.headerDimensions;
-    this.headerDimensions = {
-      width: entry.contentRect.width,
-      height: entry.contentRect.height,
-    };
+    invokeResizeCallback(() => {
+      run(() => {
+        let isFirstMeasure = !this.headerDimensions;
+        this.headerDimensions = {
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        };
 
-    // If an initialScrollTop was set we need to apply it after the collections rows render
-    if (isFirstMeasure && this.args.initialScrollTop) {
-      next(scrollViewApi, scrollViewApi.scrollTo, this.args.initialScrollTop);
-    }
+        // If an initialScrollTop was set we need to apply it after the collections rows render
+        if (isFirstMeasure && this.args.initialScrollTop) {
+          next(
+            scrollViewApi,
+            scrollViewApi.scrollTo,
+            this.args.initialScrollTop,
+          );
+        }
+      });
+    });
   }
 
   @action
