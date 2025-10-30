@@ -17,13 +17,15 @@ export default class VerticalScrollBar extends Component {
 
   constructor() {
     super(...arguments);
-    this.trackHeight = this.clientHeight;
+    this.trackHeight = 0;
+    this.trackElement = null;
   }
 
   @action
   didInsert(element) {
+    this.trackElement = element;
     this.thumb = element.querySelector('[data-thumb]');
-    this.trackHeight = element.offsetHeight;
+    this.updateTrackHeight();
     this.updateThumbStyle();
     this.args.registerWithScrollView(this.updateScrollingParameters.bind(this));
   }
@@ -32,7 +34,8 @@ export default class VerticalScrollBar extends Component {
   didUpdateScrollerHeight(element) {
     if (this._lastScrollerHeight !== this.args.scrollerHeight) {
       if (element) {
-        this.trackHeight = element.offsetHeight;
+        this.trackElement = element;
+        this.updateTrackHeight();
         this.updateThumbStyle();
       }
       this._lastScrollerHeight = this.args.scrollerHeight;
@@ -48,20 +51,24 @@ export default class VerticalScrollBar extends Component {
 
   updateThumbStyle() {
     let { scrollerHeight } = this.args;
-    if (!scrollerHeight) {
+    if (!scrollerHeight || !this.thumb) {
       return;
     }
-    let { trackHeight, contentRatio, scrollTopRatio, _isScrolling } = this;
+    let trackHeight = this.updateTrackHeight();
+    if (!trackHeight) {
+      return;
+    }
+    let { contentRatio, scrollTopRatio, _isScrolling } = this;
     if (!_isScrolling) {
       this.thumb.style.opacity = '0';
       return;
     }
 
-    let thumbHeight = contentRatio * trackHeight;
-    let trackAreaScrollSize = trackHeight - thumbHeight;
+    let rawThumbHeight = contentRatio * trackHeight;
+    let thumbHeight = Math.max(MIN_THUMB_LENGTH, rawThumbHeight);
+    let trackAreaScrollSize = Math.max(0, trackHeight - thumbHeight);
     let thumbY = scrollTopRatio * trackAreaScrollSize;
     let isAtMax = thumbY + thumbHeight >= trackHeight;
-    thumbHeight = Math.max(MIN_THUMB_LENGTH, thumbHeight);
 
     if (isAtMax) {
       thumbY = trackHeight - thumbHeight;
@@ -74,8 +81,17 @@ export default class VerticalScrollBar extends Component {
     Object.assign(this.thumb.style, {
       opacity: '1',
       height: `${thumbHeight}px`,
+      boxSizing: 'border-box',
       transform: `translateY(${thumbY}px)`,
     });
+  }
+
+  updateTrackHeight() {
+    if (!this.trackElement) {
+      return this.trackHeight;
+    }
+    this.trackHeight = Math.max(0, this.trackElement.offsetHeight);
+    return this.trackHeight;
   }
 
   get contentRatio() {

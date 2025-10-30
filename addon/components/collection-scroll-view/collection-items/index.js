@@ -6,11 +6,14 @@ import identity from 'ember-collection/utils/identity';
 import { tracked } from '@glimmer/tracking';
 import { reads } from 'macro-decorators';
 
-function isElementInViewport (el) {
-    let rect = el.getBoundingClientRect();
-    let windowHeight = (window.innerHeight || document.documentElement.clientHeight);
-    return (rect.top > 0 && rect.top < windowHeight) ||
-      (rect.bottom > 0 && rect.bottom < windowHeight);
+function isElementInViewport(el) {
+  let rect = el.getBoundingClientRect();
+  let windowHeight =
+    window.innerHeight || document.documentElement.clientHeight;
+  return (
+    (rect.top > 0 && rect.top < windowHeight) ||
+    (rect.bottom > 0 && rect.bottom < windowHeight)
+  );
 }
 
 let scrollViewCollectionItemsCellCounter = 0;
@@ -94,13 +97,13 @@ export default class CollectionScrollViewCollectionItems extends Component {
       scrollLeft,
       scrollTop,
       clientWidth,
-      clientHeight
+      clientHeight,
     );
     let count = cellLayout.count(
       scrollLeft,
       scrollTop,
       clientWidth,
-      clientHeight
+      clientHeight,
     );
     let bufferBefore = Math.min(index, this.buffer);
     index -= bufferBefore;
@@ -120,7 +123,7 @@ export default class CollectionScrollViewCollectionItems extends Component {
         let style = cellLayout.formatItemStyle(
           itemIndex,
           clientWidth,
-          clientHeight
+          clientHeight,
         );
         cell.style = style;
         cell.hidden = false;
@@ -142,7 +145,7 @@ export default class CollectionScrollViewCollectionItems extends Component {
           let style = cellLayout.formatItemStyle(
             itemIndex,
             clientWidth,
-            clientHeight
+            clientHeight,
           );
           cell.style = style;
           cell.key = itemKey;
@@ -164,7 +167,11 @@ export default class CollectionScrollViewCollectionItems extends Component {
       let itemIndex = newItems[i];
       let item = items[itemIndex];
       let itemKey = identity(item);
-      let style = cellLayout.formatItemStyle(itemIndex, clientWidth, clientHeight);
+      let style = cellLayout.formatItemStyle(
+        itemIndex,
+        clientWidth,
+        clientHeight,
+      );
       const cell = new Cell(itemKey, item, itemIndex, style);
       cellMap[itemKey] = cell;
       cells.pushObject(cell);
@@ -179,7 +186,9 @@ export default class CollectionScrollViewCollectionItems extends Component {
       for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         if (cell.needsReflow) {
-          let element = document.querySelector(`[data-collection-scroll-view-cell-container-id="${cell.containerId}"]`);
+          let element = document.querySelector(
+            `[data-collection-scroll-view-cell-container-id="${cell.containerId}"]`,
+          );
           if (element && isElementInViewport(element)) {
             let display = element.style.display;
             element.style.display = 'none';

@@ -14,8 +14,8 @@ import { task, timeout, waitForQueue } from 'ember-concurrency';
 import ScrollViewApi from 'yapp-scroll-view/utils/scroll-view-api';
 import { DEBUG } from '@glimmer/env';
 import { buildWaiter } from '@ember/test-waiters';
-import Ember from 'ember';
-import { cached } from 'ember-cached-decorator-polyfill';
+import { isTesting } from '@embroider/macros';
+import { cached } from '@glimmer/tracking';
 
 let waiter = buildWaiter('yapp-scroll-view:scrolling');
 
@@ -114,6 +114,10 @@ class ScrollView extends Component {
   _isScrolling = false;
   _touchStartTimeStamp = null;
   _lastIsScrolling = false;
+  _touchStartDecelerationVelocityY = 0;
+  _touchStartWasDecelerating = false;
+  _touchStartWasDragging = false;
+  _preventClickWhileDecelerating = false;
 
   @service('scroll-position-memory')
   memory;
@@ -169,7 +173,7 @@ class ScrollView extends Component {
     this._scrollPositionCallbacks = [];
     this.remember(this._lastKey);
     if (DEBUG) {
-      if (Ember.testing) {
+      if (isTesting()) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
       }
       this._trackIsScrollingForWaiter(false);
@@ -220,7 +224,7 @@ class ScrollView extends Component {
     let { isAtTop, isAtTopChanged } = getScrolledToTopChanged(
       scrollTop,
       lastTop,
-      this.scrollTopOffset
+      this.scrollTopOffset,
     );
 
     if (this.contentElement) {
@@ -231,8 +235,12 @@ class ScrollView extends Component {
       isScrolling,
       scrollTop,
       isAtTop,
-      decelerationVelocityY
+      decelerationVelocityY,
     );
+
+    if (this.scroller?.__isDecelerating) {
+      this._preventClickWhileDecelerating = true;
+    }
 
     if (this.args.scrollChange && scrollTop !== lastTop) {
       this.args.scrollChange(scrollTop);
@@ -254,8 +262,9 @@ class ScrollView extends Component {
       false,
       this._appliedScrollTop,
       this._appliedScrollTop <= this.scrollTopOffset,
-      0
+      0,
     );
+    this._preventClickWhileDecelerating = false;
     if (DEBUG) {
       this._trackIsScrollingForWaiter(false);
     }
@@ -267,7 +276,7 @@ class ScrollView extends Component {
         this._appliedClientWidth,
         this._appliedClientHeight,
         this._appliedClientWidth,
-        this._appliedContentHeight
+        this._appliedContentHeight,
       );
     }
   }
@@ -283,7 +292,19 @@ class ScrollView extends Component {
     element.addEventListener(
       normalizeWheel.getEventType(),
       this._boundHandleWheel,
-      { passive: false }
+      { passive: false },
+    );
+    this._scrollViewDocument = element.ownerDocument;
+    this._boundHandleCapturedClick = (event) => {
+      if (!this.scrollViewElement?.contains(event.target)) {
+        return;
+      }
+      this.handleCapturedClickDuringMomentum(event);
+    };
+    this._scrollViewDocument.addEventListener(
+      'click',
+      this._boundHandleCapturedClick,
+      true,
     );
   }
 
@@ -295,12 +316,28 @@ class ScrollView extends Component {
     element?.removeEventListener(
       normalizeWheel.getEventType(),
       this._boundHandleWheel,
-      false
+      false,
     );
+    this._scrollViewDocument?.removeEventListener(
+      'click',
+      this._boundHandleCapturedClick,
+      true,
+    );
+    this._scrollViewDocument = null;
   }
 
   doTouchStart(touches, timeStamp) {
-    this._wasScrollingAtTouchStart = this._isScrolling;
+    let { scroller } = this;
+    this._touchStartWasDragging = !!scroller?.__isDragging;
+    this._touchStartWasDecelerating = !!(
+      scroller?.__isDecelerating || scroller?.__isAnimating
+    );
+    this._touchStartDecelerationVelocityY =
+      scroller?.__decelerationVelocityY ?? this._decelerationVelocityY ?? 0;
+    this._wasScrollingAtTouchStart =
+      this._isScrolling ||
+      this._touchStartWasDragging ||
+      this._touchStartWasDecelerating;
     this._touchStartTimeStamp = timeStamp;
     this.scroller.doTouchStart(touches, timeStamp);
   }
@@ -332,10 +369,14 @@ class ScrollView extends Component {
       }
       event.preventDefault();
       event.stopPropagation();
+      this._preventClickWhileDecelerating = true;
     }
 
     this._touchStartTimeStamp = null;
     this.scroller.doTouchEnd(timeStamp);
+    this._touchStartWasDragging = false;
+    this._touchStartWasDecelerating = false;
+    this._touchStartDecelerationVelocityY = 0;
   }
 
   needsPreventClick(touchDuration) {
@@ -350,10 +391,13 @@ class ScrollView extends Component {
     // 3) when the user does a long press (> 500 ms)
     //
     // This method determines whether either of these cases apply.
-    let isFinishingDragging = this.scroller.__isDragging;
+    let momentumVelocity =
+      this._touchStartDecelerationVelocityY ?? this._decelerationVelocityY ?? 0;
+    let isFinishingDragging =
+      this._touchStartWasDragging || this.scroller.__isDragging;
     let wasAnimatingWithMomentum =
-      this._wasScrollingAtTouchStart &&
-      Math.abs(this._decelerationVelocityY) > 2;
+      this._touchStartWasDecelerating ||
+      (this._wasScrollingAtTouchStart && Math.abs(momentumVelocity) > 0.5);
     let isLongPress = touchDuration > LONG_PRESS_DELAY;
     return isFinishingDragging || wasAnimatingWithMomentum || isLongPress;
   }
@@ -380,6 +424,24 @@ class ScrollView extends Component {
     e.stopPropagation();
   }
 
+  handleCapturedClickDuringMomentum(event) {
+    if (!this.shouldBlockMomentumClick()) {
+      return;
+    }
+    let target = event.target;
+    if (!target?.closest('a')) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    this._preventClickWhileDecelerating = false;
+  }
+
+  shouldBlockMomentumClick() {
+    return this._preventClickWhileDecelerating;
+  }
+
   measurementTask = task(async () => {
     // Before we check the size for the first time, we capture the intended scroll position
     // and apply it after we determine and apply the size. The reason we need to do this
@@ -396,7 +458,7 @@ class ScrollView extends Component {
       this.scroller.scrollTo(0, initialScrollTop);
     }
     if (DEBUG) {
-      if (Ember.testing) {
+      if (isTesting()) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
           this.measureClientAndContent();
         };
@@ -404,12 +466,12 @@ class ScrollView extends Component {
       }
     }
     let lastIsInViewport = true;
+    // eslint-disable-next-line no-constant-condition
     while (true) {
-      // eslint-disable-line no-constant-condition
       await timeout(
         lastIsInViewport
           ? MEASUREMENT_INTERVAL
-          : MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN
+          : MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN,
       );
       lastIsInViewport = this.isInViewport;
       if (lastIsInViewport && !this._isScrolling) {
@@ -430,7 +492,7 @@ class ScrollView extends Component {
       !this.hasClientOrContentSizeChanged(
         clientWidth,
         clientHeight,
-        contentHeight
+        contentHeight,
       )
     ) {
       return;
@@ -440,7 +502,7 @@ class ScrollView extends Component {
       this.applyNewMeasurements,
       clientWidth,
       clientHeight,
-      contentHeight
+      contentHeight,
     );
   }
 
@@ -533,7 +595,7 @@ class ScrollView extends Component {
   scrollToBottom() {
     return this.scrollTo(
       this._appliedContentHeight - this._appliedClientHeight,
-      true
+      true,
     );
   }
 

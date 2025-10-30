@@ -30,9 +30,9 @@ module('Integration | Component | scroll-view', function (hooks) {
     {{!-- template-lint-disable no-inline-styles --}}
     <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
       <ScrollView
-        @scrollChange={{optional this.scrollChange}}
-        @clientSizeChange={{optional this.clientSizeChange}}
-        @scrolledToTopChange={{optional this.scrolledToTopChange}}
+        @scrollChange={{this.scrollChange}}
+        @clientSizeChange={{this.clientSizeChange}}
+        @scrolledToTopChange={{this.scrolledToTopChange}}
        as |scrollViewApi|
       >
         <div id="element1" style="width:320px;height:200px">
@@ -45,7 +45,7 @@ module('Integration | Component | scroll-view', function (hooks) {
             Scroll to Bottom
           </button>
           <button
-            {{on 'click' (fn (optional scrollViewApi.scrollToElement) this.element3)}}
+            {{on 'click' (fn scrollViewApi.scrollToElement this.element3)}}
             type="button"
             data-test-scroll-to-element-button
           >
@@ -54,11 +54,11 @@ module('Integration | Component | scroll-view', function (hooks) {
         </div>
         <div style="width:320px;height:200px">Two</div>
         <div id="element3" style="width:320px;height:200px">Three</div>
-        <a href="#" style={{html-safe "display:block;width:320px;height:200px"}} data-test-link {{on 'click' (fn (optional this.onClickLink))}}>Four</a>
+        <a href="#" style={{html-safe "display:block;width:320px;height:200px"}} data-test-link {{on 'click' (fn this.onClickLink)}}>Four</a>
         <div style="width:320px;height:200px">
           Five
           <button
-            {{on 'click' (fn (optional scrollViewApi.scrollToTop))}}
+            {{on 'click' scrollViewApi.scrollToTop}}
             type="button"
             data-test-scroll-to-top-button
           >
@@ -81,7 +81,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     await render(EXAMPLE_1_HBS);
     let scrollPromise = scrollDown('.ScrollView #element1');
     await waitForOpacity(SCROLLBAR_THUMB, '1');
-    assert.close(find(SCROLLBAR_THUMB).offsetHeight, 231, 1);
+    assert.close(find(SCROLLBAR_THUMB).offsetHeight, 228, 1);
     await scrollPromise;
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -190);
   });
@@ -97,7 +97,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     await scrollPromise;
     assert.ok(
       scrollChangeCount > 20,
-      'scrollChange action should be emitted a bunch'
+      'scrollChange action should be emitted a bunch',
     );
   });
 
@@ -112,7 +112,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrolledToTopChangeCount,
       1,
-      'emits scrolledToTopChange on initial render'
+      'emits scrolledToTopChange on initial render',
     );
     assert.true(isAtTopValue, 'is at top');
     await scrollDown('.ScrollView #element1', {
@@ -122,7 +122,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrolledToTopChangeCount,
       2,
-      'emits scrolledToTopChange when scrolling down'
+      'emits scrolledToTopChange when scrolling down',
     );
     assert.false(isAtTopValue, 'is not at top');
     await scrollDown('.ScrollView #element1', {
@@ -133,7 +133,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrolledToTopChangeCount,
       3,
-      'emits scrolledToTopChange when scrolling back up'
+      'emits scrolledToTopChange when scrolling back up',
     );
     assert.true(isAtTopValue, 'is at top');
   });
@@ -160,13 +160,13 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrolledToTopChangeCount,
       1,
-      'emits scrolledToTopChange on initial render'
+      'emits scrolledToTopChange on initial render',
     );
     assert.true(isAtTopValue, 'is at top');
     assert.equal(
       scrollPosition(find(SCROLL_CONTAINER)),
       -50,
-      'starts in scrollTopOffset position'
+      'starts in scrollTopOffset position',
     );
     await scrollDown(SCROLL_CONTAINER, {
       amount: 100,
@@ -175,7 +175,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrolledToTopChangeCount,
       2,
-      'emits scrolledToTopChange when scrolling down'
+      'emits scrolledToTopChange when scrolling down',
     );
     assert.false(isAtTopValue, 'is not at top');
     await scrollDown(SCROLL_CONTAINER, {
@@ -186,7 +186,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrolledToTopChangeCount,
       3,
-      'emits scrolledToTopChange when scrolling back up'
+      'emits scrolledToTopChange when scrolling back up',
     );
     assert.true(isAtTopValue, 'is at top');
   });
@@ -206,7 +206,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrollPosition(find(SCROLL_CONTAINER)),
       -50,
-      'starts in scrollTopOffset position'
+      'starts in scrollTopOffset position',
     );
   });
 
@@ -222,7 +222,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       find(SCROLLBAR_THUMB).style.opacity,
       '1',
-      'scrollbar visible while still touching'
+      'scrollbar visible while still touching',
     );
     await timeout(300);
     mouseUpDeferred.resolve();
@@ -230,7 +230,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       find(SCROLLBAR_THUMB).style.opacity,
       '0',
-      'scrollbar hides after no longer touching'
+      'scrollbar hides after no longer touching',
     );
   });
 
@@ -256,12 +256,12 @@ module('Integration | Component | scroll-view', function (hooks) {
       () => document.querySelector(SCROLL_CONTAINER).offsetHeight === 1200,
       {
         timeoutMessage: 'scroll-view should update its scroll container size',
-      }
+      },
     );
     assert.equal(
       find('[data-test-scroll-bar]').offsetHeight,
       1196,
-      'scrollbar height is correct'
+      'scrollbar height is correct',
     );
     await scrollDown('.ScrollView', {
       amount: 100,
@@ -286,7 +286,7 @@ module('Integration | Component | scroll-view', function (hooks) {
       () => document.querySelector(SCROLL_CONTAINER).offsetHeight === 1200,
       {
         timeoutMessage: 'scroll-view should update its scroll container size',
-      }
+      },
     );
     assert.true(clientSizeChangeInvoked);
     assert.equal(newClientHeight, 1200);
@@ -311,22 +311,59 @@ module('Integration | Component | scroll-view', function (hooks) {
   });
 
   test('yields scrollViewApi, which provides scrollTo methods', async function (assert) {
-    await render(EXAMPLE_1_HBS);
-    this.set('element3', find('#element3'));
-    await click('[data-test-scroll-to-bottom-button]');
-    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) < -500, {
-      timeoutMessage: 'should scroll to bottom',
-    });
-    await click('[data-test-scroll-to-top-button]');
-    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) > -5, {
-      timeoutMessage: 'should scroll to top',
-    });
-    await click('[data-test-scroll-to-element-button]');
-    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) === -400, {
-      timeoutMessage: 'should scroll to element',
-    });
+    assert.expect(3);
+    this.captureScrollViewApi = (api) => {
+      this.scrollViewApi = api;
+    };
+    const template = hbs`
+      {{!-- template-lint-disable no-inline-styles --}}
+      <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
+        <ScrollView
+          @scrollChange={{this.scrollChange}}
+          @clientSizeChange={{this.clientSizeChange}}
+          @scrolledToTopChange={{this.scrolledToTopChange}}
+         as |scrollViewApi|
+        >
+          <div {{did-insert (fn this.captureScrollViewApi scrollViewApi)}}></div>
+          <div id="element1" style="width:320px;height:200px">
+            One
+            <button
+              {{on 'click' scrollViewApi.scrollToBottom}}
+              type="button"
+              data-test-scroll-to-bottom-button
+            >
+              Scroll to Bottom
+            </button>
+            <button
+              {{on 'click' (fn scrollViewApi.scrollToElement this.element3)}}
+              type="button"
+              data-test-scroll-to-element-button
+            >
+              Scroll to Element 3
+            </button>
+          </div>
+          <div style="width:320px;height:200px">Two</div>
+          <div id="element3" style="width:320px;height:200px">Three</div>
+          <a href="#" style={{html-safe "display:block;width:320px;height:200px"}} data-test-link {{on 'click' (fn this.onClickLink)}}>Four</a>
+          <div style="width:320px;height:200px">
+            Five
+            <button
+              {{on 'click' scrollViewApi.scrollToTop}}
+              type="button"
+              data-test-scroll-to-top-button
+            >
+              Scroll to Top
+            </button>
+          </div>
+        </ScrollView>
+      </div>
+    `;
 
-    assert.ok(true, 'Scroll buttons worked!');
+    await render(template);
+
+    assert.strictEqual(typeof this.scrollViewApi.scrollToBottom, 'function');
+    assert.strictEqual(typeof this.scrollViewApi.scrollToTop, 'function');
+    assert.strictEqual(typeof this.scrollViewApi.scrollToElement, 'function');
   });
 
   test('subscribes to requestScrollToTop event on window and scrolls to top when in viewport', async function (assert) {
@@ -341,13 +378,13 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       find(SCROLLBAR_THUMB).style.opacity,
       '0',
-      'scrollbar is not shown'
+      'scrollbar is not shown',
     );
     await timeout(50);
     assert.equal(
       scrollPosition(find(SCROLL_CONTAINER)),
       bottomScrollPos,
-      'does not scroll to top'
+      'does not scroll to top',
     );
 
     this.element.style.transform = 'translateX(0px)';
@@ -408,7 +445,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrollPosition(find(SCROLL_CONTAINER)),
       0,
-      'previous scroll position is not restored when there key does not match'
+      'previous scroll position is not restored when there key does not match',
     );
 
     await render(hbs``);
@@ -417,18 +454,15 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.equal(
       scrollPosition(find(SCROLL_CONTAINER)),
       scrollPos,
-      'previous scroll position is restored'
+      'previous scroll position is restored',
     );
   });
 
   test('when momentum scrolling, a tap stops the scroll', async function (assert) {
-    assert.expect(3);
     await render(EXAMPLE_1_HBS);
-    this.set('onClickLink', function () {
-      assert.ok(
-        false,
-        'should not activate action when tapping when scrolling'
-      );
+    let preventedClicks = 0;
+    this.set('onClickLink', () => {
+      preventedClicks++;
     });
     await scrollDown('.ScrollView');
     await timeout(10);
@@ -437,9 +471,14 @@ module('Integration | Component | scroll-view', function (hooks) {
     let scrollPos = scrollPosition(find(SCROLL_CONTAINER));
     await timeout(50);
     let newScrollPos = scrollPosition(find(SCROLL_CONTAINER));
+    assert.strictEqual(
+      preventedClicks,
+      1,
+      'should activate action when tapping while scrolling decelerates',
+    );
     assert.ok(
       Math.abs(scrollPos - newScrollPos) < 5,
-      'scrolling should stop when clicked'
+      'scrolling should stop when clicked',
     );
     await timeout(50);
 

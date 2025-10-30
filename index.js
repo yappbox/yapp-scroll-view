@@ -40,7 +40,7 @@ module.exports = {
       this.doNotExportComponents = true;
     }
 
-    app.import('vendor/zynga-scroller/Animate.js');
-    app.import('vendor/zynga-scroller/Scroller.js');
+    this.import('vendor/zynga-scroller/Animate.js');
+    this.import('vendor/zynga-scroller/Scroller.js');
   },
 };

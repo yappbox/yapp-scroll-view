@@ -51,7 +51,7 @@ export default class extends Controller {
         }
         this.isLoadingMore = false;
       },
-      2000
+      2000,
     );
   }
 }

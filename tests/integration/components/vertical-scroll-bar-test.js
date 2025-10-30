@@ -55,7 +55,7 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
   test('it renders with a thumb size proportional to content ratio', async function (assert) {
     await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 100);
-    assert.close(thumbSize(), 234, 1);
+    assert.close(thumbSize(), 232, 1);
     assert.equal(thumbPosition(), 48);
     assert.equal(find(THUMB).style.opacity, '1');
   });
@@ -65,7 +65,7 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
     await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 5);
     this.simulateCallback(true, 0);
-    assert.close(thumbSize(), 481, 1);
+    assert.close(thumbSize(), 479, 1);
     assert.equal(thumbPosition(), 0);
     assert.equal(find(THUMB).style.opacity, '1');
   });
@@ -79,7 +79,7 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
     this.set('contentHeight', 100000);
     await render(EXAMPLE_1_HBS);
     this.simulateCallback(true, 100);
-    assert.close(thumbSize(), 17, 1);
+    assert.close(thumbSize(), 15, 1);
   });
 
   test('thumb is visible when isScrolling is true', async function (assert) {
