@@ -5,8 +5,6 @@ import { setApplication } from '@ember/test-helpers';
 import { start } from 'ember-qunit';
 import { setup } from 'qunit-dom';
 
-setup(QUnit.assert);
-
 setApplication(Application.create(config.APP));
 
 setup(QUnit.assert);
@@ -37,7 +35,7 @@ function _getPushContext(context) {
     pushContext = QUnit.pushResult;
   } else {
     throw new Error(
-      'Could not find the QUnit `Assert` context to push results'
+      'Could not find the QUnit `Assert` context to push results',
     );
   }
 

@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import { reads } from 'macro-decorators';
-import { cached } from 'ember-cached-decorator-polyfill';
-import { tracked } from '@glimmer/tracking';
+import { cached, tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { next, schedule } from '@ember/runloop';
 import { ref } from 'ember-ref-bucket';

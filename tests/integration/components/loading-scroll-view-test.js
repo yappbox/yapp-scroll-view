@@ -82,7 +82,7 @@ module('Integration | Component | loading-scroll-view', function (hooks) {
     });
     assert.ok(
       scrollPosition(find(SCROLL_CONTAINER)) < -1000,
-      'can scroll down below previous boundary'
+      'can scroll down below previous boundary',
     );
   });
 

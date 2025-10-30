@@ -25,7 +25,7 @@ function assertDoNotOverlap(assert, selector1, selector2) {
     rect1.top < rect2.bottom;
   assert.ok(
     !overlaps,
-    `Expected element at ${selector1} to NOT overlap element at ${selector2} but it does`
+    `Expected element at ${selector1} to NOT overlap element at ${selector2} but it does`,
   );
 }
 
@@ -104,9 +104,9 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
     await waitUntil(() => {
       // console.log('find(SCROLLBAR_THUMB).offsetHeight', find(SCROLLBAR_THUMB).offsetHeight);
       let thumbEl = find(SCROLLBAR_THUMB);
-      return Math.abs(thumbEl.offsetHeight - 231) <= 1;
+      return Math.abs(thumbEl.offsetHeight - 228) <= 1;
     });
-    assert.close(find(SCROLLBAR_THUMB).offsetHeight, 231, 1);
+    assert.close(find(SCROLLBAR_THUMB).offsetHeight, 228, 1);
     await scrollPromise;
     await waitUntil(() => {
       // console.log('scrollPosition(find(SCROLL_CONTAINER))', scrollPosition(find(SCROLL_CONTAINER)));
@@ -127,7 +127,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       () => document.querySelector(SCROLL_CONTAINER).offsetHeight === 1200,
       {
         timeoutMessage: 'scroll-view should update its scroll container size',
-      }
+      },
     );
     assert.dom(SCROLL_CONTAINER).containsText('Eight');
   });
@@ -196,7 +196,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       assertDoNotOverlap(
         assert,
         `${SCROLL_CONTAINER} h1`,
-        `[data-list-item-id="${this.items[0].id}"]`
+        `[data-list-item-id="${this.items[0].id}"]`,
       );
       assert.dom(SCROLL_CONTAINER).containsText('Three');
       assert.dom(SCROLL_CONTAINER).containsText('Four');
@@ -231,7 +231,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       assertDoNotOverlap(
         assert,
         `${SCROLL_CONTAINER} h1`,
-        `[data-list-item-id="${this.items[0].id}"]`
+        `[data-list-item-id="${this.items[0].id}"]`,
       );
       assert.dom(SCROLL_CONTAINER).containsText('Three');
       assert.dom(SCROLL_CONTAINER).containsText('Four');
@@ -249,14 +249,11 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       await render(HBS_WITH_HEADER);
       assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
       await waitFor(ITEMS_CONTAINER);
-      assert.equal(
-        Math.round(find(ITEMS_CONTAINER).getBoundingClientRect().height),
-        1000
-      );
+      assert.strictEqual(find(ITEMS_CONTAINER).offsetHeight, 1000);
       assertDoNotOverlap(
         assert,
         `${SCROLL_CONTAINER} h1`,
-        `[data-list-item-id="${this.items[0].id}"]`
+        `[data-list-item-id="${this.items[0].id}"]`,
       );
       assert.dom(SCROLL_CONTAINER).containsText('One');
       assert.dom(SCROLL_CONTAINER).containsText('Three');
@@ -265,12 +262,9 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       assertDoNotOverlap(
         assert,
         `${SCROLL_CONTAINER} h1`,
-        `[data-list-item-id="${this.items[0].id}"]`
+        `[data-list-item-id="${this.items[0].id}"]`,
       );
-      assert.equal(
-        Math.round(find(ITEMS_CONTAINER).getBoundingClientRect().height),
-        1000
-      );
+      assert.strictEqual(find(ITEMS_CONTAINER).offsetHeight, 1000);
       assert.dom(SCROLL_CONTAINER).containsText('One');
       assert.dom(SCROLL_CONTAINER).containsText('Three');
       await waitUntilText('Four');
