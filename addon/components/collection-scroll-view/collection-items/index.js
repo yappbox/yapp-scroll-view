@@ -200,6 +200,34 @@ export default class CollectionScrollViewCollectionItems extends Component {
       }
     }
 
+    // This is needed to keep the cells in the correct order in the DOM
+    // otherwise VoiceOver will read the cells in the wrong order
+    let sortedCells = cells.slice().sort((a, b) => {
+      let aKey =
+        a.hidden || a.index === undefined || a.index === null
+          ? Number.POSITIVE_INFINITY
+          : a.index;
+      let bKey =
+        b.hidden || b.index === undefined || b.index === null
+          ? Number.POSITIVE_INFINITY
+          : b.index;
+      if (aKey === bKey) {
+        return (a.containerId || 0) - (b.containerId || 0);
+      }
+      return aKey - bKey;
+    });
+
+    let needsReorder = false;
+    for (let i = 0; i < cells.length; i++) {
+      if (cells[i] !== sortedCells[i]) {
+        needsReorder = true;
+        break;
+      }
+    }
+    if (needsReorder) {
+      cells.replace(0, cells.length, sortedCells);
+    }
+
     return cells;
   }
 }

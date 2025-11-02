@@ -5,8 +5,10 @@
   {{did-update this.onContentHeightChanged @contentHeight}}
   {{did-update this.onKeyUpdated @key}}
 >
-  <div data-test-scroll-container>
-    {{yield this.scrollViewApi}}
+  <div class="ScrollView-scroller">
+    <div class="ScrollView-content" data-test-scroll-container>
+      {{yield this.scrollViewApi}}
+    </div>
   </div>
   {{#if @auxiliaryComponent}}
     {{component @auxiliaryComponent}}

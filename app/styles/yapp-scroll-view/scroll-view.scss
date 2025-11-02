@@ -4,11 +4,28 @@
   top: 0;
   bottom: 0;
   right: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 
-  & > :first-child {
+  &-scroller {
+    flex: 1 1 auto;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* hide native scrollbar (Firefox) */
+  }
+
+  &-scroller::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  &-content {
+    min-height: 100%;
+  }
+
+  &-scroller > :first-child {
     position: relative;
-    will-change: transform;
   }
   &-scrollBar {
     position: absolute;

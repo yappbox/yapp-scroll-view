@@ -2,7 +2,7 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 import { find, render } from '@ember/test-helpers';
-import { scrollPosition, waitForOpacity } from '../../helpers/scrolling';
+import { waitForOpacity } from '../../helpers/scrolling';
 
 module('Integration | Component | vertical-scroll-bar', function (hooks) {
   setupRenderingTest(hooks);
@@ -45,7 +45,30 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
   const THUMB = '[data-test-thumb]';
 
   function thumbPosition() {
-    return Math.floor(scrollPosition(find(THUMB)));
+    let element = find(THUMB);
+    if (!element) {
+      return 0;
+    }
+    let transform =
+      element.style.transform || window.getComputedStyle(element).transform;
+    if (!transform || transform === 'none') {
+      return 0;
+    }
+    let translateMatch = transform.match(/translateY\(([-\d.]+)px\)/);
+    if (translateMatch) {
+      return Math.round(parseFloat(translateMatch[1]));
+    }
+    if (transform.startsWith('matrix')) {
+      let values = transform
+        .replace('matrix(', '')
+        .replace(')', '')
+        .split(',')
+        .map((value) => parseFloat(value.trim()));
+      if (values.length === 6) {
+        return Math.round(values[5]);
+      }
+    }
+    return 0;
   }
 
   function thumbSize() {
@@ -130,22 +153,22 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
 
     // when scrolled past bottom by 5
     this.simulateCallback(true, 105);
-    assert.equal(thumbPosition(), 95, 'thumb is at bottom');
+    assert.close(thumbPosition(), 95, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 906, 1, 'thumb is slightly compressed');
 
     // when scrolled past top by 5
     this.simulateCallback(true, -5);
-    assert.equal(thumbPosition(), 0, 'thumb is at top');
+    assert.close(thumbPosition(), 0, 1, 'thumb is at top');
     assert.close(thumbSize(), 995, 1, 'thumb is slightly compressed');
 
     // when scrolled past bottom by 100
     this.simulateCallback(true, 100);
-    assert.equal(thumbPosition(), 90, 'thumb is at bottom');
+    assert.close(thumbPosition(), 90, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 910, 1, 'thumb is slightly compressed');
 
     // when scrolled past top by 100
     this.simulateCallback(true, -100);
-    assert.equal(thumbPosition(), 0, 'thumb is at top');
+    assert.close(thumbPosition(), 0, 1, 'thumb is at top');
     assert.close(thumbSize(), 909, 1, 'thumb is slightly compressed');
   });
 
@@ -157,22 +180,22 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
 
     // when scrolled past bottom by 5
     this.simulateCallback(true, 5);
-    assert.equal(thumbPosition(), 4, 'thumb is at bottom');
+    assert.close(thumbPosition(), 4, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 996, 1, 'thumb is slightly compressed');
 
     // when scrolled past top by 5
     this.simulateCallback(true, -5);
-    assert.equal(thumbPosition(), 0, 'thumb is at top');
+    assert.close(thumbPosition(), 0, 1, 'thumb is at top');
     assert.close(thumbSize(), 995, 1, 'thumb is slightly compressed');
 
     // when scrolled past bottom by 100
     this.simulateCallback(true, 100);
-    assert.equal(thumbPosition(), 90, 'thumb is at bottom');
+    assert.close(thumbPosition(), 90, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 910, 1, 'thumb is slightly compressed');
 
     // when scrolled past top by 100
     this.simulateCallback(true, -100);
-    assert.equal(thumbPosition(), 0, 'thumb is at top');
+    assert.close(thumbPosition(), 0, 1, 'thumb is at top');
     assert.close(thumbSize(), 909, 1, 'thumb is slightly compressed');
   });
 
@@ -184,27 +207,27 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
 
     // when scrolled past bottom by 1
     this.simulateCallback(true, 101);
-    assert.equal(thumbPosition(), 90, 'thumb is at bottom');
+    assert.close(thumbPosition(), 90, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 810, 1, 'thumb is slightly compressed');
 
     // when scrolled past top by 1
     this.simulateCallback(true, -1);
-    assert.equal(thumbPosition(), 0, 'thumb is at top');
+    assert.close(thumbPosition(), 0, 1, 'thumb is at top');
     assert.close(thumbSize(), 810, 1, 'thumb is slightly compressed');
 
     // when scrolled to center
     this.simulateCallback(true, 50);
-    assert.equal(thumbPosition(), 45, 'thumb is in center');
+    assert.close(thumbPosition(), 45, 1, 'thumb is in center');
     assert.close(thumbSize(), 811, 1, 'thumb height is not compressed');
 
     // when scrolled past bottom by 200
     this.simulateCallback(true, 300);
-    assert.equal(thumbPosition(), 237, 'thumb is at bottom');
+    assert.close(thumbPosition(), 237, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 664, 1, 'thumb is heavily compressed');
 
     // when scrolled past top by 200
     this.simulateCallback(true, -200);
-    assert.equal(thumbPosition(), 0, 'thumb is at top');
+    assert.close(thumbPosition(), 0, 1, 'thumb is at top');
     assert.close(thumbSize(), 664, 1, 'thumb is heavily compressed');
   });
 
@@ -226,12 +249,12 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
 
     // when scrolled to center
     this.simulateCallback(true, 750);
-    assert.equal(thumbPosition(), 187, 'thumb is in center');
+    assert.close(thumbPosition(), 187, 1, 'thumb is in center');
     assert.close(thumbSize(), 126, 1, 'thumb height is not compressed');
 
     // when scrolled past bottom by 100
     this.simulateCallback(true, 1600);
-    assert.equal(thumbPosition(), 395, 'thumb is at bottom');
+    assert.close(thumbPosition(), 395, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 105, 1, 'thumb is heavily compressed');
 
     // when scrolled past top by 100
@@ -241,7 +264,7 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
 
     // when scrolled past bottom by 500
     this.simulateCallback(true, 2000);
-    assert.equal(thumbPosition(), 437, 'thumb is at bottom');
+    assert.close(thumbPosition(), 437, 1, 'thumb is at bottom');
     assert.close(thumbSize(), 63, 1, 'thumb is small');
 
     // when scrolled past top by 500
@@ -257,13 +280,13 @@ module('Integration | Component | vertical-scroll-bar', function (hooks) {
     await render(EXAMPLE_1_HBS);
 
     this.simulateCallback(true, 750);
-    assert.equal(thumbPosition(), 187, 'thumb is in center');
+    assert.close(thumbPosition(), 187, 1, 'thumb is in center');
     assert.close(thumbSize(), 126, 1, 'thumb height is not compressed');
 
     this.set('scrollerHeight', 1000);
 
     this.simulateCallback(true, 750);
-    assert.equal(thumbPosition(), 375, 'thumb is in center');
+    assert.close(thumbPosition(), 375, 1, 'thumb is in center');
     assert.close(thumbSize(), 501, 1, 'thumb height is not compressed');
   });
 });

@@ -1,62 +1,21 @@
-/* global Scroller */
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
+import { tracked, cached } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
-// import { argument } from '@ember-decorators/argument';
-// import { Action, optional } from '@ember-decorators/argument/types';
-import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
-import Hammer from 'hammerjs';
-import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer';
 import { join, schedule } from '@ember/runloop';
-import { translate } from 'ember-collection/utils/translate';
 import { task, timeout, waitForQueue } from 'ember-concurrency';
 import ScrollViewApi from 'yapp-scroll-view/utils/scroll-view-api';
 import { DEBUG } from '@glimmer/env';
 import { buildWaiter } from '@ember/test-waiters';
 import { isTesting } from '@embroider/macros';
-import { cached } from '@glimmer/tracking';
 
 let waiter = buildWaiter('yapp-scroll-view:scrolling');
 let measurementWaiter = buildWaiter('yapp-scroll-view:measurement');
 
-const FIELD_REGEXP = /input|textarea|select/i;
 const MEASUREMENT_INTERVAL = 250;
 const MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN = 1000;
-const LONG_PRESS_DELAY = 500;
-const GHOST_CLICK_DELAY = 100;
-
-const isIPhone = /iPhone|iPod|iPad/i.test(navigator.appVersion);
-
-let timeoutID = 0;
-function addCaptureClick(domElement) {
-  if (timeoutID) {
-    clearTimeout(timeoutID);
-  } else {
-    domElement.addEventListener('click', captureClick, true);
-  }
-  let cancelCaptureClick = () => {
-    timeoutID = 0;
-    domElement.removeEventListener('click', captureClick, true);
-  };
-  timeoutID = setTimeout(cancelCaptureClick, GHOST_CLICK_DELAY);
-}
-
-function debounce(func, wait, immediate) {
-  var timeout;
-  return function () {
-    var context = this,
-      args = arguments;
-    var later = function () {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    var callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
-  };
-}
+const SCROLL_IDLE_DELAY = 150;
+const FIELD_REGEXP = /input|textarea|select/i;
 
 function getScrolledToTopChanged(currentTop, lastTop, offset) {
   let isAtTop = currentTop <= offset;
@@ -70,11 +29,11 @@ function getScrolledToTopChanged(currentTop, lastTop, offset) {
   return { isAtTop, isAtTopChanged };
 }
 
-function captureClick(e) {
-  e.stopPropagation();
-  e.target
-    .closest('.ScrollView')
-    .removeEventListener('click', captureClick, true);
+function now() {
+  if (typeof performance !== 'undefined' && performance.now) {
+    return performance.now();
+  }
+  return Date.now();
 }
 
 class ScrollView extends Component {
@@ -102,23 +61,20 @@ class ScrollView extends Component {
   // @argument(optional(Action))
   // scrolledToTopChange;
 
-  _scrollTop = 0;
-  _isAtTop;
-  _needsContentSizeUpdate = true;
   _appliedClientWidth;
   _appliedClientHeight;
   _appliedContentHeight;
   @tracked scrollBarClientHeight;
   @tracked scrollBarContentHeight;
-  _appliedScrollTop;
+  _appliedScrollTop = 0;
   _shouldMeasureContent = undefined;
   _isScrolling = false;
-  _touchStartTimeStamp = null;
   _lastIsScrolling = false;
-  _touchStartDecelerationVelocityY = 0;
-  _touchStartWasDecelerating = false;
-  _touchStartWasDragging = false;
-  _preventClickWhileDecelerating = false;
+  _lastScrollEventAt = 0;
+  _lastScrollTop = 0;
+  _scrollEndTimer = null;
+  _ignoreScrollBecauseOfField = false;
+  _usingPointerEvents = false;
   _measurementWaiterToken = null;
 
   @service('scroll-position-memory')
@@ -127,7 +83,6 @@ class ScrollView extends Component {
   constructor() {
     super(...arguments);
     this._scrollPositionCallbacks = [];
-    this.debouncedOnScrollingComplete = debounce(this.onScrollingComplete, 500);
   }
 
   @action
@@ -146,12 +101,29 @@ class ScrollView extends Component {
 
   @action
   didInsert(element) {
-    this.scrollViewElement = element;
-    this.contentElement = element.firstElementChild;
-    this.setupScroller();
+    this.wrapperElement = element;
+    let scrollViewElement =
+      element.querySelector('.ScrollView-scroller') ||
+      element.querySelector('[data-test-scroll-container]') ||
+      element;
+    this.scrollViewElement = scrollViewElement;
+    this.contentElement =
+      scrollViewElement.querySelector('.ScrollView-content') ||
+      scrollViewElement.firstElementChild ||
+      scrollViewElement;
+    this._appliedScrollTop = scrollViewElement.scrollTop || 0;
+    scrollViewElement.addEventListener('scroll', this.handleNativeScroll, {
+      passive: true,
+    });
+    this.addInteractionEventListeners(scrollViewElement);
     this.measurementTask.perform();
-    this.bindScrollerEvents(element);
     this.onKeyUpdated();
+    this.applyScrollTop({
+      scrollTop: this._appliedScrollTop,
+      lastTop: undefined,
+      isScrolling: false,
+      velocityY: 0,
+    });
   }
 
   @action
@@ -170,8 +142,15 @@ class ScrollView extends Component {
   }
 
   willDestroy() {
-    this.unbindScrollerEvents(this.scrollViewElement);
+    this.cancelScrollEndTimer();
+    this.removeInteractionEventListeners(this.scrollViewElement);
+    this.scrollViewElement?.removeEventListener(
+      'scroll',
+      this.handleNativeScroll,
+      false,
+    );
     this.scrollViewElement = null;
+    this.wrapperElement = null;
     this._scrollPositionCallbacks = [];
     this.remember(this._lastKey);
     if (DEBUG) {
@@ -183,66 +162,112 @@ class ScrollView extends Component {
     super.willDestroy(...arguments);
   }
 
-  setupScroller() {
-    this.scroller = new Scroller(this.onScrollChange.bind(this), {
-      scrollingX: false,
-      scrollingComplete: this.onScrollingComplete.bind(this),
-    });
-  }
-
-  onScrollChange(_left, top) {
-    let scrollTop = top | 0;
+  @action
+  handleNativeScroll(event) {
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
-    let { scroller } = this;
-    let isScrolling = !!(
-      scroller.__isDragging ||
-      scroller.__isDecelerating ||
-      scroller.__isAnimating
-    );
-    this._isScrolling = isScrolling;
-    this._decelerationVelocityY = scroller.__decelerationVelocityY;
+    let { target } = event;
+    if (this._ignoreScrollBecauseOfField) {
+      if (target.scrollTop !== this._appliedScrollTop) {
+        target.scrollTop = this._appliedScrollTop;
+      }
+      return;
+    }
+    let scrollTop = target.scrollTop;
+    let instant = now();
+    let deltaTime = this._lastScrollEventAt
+      ? Math.max(instant - this._lastScrollEventAt, 1)
+      : 1;
+    let velocityY = ((scrollTop - this._lastScrollTop) / deltaTime) * 1000;
+
+    this._isScrolling = true;
+    this._lastScrollEventAt = instant;
+    this._lastScrollTop = scrollTop;
+
     this.applyScrollTop({
       scrollTop,
       lastTop: this._appliedScrollTop,
-      isScrolling,
-      decelerationVelocityY: this._decelerationVelocityY,
+      isScrolling: true,
+      velocityY,
     });
-    if (
-      +new Date() - this._lastMeasurement >
-      MEASUREMENT_INTERVAL_WHILE_SCROLLING_OR_OFFSCREEN
-    ) {
-      this.measureClientAndContent();
-    }
 
-    // There are times when onScrollComplete is not called. This is due to subtleties
-    // In how the hammer recognizer pass events around. This debounced call will ensure
-    // scroll thumb is hidden 500ms after the last onScrollChange call
-    this.debouncedOnScrollingComplete();
+    this.scheduleScrollEndNotification();
   }
 
-  applyScrollTop({ scrollTop, lastTop, isScrolling, decelerationVelocityY }) {
+  addInteractionEventListeners(element) {
+    if (!element || typeof window === 'undefined') {
+      return;
+    }
+    this._usingPointerEvents = 'PointerEvent' in window;
+    if (this._usingPointerEvents) {
+      element.addEventListener('pointerdown', this.handlePointerDown, true);
+      element.addEventListener('pointerup', this.handlePointerUp, true);
+      element.addEventListener('pointercancel', this.handlePointerUp, true);
+    } else {
+      element.addEventListener('touchstart', this.handlePointerDown, true);
+      element.addEventListener('touchend', this.handlePointerUp, true);
+      element.addEventListener('touchcancel', this.handlePointerUp, true);
+      element.addEventListener('mousedown', this.handlePointerDown, true);
+      element.addEventListener('mouseup', this.handlePointerUp, true);
+    }
+  }
+
+  removeInteractionEventListeners(element) {
+    if (!element) {
+      return;
+    }
+    if (this._usingPointerEvents) {
+      element.removeEventListener('pointerdown', this.handlePointerDown, true);
+      element.removeEventListener('pointerup', this.handlePointerUp, true);
+      element.removeEventListener('pointercancel', this.handlePointerUp, true);
+    } else {
+      element.removeEventListener('touchstart', this.handlePointerDown, true);
+      element.removeEventListener('touchend', this.handlePointerUp, true);
+      element.removeEventListener('touchcancel', this.handlePointerUp, true);
+      element.removeEventListener('mousedown', this.handlePointerDown, true);
+      element.removeEventListener('mouseup', this.handlePointerUp, true);
+    }
+  }
+
+  @action
+  handlePointerDown(event) {
+    let field = event.target?.closest
+      ? event.target.closest('input, textarea, select')
+      : null;
+    if (field && FIELD_REGEXP.test(field.tagName)) {
+      this._ignoreScrollBecauseOfField = true;
+    }
+  }
+
+  @action
+  handlePointerUp() {
+    this._ignoreScrollBecauseOfField = false;
+  }
+
+  scheduleScrollEndNotification() {
+    this.cancelScrollEndTimer();
+    this._scrollEndTimer = window.setTimeout(
+      () => this.onScrollingComplete(),
+      SCROLL_IDLE_DELAY,
+    );
+  }
+
+  cancelScrollEndTimer() {
+    if (this._scrollEndTimer) {
+      window.clearTimeout(this._scrollEndTimer);
+      this._scrollEndTimer = null;
+    }
+  }
+
+  applyScrollTop({ scrollTop, lastTop, isScrolling, velocityY }) {
     let { isAtTop, isAtTopChanged } = getScrolledToTopChanged(
       scrollTop,
       lastTop,
       this.scrollTopOffset,
     );
 
-    if (this.contentElement) {
-      translate(this.contentElement, 0, -1 * scrollTop);
-    }
-
-    this.notifyScrollPosition(
-      isScrolling,
-      scrollTop,
-      isAtTop,
-      decelerationVelocityY,
-    );
-
-    if (this.scroller?.__isDecelerating) {
-      this._preventClickWhileDecelerating = true;
-    }
+    this.notifyScrollPosition(isScrolling, scrollTop, isAtTop, velocityY);
 
     if (this.args.scrollChange && scrollTop !== lastTop) {
       this.args.scrollChange(scrollTop);
@@ -260,195 +285,21 @@ class ScrollView extends Component {
     if (this.isDestroyed || this.isDestroying) {
       return;
     }
-    this.notifyScrollPosition(
-      false,
-      this._appliedScrollTop,
-      this._appliedScrollTop <= this.scrollTopOffset,
-      0,
-    );
-    this._preventClickWhileDecelerating = false;
-    if (DEBUG) {
-      this._trackIsScrollingForWaiter(false);
-    }
-  }
+    this.cancelScrollEndTimer();
+    this._isScrolling = false;
+    let scrollTop = this.scrollViewElement
+      ? this.scrollViewElement.scrollTop
+      : this._appliedScrollTop;
 
-  updateScrollerDimensions() {
-    if (this._appliedClientWidth && this._appliedClientHeight) {
-      this.scroller.setDimensions(
-        this._appliedClientWidth,
-        this._appliedClientHeight,
-        this._appliedClientWidth,
-        this._appliedContentHeight,
-      );
-    }
-  }
-
-  bindScrollerEvents(element) {
-    this.hammer = new Hammer.Manager(element, {
-      inputClass: Hammer.TouchMouseInput,
-      recognizers: [
-        [ZyngaScrollerVerticalRecognizer, { scrollComponent: this }],
-      ],
+    this.applyScrollTop({
+      scrollTop,
+      lastTop: this._appliedScrollTop,
+      isScrolling: false,
+      velocityY: 0,
     });
-    this._boundHandleWheel = this.handleWheel.bind(this);
-    element.addEventListener(
-      normalizeWheel.getEventType(),
-      this._boundHandleWheel,
-      { passive: false },
-    );
-    this._scrollViewDocument = element.ownerDocument;
-    this._boundHandleCapturedClick = (event) => {
-      if (!this.scrollViewElement?.contains(event.target)) {
-        return;
-      }
-      this.handleCapturedClickDuringMomentum(event);
-    };
-    this._scrollViewDocument.addEventListener(
-      'click',
-      this._boundHandleCapturedClick,
-      true,
-    );
-  }
-
-  unbindScrollerEvents(element) {
-    if (this.hammer) {
-      this.hammer.destroy();
-      this.hammer = null;
-    }
-    element?.removeEventListener(
-      normalizeWheel.getEventType(),
-      this._boundHandleWheel,
-      false,
-    );
-    this._scrollViewDocument?.removeEventListener(
-      'click',
-      this._boundHandleCapturedClick,
-      true,
-    );
-    this._scrollViewDocument = null;
-  }
-
-  doTouchStart(touches, timeStamp) {
-    let { scroller } = this;
-    this._touchStartWasDragging = !!scroller?.__isDragging;
-    this._touchStartWasDecelerating = !!(
-      scroller?.__isDecelerating || scroller?.__isAnimating
-    );
-    this._touchStartDecelerationVelocityY =
-      scroller?.__decelerationVelocityY ?? this._decelerationVelocityY ?? 0;
-    this._wasScrollingAtTouchStart =
-      this._isScrolling ||
-      this._touchStartWasDragging ||
-      this._touchStartWasDecelerating;
-    this._touchStartTimeStamp = timeStamp;
-    this.scroller.doTouchStart(touches, timeStamp);
-  }
-
-  doTouchMove(touches, timeStamp, scale) {
-    this.scroller.doTouchMove(touches, timeStamp, scale);
-  }
-
-  doTouchEnd(_touches, timeStamp, event) {
-    // In most cases, `doTouchStart` is being called before `doTouchEnd`, allowing to set `_touchStartTimeStamp`
-    // It is not true when the event occurs on some elements (`input`, `textarea`, or `select`) which can be scrolled.
-    // In this case, `ZyngaScrollerVerticalOrganizer` will not call `doTouchStart`
-    let touchDuration = this._touchStartTimeStamp
-      ? timeStamp - this._touchStartTimeStamp
-      : 0;
-    let preventClick = this.needsPreventClick(touchDuration);
-
-    if (preventClick) {
-      // A touchend event can prevent a follow-on click event by calling preventDefault.
-      // On Android, it works well.
-      // On iOS, we see a click event being triggered after a touchend event,
-      // even when `preventDefault` and `stopPropagation` were called. However, phantom clicks
-      // are not triggered consistently. In order to avoid capturing legit click events,
-      // we only try to capture phantom clicks if they happen less than 100ms after a touchend event.
-      // On desktop browsers, a mouseup event cannot do this so we need to capture the upcoming click instead.
-
-      if (isIPhone || event instanceof MouseEvent) {
-        addCaptureClick(this.scrollViewElement);
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      this._preventClickWhileDecelerating = true;
-    }
-
-    this._touchStartTimeStamp = null;
-    this.scroller.doTouchEnd(timeStamp);
-    this._touchStartWasDragging = false;
-    this._touchStartWasDecelerating = false;
-    this._touchStartDecelerationVelocityY = 0;
-  }
-
-  needsPreventClick(touchDuration) {
-    // There are three cases where we want to prevent the click that normally follows a mouseup/touchend.
-    //
-    // 1) when the user is just finishing a purposeful scroll (i.e. dragging scroll view beyond a threshold)
-    //    This is only true on a desktop.
-    // 2) when animating with "momentum", a tap should stop the movement rather than
-    //    trigger an interactive element that may be under the tap. Zynga scroller
-    //    takes care of stopping the movement, but we need to capture the click
-    //    and stop propagation.
-    // 3) when the user does a long press (> 500 ms)
-    //
-    // This method determines whether either of these cases apply.
-    let momentumVelocity =
-      this._touchStartDecelerationVelocityY ?? this._decelerationVelocityY ?? 0;
-    let isFinishingDragging =
-      this._touchStartWasDragging || this.scroller.__isDragging;
-    let wasAnimatingWithMomentum =
-      this._touchStartWasDecelerating ||
-      (this._wasScrollingAtTouchStart && Math.abs(momentumVelocity) > 0.5);
-    let isLongPress = touchDuration > LONG_PRESS_DELAY;
-    return isFinishingDragging || wasAnimatingWithMomentum || isLongPress;
-  }
-
-  handleWheel(e) {
-    if (e.target && e.target.tagName.match(FIELD_REGEXP)) {
-      return;
-    }
-    let eventInfo = normalizeWheel(e);
-    let delta = eventInfo.pixelY;
-    let { scroller } = this;
-    let scrollTop = scroller.__scrollTop;
-    let maxScrollTop = scroller.__maxScrollTop;
-    let candidatePosition = scrollTop + delta;
-
-    e.preventDefault();
-    if (
-      (scrollTop === 0 && candidatePosition < 0) ||
-      (scrollTop === maxScrollTop && candidatePosition > maxScrollTop)
-    ) {
-      return;
-    }
-    scroller.scrollBy(0, delta, true);
-    e.stopPropagation();
-  }
-
-  handleCapturedClickDuringMomentum(event) {
-    if (!this.shouldBlockMomentumClick()) {
-      return;
-    }
-    let target = event.target;
-    if (!target?.closest('a')) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    this._preventClickWhileDecelerating = false;
-  }
-
-  shouldBlockMomentumClick() {
-    return this._preventClickWhileDecelerating;
   }
 
   measurementTask = task(async () => {
-    // Before we check the size for the first time, we capture the intended scroll position
-    // and apply it after we determine and apply the size. The reason we need to do this
-    // is that attempting to apply the scroll position before the scroller has size results
-    // in a scroll position of [0,0].
     let initialScrollTop =
       this.args.initialScrollTop !== undefined
         ? this.args.initialScrollTop
@@ -457,15 +308,13 @@ class ScrollView extends Component {
     this.measureClientAndContent();
     this._initialSizeCheckCompleted = true;
     if (initialScrollTop) {
-      this.scroller.scrollTo(0, initialScrollTop);
+      this.scrollTo(initialScrollTop, false);
     }
-    if (DEBUG) {
-      if (isTesting()) {
-        window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
-          this.measureClientAndContent();
-        };
-        return;
-      }
+    if (DEBUG && isTesting()) {
+      window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
+        this.measureClientAndContent();
+      };
+      return;
     }
     let lastIsInViewport = true;
     // eslint-disable-next-line no-constant-condition
@@ -488,7 +337,7 @@ class ScrollView extends Component {
       if (!this.scrollViewElement) {
         return;
       }
-      this._lastMeasurement = +new Date();
+      this._lastMeasurement = now();
       let { clientWidth, clientHeight, contentHeight } =
         this.getCurrentClientAndContentSizes();
 
@@ -514,12 +363,15 @@ class ScrollView extends Component {
   }
 
   getCurrentClientAndContentSizes() {
-    let {
-      scrollViewElement: { offsetWidth, offsetHeight },
-    } = this;
+    let { scrollViewElement } = this;
+    let { offsetWidth, offsetHeight, scrollHeight } = scrollViewElement;
     let contentHeight = this.args.contentHeight;
     if (this._shouldMeasureContent) {
-      contentHeight = this.contentElement.offsetHeight;
+      let measuredContentHeight =
+        this.contentElement?.scrollHeight ??
+        this.contentElement?.offsetHeight ??
+        0;
+      contentHeight = measuredContentHeight || scrollHeight;
     }
 
     return {
@@ -541,26 +393,26 @@ class ScrollView extends Component {
     this._appliedClientWidth = clientWidth;
     this._appliedClientHeight = clientHeight;
     this._appliedContentHeight = contentHeight;
-    this.contentElement.style.minHeight = `${clientHeight}px`;
+    if (this.contentElement) {
+      if (this.contentElement === this.scrollViewElement) {
+        this.contentElement.style.minHeight = `${clientHeight}px`;
+      } else {
+        this.contentElement.style.minHeight = '';
+      }
+    }
     this.updateScrollBarDimensionsTask.perform();
-    this.updateScrollerDimensions();
     if (this.args.clientSizeChange) {
       this.args.clientSizeChange(clientWidth, clientHeight);
     }
   }
+
   updateScrollBarDimensionsTask = task(async () => {
     await waitForQueue('afterRender');
     this.scrollBarClientHeight = this._appliedClientHeight;
     this.scrollBarContentHeight = this._appliedContentHeight;
   });
 
-  get extraCssClasses() {
-    // for overriding by LoadingScrollView
-    return null;
-  }
-
   get windowRef() {
-    // need a way to reference `window` from hbs
     return window;
   }
 
@@ -573,24 +425,40 @@ class ScrollView extends Component {
       return false;
     }
     let rect = this.scrollViewElement.getBoundingClientRect();
+    let viewportHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+    let viewportWidth =
+      window.innerWidth || document.documentElement.clientWidth;
     return (
       rect.top >= 0 &&
       rect.left >= 0 &&
-      rect.bottom <=
-        (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      rect.bottom <= viewportHeight &&
+      rect.right <= viewportWidth
     );
   }
 
   scrollTo(yPos, animated = false) {
-    if (this.scrollViewElement) {
-      this.measureClientAndContent();
-      return this.scroller.scrollTo(0, yPos, animated);
+    if (!this.scrollViewElement) {
+      schedule('afterRender', this, this.scrollTo, yPos, animated);
+      return;
     }
+    this.measureClientAndContent();
+    if (animated && typeof this.scrollViewElement.scrollTo === 'function') {
+      try {
+        this.scrollViewElement.scrollTo({
+          top: yPos,
+          behavior: 'smooth',
+        });
+        return;
+      } catch (e) {
+        // fall through to direct assignment
+      }
+    }
+    this.scrollViewElement.scrollTop = yPos;
   }
 
   scrollToTop() {
-    return this.scrollTo(0, true);
+    this.scrollTo(0, true);
   }
 
   scrollToTopIfInViewport() {
@@ -600,19 +468,21 @@ class ScrollView extends Component {
   }
 
   scrollToBottom() {
-    return this.scrollTo(
-      this._appliedContentHeight - this._appliedClientHeight,
-      true,
-    );
+    let contentHeight =
+      this._appliedContentHeight ?? this.scrollViewElement?.scrollHeight ?? 0;
+    let clientHeight =
+      this._appliedClientHeight ?? this.scrollViewElement?.clientHeight ?? 0;
+    this.scrollTo(Math.max(0, contentHeight - clientHeight), true);
   }
 
   scrollToElement(el, animated = false) {
     this.measureClientAndContent();
-    if (this.scrollViewElement) {
+    if (this.scrollViewElement && el) {
       let yPos = this._yOffset(el);
-      return this.scroller.scrollTo(0, yPos, animated);
+      this.scrollTo(yPos, animated);
     } else {
-      return console.warn('scrollToElement called before scrollView is inDOM'); // eslint-disable-line
+      // eslint-disable-next-line no-console
+      console.warn('scrollToElement called before scrollView is inDOM');
     }
   }
 
@@ -624,12 +494,19 @@ class ScrollView extends Component {
     return top;
   }
 
-  getViewHeight() {}
+  getViewHeight() {
+    return (
+      this._appliedClientHeight ?? this.scrollViewElement?.clientHeight ?? 0
+    );
+  }
+
+  get extraCssClasses() {
+    return this._isScrolling ? 'isScrolling' : '';
+  }
 
   remember(key) {
     if (key) {
-      let position = this._appliedScrollTop;
-      this.memory[key] = position;
+      this.memory[key] = this._appliedScrollTop || 0;
     }
   }
 

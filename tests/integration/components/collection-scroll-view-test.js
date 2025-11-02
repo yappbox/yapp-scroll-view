@@ -1,7 +1,14 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
-import { find, render, waitFor, waitUntil } from '@ember/test-helpers';
+import {
+  find,
+  focus,
+  render,
+  triggerKeyEvent,
+  waitFor,
+  waitUntil,
+} from '@ember/test-helpers';
 import {
   scrollPosition,
   scrollDown,
@@ -154,6 +161,106 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
     await timeout(200);
     assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
+  });
+
+  test('allows keyboard users to move focus between rendered items', async function (assert) {
+    await render(EXAMPLE_1_HBS);
+    await waitUntilText('One');
+
+    const firstSelector = '[data-collection-scroll-view-cell-index="0"]';
+    const secondSelector = '[data-collection-scroll-view-cell-index="1"]';
+    const lastSelector = '[data-collection-scroll-view-cell-index="9"]';
+
+    await waitUntil(() => Boolean(find(firstSelector)));
+    await focus(firstSelector);
+
+    assert.strictEqual(
+      document.activeElement,
+      find(firstSelector),
+      'focus defaults to the first rendered cell',
+    );
+    assert.dom(firstSelector).hasAttribute('tabindex', '0');
+    await waitUntil(() => Boolean(find(secondSelector)));
+    assert.dom(secondSelector).hasAttribute('tabindex', '-1');
+
+    await triggerKeyEvent(firstSelector, 'keydown', 'Tab');
+    await waitUntil(() => document.activeElement === find(secondSelector));
+
+    assert.dom(firstSelector).hasAttribute('tabindex', '-1');
+    assert.dom(secondSelector).hasAttribute('tabindex', '0');
+
+    await triggerKeyEvent(secondSelector, 'keydown', 'Tab', { shiftKey: true });
+    await waitUntil(() => document.activeElement === find(firstSelector));
+
+    assert.dom(firstSelector).hasAttribute('tabindex', '0');
+    assert.dom(secondSelector).hasAttribute('tabindex', '-1');
+
+    await triggerKeyEvent(firstSelector, 'keydown', 'ArrowDown');
+    await waitUntil(() => document.activeElement === find(secondSelector));
+
+    assert.dom(firstSelector).hasAttribute('tabindex', '-1');
+    assert.dom(secondSelector).hasAttribute('tabindex', '0');
+
+    await triggerKeyEvent(secondSelector, 'keydown', 'End');
+    await waitUntil(() => {
+      let candidate = find(lastSelector);
+      return candidate && document.activeElement === candidate;
+    });
+    assert.dom(lastSelector).hasAttribute('tabindex', '0');
+  });
+
+  test('uses focus target attribute when provided', async function (assert) {
+    this.keys = [];
+    this.set('handleCellKeyDown', (event) => {
+      this.keys.push(event.key);
+    });
+    const template = hbs`
+      <div style={{html-safe (concat "width:320px; height:" this.viewportHeight "px; position:relative")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimated-width={{this.viewportWidth}}
+          @estimated-height={{this.viewportHeight}}
+          @buffer={{1}}
+          @cell-layout={{fixed-grid-layout 320 100}}
+        >
+          <:row as |item|>
+            <div
+              class='focus-target'
+              data-collection-scroll-view-focus-target
+              tabindex='0'
+              {{on 'keydown' this.handleCellKeyDown}}
+            >
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `;
+
+    await render(template);
+    const firstTarget =
+      '[data-collection-scroll-view-cell-index="0"] [data-collection-scroll-view-focus-target]';
+    const secondTarget =
+      '[data-collection-scroll-view-cell-index="1"] [data-collection-scroll-view-focus-target]';
+
+    await focus('[data-collection-scroll-view-cell-index="0"]');
+    await waitUntil(() => document.activeElement === find(firstTarget), {
+      timeoutMessage: 'first focus target should receive focus',
+    });
+    assert.dom(firstTarget).isFocused();
+
+    await triggerKeyEvent(firstTarget, 'keydown', 'ArrowDown');
+    await waitUntil(() => document.activeElement === find(secondTarget), {
+      timeoutMessage:
+        'second focus target should receive focus after ArrowDown',
+    });
+    assert.deepEqual(this.keys, ['ArrowDown']);
+
+    await triggerKeyEvent(secondTarget, 'keydown', 'Enter');
+    await waitUntil(() => this.keys.includes('Enter'), {
+      timeoutMessage: 'Enter key should be observed by focus target handler',
+    });
+    assert.deepEqual(this.keys, ['ArrowDown', 'Enter']);
   });
 
   module('providing a header', function (hooks) {

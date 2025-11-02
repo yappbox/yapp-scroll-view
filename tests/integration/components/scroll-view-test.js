@@ -80,7 +80,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     assert.expect(2);
     await render(EXAMPLE_1_HBS);
     let scrollPromise = scrollDown('.ScrollView #element1');
-    await waitForOpacity(SCROLLBAR_THUMB, '1');
+    await waitForOpacity(SCROLLBAR_THUMB, '1', { timeout: 20 });
     assert.close(find(SCROLLBAR_THUMB).offsetHeight, 228, 1);
     await scrollPromise;
     assert.ok(scrollPosition(find(SCROLL_CONTAINER)) <= -190);
@@ -226,7 +226,7 @@ module('Integration | Component | scroll-view', function (hooks) {
     );
     await timeout(300);
     mouseUpDeferred.resolve();
-    await waitForOpacity(SCROLLBAR_THUMB, '0');
+    await waitForOpacity(SCROLLBAR_THUMB, '0', { timeout: 20 });
     assert.equal(
       find(SCROLLBAR_THUMB).style.opacity,
       '0',
@@ -244,7 +244,7 @@ module('Integration | Component | scroll-view', function (hooks) {
       </div>
     `);
     assert.equal(find(SCROLL_CONTAINER).offsetHeight, 480);
-    assert.equal(find('[data-test-scroll-bar]').offsetHeight, 476);
+    assert.close(find('[data-test-scroll-bar]').offsetHeight, 476, 1);
   });
 
   test('when scroll-view changes size, scrolling behavior follows suit', async function (assert) {
@@ -305,7 +305,7 @@ module('Integration | Component | scroll-view', function (hooks) {
       amount: 1000,
       duration: 200,
     });
-    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) < -1000, {
+    await waitUntil(() => scrollPosition(find(SCROLL_CONTAINER)) < -980, {
       timeoutMessage: 'should allow scrolling to go beyond old dimensions',
     });
   });

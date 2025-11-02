@@ -28,7 +28,12 @@
   {{/if}}
 
   {{#if (not (and (has-block 'header') (is-empty this.headerDimensions)))}}
-    <div data-test-collection-items-container style={{html-safe (concat "position:relative;height:" this.contentSize.height "px;width:" this.contentSize.width "px")}}>
+    <div
+      data-test-collection-items-container
+      role="list"
+      style={{html-safe (concat "position:relative;height:" this.contentSize.height "px;width:" this.contentSize.width "px")}}
+      {{did-update this.onItemsDidUpdate this.itemsLength}}
+    >
       <CollectionScrollView::CollectionItems
         @clientSize={{this.collectionClientSize}}
         @scrollTop={{this.collectionScrollTop}}
@@ -40,7 +45,18 @@
         as |cells|
       >
         {{~#each cells as |cell|~}}
-          <div style={{html-safe cell.style}} data-collection-scroll-view-cell-container-id={{cell.containerId}}>{{yield cell.item cell.index scrollViewApi to="row"}}</div>
+          {{!-- template-lint-disable require-context-role --}}
+          <div
+            style={{html-safe cell.style}}
+            role="listitem"
+            tabindex={{if (eq cell.index this.activeCellIndex) "0" "-1"}}
+            aria-posinset={{add cell.index 1}}
+            aria-setsize={{this.itemsLength}}
+            data-collection-scroll-view-cell-container-id={{cell.containerId}}
+            data-collection-scroll-view-cell-index={{cell.index}}
+            {{on "focusin" (fn this.handleCellFocus cell.index)}}
+            {{on "keydown" (fn this.handleCellKeydown scrollViewApi cell.index)}}
+          >{{yield cell.item cell.index scrollViewApi to="row"}}</div>
         {{~/each~}}
       </CollectionScrollView::CollectionItems>
     </div>
