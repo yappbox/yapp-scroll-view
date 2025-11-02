@@ -39,8 +39,5 @@ module.exports = {
     ) {
       this.doNotExportComponents = true;
     }
-
-    this.import('vendor/zynga-scroller/Animate.js');
-    this.import('vendor/zynga-scroller/Scroller.js');
   },
 };

@@ -53,9 +53,6 @@ importers:
       eventemitter3:
         specifier: ^5.0.1
         version: 5.0.1
-      hammerjs:
-        specifier: ^2.0.8
-        version: 2.0.8
       macro-decorators:
         specifier: ^0.1.2
         version: 0.1.2
@@ -3920,10 +3917,6 @@ packages:
 
   growly@1.3.0:
     resolution: {integrity: sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==}
-
-  hammerjs@2.0.8:
-    resolution: {integrity: sha512-tSQXBXS/MWQOn/RKckawJ61vvsDpCom87JgxiYdGwHdOa0ht0vzUWDlfioofFCRU0L+6NGDt6XzbgoJvZkMeRQ==}
-    engines: {node: '>=0.8.0'}
 
   handlebars@4.7.8:
     resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
@@ -12184,7 +12177,6 @@ snapshots:
 
   growly@1.3.0: {}
 
-  hammerjs@2.0.8: {}
 
   handlebars@4.7.8:
     dependencies:

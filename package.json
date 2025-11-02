@@ -45,7 +45,6 @@
     "ember-set-helper": "^3.1.0",
     "ember-truth-helpers": "^4.0.3",
     "eventemitter3": "^5.0.1",
-    "hammerjs": "^2.0.8",
     "macro-decorators": "^0.1.2",
     "tracked-built-ins": "^4.0.0",
     "webpack": "^5.95.0"
