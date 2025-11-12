@@ -23,6 +23,9 @@ importers:
       '@glimmer/tracking':
         specifier: ^1.1.2
         version: 1.1.2
+      '@html-next/vertical-collection':
+        specifier: 4.0.2
+        version: 4.0.2
       broccoli-stew:
         specifier: ^3.0.0
         version: 3.0.0
@@ -126,6 +129,9 @@ importers:
       ember-collection:
         specifier: ^3.0.0
         version: 3.0.0(@babel/core@7.28.5)
+      ember-composable-helpers:
+        specifier: ^5.0.0
+        version: 5.0.0
       ember-disable-prototype-extensions:
         specifier: ^1.1.3
         version: 1.1.3
@@ -135,6 +141,9 @@ importers:
       ember-qunit:
         specifier: ^7.0.0
         version: 7.0.0(@ember/test-helpers@3.3.1(@babel/core@7.28.5)(ember-source@4.12.4(@babel/core@7.28.5)(@glimmer/component@1.1.2(@babel/core@7.28.5))(webpack@5.102.1))(webpack@5.102.1))(ember-source@4.12.4(@babel/core@7.28.5)(@glimmer/component@1.1.2(@babel/core@7.28.5))(webpack@5.102.1))(qunit@2.24.2)(webpack@5.102.1)
+      ember-raf-scheduler:
+        specifier: 0.3.0
+        version: 0.3.0
       ember-resolver:
         specifier: ^13.1.1
         version: 13.1.1
@@ -914,6 +923,10 @@ packages:
     resolution: {integrity: sha512-D76vKOZFEGA9v6g0rZTYTQDUXNopCblW1Zeas3EEVrbdeh8gWrCEO9/goocKmcgtqAwv1Md76p58UQp7HeFTEw==}
     engines: {node: ^18 || ^20 || ^22 || >=24}
 
+  '@html-next/vertical-collection@4.0.2':
+    resolution: {integrity: sha512-S8cgntEDdXrOwdylVGDh1BFe+nX5uuUzzb3teh1FE++/kbqsOfUpXOYRUsEzsqb0fRqcm6eLxvtNb282Zr67rQ==}
+    engines: {node: '>= 14.*'}
+
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
     engines: {node: '>=10.10.0'}
@@ -1301,6 +1314,10 @@ packages:
 
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
+
+  '@types/broccoli-plugin@3.0.4':
+    resolution: {integrity: sha512-VfG0WydDHFr6MGj75U16bKxOnrl8uP9bXvq7VD+NuvnAq5/22cQDrf8o7BnzBJQt+Xm9jkPt1hh2EHVWluGYIA==}
+    deprecated: This is a stub types definition. broccoli-plugin provides its own type definitions, so you do not need this installed.
 
   '@types/chai-as-promised@7.1.8':
     resolution: {integrity: sha512-ThlRVIJhr69FLlh6IctTXFkmhtP3NpMZ2QGq69StYLyKZFp/HOp1VdKZj7RvfNWYYcJ1xlbLGLLWj1UvP5u/Gw==}
@@ -1949,6 +1966,9 @@ packages:
   babel-types@6.26.0:
     resolution: {integrity: sha512-zhe3V/26rCWsEZK8kZN+HaQj5yQ1CilTObixFzKW1UWjqG7618Twz6YEsCnjfg5gBcJh02DrpCkS9h98ZqDY+g==}
 
+  babel6-plugin-strip-class-callcheck@6.0.0:
+    resolution: {integrity: sha512-biNFJ7JAK4+9BwswDGL0dmYpvXHvswOFR/iKg3Q/f+pNxPEa5bWZkLHI1fW4spPytkHGMe7f/XtYyhzml9hiWg==}
+
   babylon@6.18.0:
     resolution: {integrity: sha512-q/UEjfGJ2Cm3oKV71DJz9d25TPnq5rhBVL2Q4fA5wcC3jcrdn7+SssEybFIxwAvvP+YCsCYNKughoF33GxgycQ==}
     hasBin: true
@@ -2079,6 +2099,10 @@ packages:
   broccoli-funnel-reducer@1.0.0:
     resolution: {integrity: sha512-SaOCEdh+wnt2jFUV2Qb32m7LXyElvFwW3NKNaEJyi5PGQNwxfqpkc0KI6AbQANKgdj/40U2UC0WuGThFwuEUaA==}
 
+  broccoli-funnel@2.0.1:
+    resolution: {integrity: sha512-C8Lnp9TVsSSiZMGEF16C0dCiNg2oJqUKwuZ1K4kVC6qRPG/2Cj/rtB5kRCC9qEbwqhX71bDbfHROx0L3J7zXQg==}
+    engines: {node: ^4.5 || 6.* || >= 7.*}
+
   broccoli-funnel@2.0.2:
     resolution: {integrity: sha512-/vDTqtv7ipjEZQOVqO4vGDVAOZyuYzQ/EgGoyewfOgh1M7IQAToBKZI0oAQPgMBeFPPlIbfMuAngk+ohPBuaHQ==}
     engines: {node: ^4.5 || 6.* || >= 7.*}
@@ -2147,6 +2171,10 @@ packages:
   broccoli-plugin@4.0.7:
     resolution: {integrity: sha512-a4zUsWtA1uns1K7p9rExYVYG99rdKeGRymW0qOCNkvDPHQxVi3yVyJHhQbM3EZwdt2E0mnhr5e0c/bPpJ7p3Wg==}
     engines: {node: 10.* || >= 12.*}
+
+  broccoli-rollup@5.0.0:
+    resolution: {integrity: sha512-QdMuXHwsdz/LOS8zu4HP91Sfi4ofimrOXoYP/lrPdRh7lJYD87Lfq4WzzUhGHsxMfzANIEvl/7qVHKD3cFJ4tA==}
+    engines: {node: '>=12.0'}
 
   broccoli-sass-source-maps@4.3.0:
     resolution: {integrity: sha512-t/YEueiFAOboCERQsH6J9RmifEDkqkoFjIB6owIeilpSbhJbNXj0FfzWcXnG/ahKYByHE4g3H7agHr2mtlJdDw==}
@@ -3102,6 +3130,10 @@ packages:
     resolution: {integrity: sha512-BtkjulweiXo9c3yVWrtexw2dTmBrvavD/xixNC6TKOBdrixUwU+6nuOO9dufDWsMxoid7MvtmDpzc9+mE8PdaA==}
     engines: {node: 10.* || >= 12.*}
 
+  ember-composable-helpers@5.0.0:
+    resolution: {integrity: sha512-gyUrjiSju4QwNrsCLbBpP0FL6VDFZaELNW7Kbcp60xXhjvNjncYgzm4zzYXhT+i1lLA6WEgRZ3lOGgyBORYD0w==}
+    engines: {node: 12.* || 14.* || >= 16}
+
   ember-concurrency@4.0.6:
     resolution: {integrity: sha512-Ikwl2YwXVe8aBwrT1deWTcUVxVu6KxS1qeU1ks3EML1Q/nxwKgxCkGqTJavxczawO8H/SIW45dV4r7z5Yqd2Xg==}
     engines: {node: 16.* || >= 18}
@@ -3153,6 +3185,10 @@ packages:
       '@ember/test-helpers': '>=3.0.3'
       ember-source: '>=4.0.0'
       qunit: ^2.13.0
+
+  ember-raf-scheduler@0.3.0:
+    resolution: {integrity: sha512-i8JWQidNCX7n5TOTIKRDR0bnsQN9aJh/GtOJKINz2Wr+I7L7sYVhli6MFqMYNGKC9j9e6iWsznfAIxddheyEow==}
+    engines: {node: 12.* || 14.* || >= 16}
 
   ember-ref-bucket@5.0.8:
     resolution: {integrity: sha512-OYKLpryoyrwDYpKTqrGIx7cvAouv3cLwY1YkTZjXYp+NM+J5PtNu+Zmend4EtQpKQhrOI+UDEcL2ERl2fXl91g==}
@@ -3435,6 +3471,9 @@ packages:
   estraverse@5.3.0:
     resolution: {integrity: sha512-MMdARuVEQziNTeJD8DgMqmhwR11BRQ/cBP+pLtYdSTnf3MIO8fFeiINEbX36ZdNlfU/7A9f3gUw49B3oQsvwBA==}
     engines: {node: '>=4.0'}
+
+  estree-walker@0.6.1:
+    resolution: {integrity: sha512-SqmZANLWS0mnatqbSfRP5g8OXZC12Fgg1IwNtLsyHDzJizORW4khDfjPqJZsemPWBB2uqykUah5YpQ6epsqC/w==}
 
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
@@ -3750,6 +3789,11 @@ packages:
 
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
+
+  fsevents@2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
@@ -5134,6 +5178,9 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
+  node-modules-path@1.0.2:
+    resolution: {integrity: sha512-6Gbjq+d7uhkO7epaKi5DNgUJn7H0gEyA4Jg0Mo1uQOi3Rk50G83LtmhhFyw0LxnAFhtlspkiiw52ISP13qzcBg==}
+
   node-notifier@10.0.1:
     resolution: {integrity: sha512-YX7TSyDukOZ0g+gmzjB6abKu+hTGvO8+8+gIFDsRCU2t8fLV/P2unmt+LGFaIa4y64aX98Qksa97rgz4vMNeLQ==}
 
@@ -5917,6 +5964,14 @@ packages:
   rimraf@3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     deprecated: Rimraf versions prior to v4 are no longer supported
+    hasBin: true
+
+  rollup-pluginutils@2.8.2:
+    resolution: {integrity: sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==}
+
+  rollup@2.79.2:
+    resolution: {integrity: sha512-fS6iqSPZDs3dr/y7Od6y5nha8dW1YnbgtsyotCVvoFGKbERG++CVRFv1meyGDE1SNItQA8BrnCw7ScdAhRJ3XQ==}
+    engines: {node: '>=10.0.0'}
     hasBin: true
 
   rsvp@3.2.1:
@@ -7934,6 +7989,19 @@ snapshots:
 
   '@handlebars/parser@2.2.1': {}
 
+  '@html-next/vertical-collection@4.0.2':
+    dependencies:
+      babel6-plugin-strip-class-callcheck: 6.0.0
+      broccoli-funnel: 3.0.8
+      broccoli-merge-trees: 4.2.0
+      broccoli-rollup: 5.0.0
+      ember-cli-babel: 7.26.11
+      ember-cli-htmlbars: 6.3.0
+      ember-cli-version-checker: 5.1.2
+      ember-raf-scheduler: 0.3.0
+    transitivePeerDependencies:
+      - supports-color
+
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
@@ -8317,6 +8385,12 @@ snapshots:
     dependencies:
       '@types/connect': 3.4.38
       '@types/node': 24.9.2
+
+  '@types/broccoli-plugin@3.0.4':
+    dependencies:
+      broccoli-plugin: 4.0.7
+    transitivePeerDependencies:
+      - supports-color
 
   '@types/chai-as-promised@7.1.8':
     dependencies:
@@ -9262,6 +9336,8 @@ snapshots:
       lodash: 4.17.21
       to-fast-properties: 1.0.3
 
+  babel6-plugin-strip-class-callcheck@6.0.0: {}
+
   babylon@6.18.0: {}
 
   backbone@1.6.1:
@@ -9524,6 +9600,24 @@ snapshots:
 
   broccoli-funnel-reducer@1.0.0: {}
 
+  broccoli-funnel@2.0.1:
+    dependencies:
+      array-equal: 1.0.2
+      blank-object: 1.0.2
+      broccoli-plugin: 1.3.1
+      debug: 2.6.9
+      fast-ordered-set: 1.0.3
+      fs-tree-diff: 0.5.9
+      heimdalljs: 0.2.6
+      minimatch: 3.1.2
+      mkdirp: 0.5.6
+      path-posix: 1.0.0
+      rimraf: 2.7.1
+      symlink-or-copy: 1.3.1
+      walk-sync: 0.3.4
+    transitivePeerDependencies:
+      - supports-color
+
   broccoli-funnel@2.0.2:
     dependencies:
       array-equal: 1.0.2
@@ -9689,6 +9783,20 @@ snapshots:
       quick-temp: 0.1.8
       rimraf: 3.0.2
       symlink-or-copy: 1.3.1
+    transitivePeerDependencies:
+      - supports-color
+
+  broccoli-rollup@5.0.0:
+    dependencies:
+      '@types/broccoli-plugin': 3.0.4
+      broccoli-plugin: 4.0.7
+      fs-tree-diff: 2.0.1
+      heimdalljs: 0.2.6
+      node-modules-path: 1.0.2
+      rollup: 2.79.2
+      rollup-pluginutils: 2.8.2
+      symlink-or-copy: 1.3.1
+      walk-sync: 2.2.0
     transitivePeerDependencies:
       - supports-color
 
@@ -10940,6 +11048,15 @@ snapshots:
       - '@babel/core'
       - supports-color
 
+  ember-composable-helpers@5.0.0:
+    dependencies:
+      '@babel/core': 7.28.5
+      broccoli-funnel: 2.0.1
+      ember-cli-babel: 7.26.11
+      resolve: 1.22.11
+    transitivePeerDependencies:
+      - supports-color
+
   ember-concurrency@4.0.6(@babel/core@7.28.5):
     dependencies:
       '@babel/helper-module-imports': 7.27.1
@@ -11035,6 +11152,12 @@ snapshots:
       - '@glint/template'
       - supports-color
       - webpack
+
+  ember-raf-scheduler@0.3.0:
+    dependencies:
+      ember-cli-babel: 7.26.11
+    transitivePeerDependencies:
+      - supports-color
 
   ember-ref-bucket@5.0.8(@babel/core@7.28.5)(webpack@5.102.1):
     dependencies:
@@ -11489,6 +11612,8 @@ snapshots:
   estraverse@4.3.0: {}
 
   estraverse@5.3.0: {}
+
+  estree-walker@0.6.1: {}
 
   esutils@2.0.3: {}
 
@@ -11962,6 +12087,9 @@ snapshots:
       - supports-color
 
   fs.realpath@1.0.0: {}
+
+  fsevents@2.3.3:
+    optional: true
 
   function-bind@1.1.2: {}
 
@@ -13503,6 +13631,8 @@ snapshots:
 
   node-int64@0.4.0: {}
 
+  node-modules-path@1.0.2: {}
+
   node-notifier@10.0.1:
     dependencies:
       growly: 1.3.0
@@ -14330,6 +14460,14 @@ snapshots:
   rimraf@3.0.2:
     dependencies:
       glob: 7.2.3
+
+  rollup-pluginutils@2.8.2:
+    dependencies:
+      estree-walker: 0.6.1
+
+  rollup@2.79.2:
+    optionalDependencies:
+      fsevents: 2.3.3
 
   rsvp@3.2.1: {}
 
