@@ -1,56 +1,44 @@
-<ScrollView
-    class="CollectionScrollView"
-    @contentHeight={{this.scrollHeight}}
-    @scrollTopOffset={{@scrollTopOffset}}
-    @initialScrollTop={{@initialScrollTop}}
-    @key={{@key}}
-    @auxiliaryComponent={{if @auxiliaryComponent
-      (component @auxiliaryComponent
-        cellLayout=this.cellLayout
-        items=@items
-        clientSize=this.collectionClientSize
-        scrollTop=this.collectionScrollTop
-        verticalOffset=this.visibleHeaderHeight
-      )
-    }}
-    @clientSizeChange={{this.clientSizeChange}}
-    @scrollChange={{this.scrollChange}}
-    @scrolledToTopChange={{this.onScrolledToTopChange}}
-    {{create-ref 'element'}}
-    ...attributes
-  as |scrollViewApi|
+<div
+  class="CollectionScrollView-scrollContainer"
+  data-test-scroll-container
+  {{this.registerScrollElement}}
+  {{on "scroll" this.handleScroll}}
+  {{on-resize this.handleResize}}
 >
-
-  {{#if (has-block 'header')}}
-    <div {{on-resize (fn this.updateHeaderDimensions scrollViewApi)}}>
-      {{yield to="header"}}
-    </div>
+  {{#if @auxiliaryComponent}}
+    {{component @auxiliaryComponent
+      cellLayout=@cellLayout
+      items=@items
+      clientSize=this.collectionClientSize
+      scrollTop=this.scrollTop
+      verticalOffset=this.visibleHeaderHeight
+    }}
   {{/if}}
-
-  {{#if (not (and (has-block 'header') (is-empty this.headerDimensions)))}}
-    <div data-test-collection-items-container style={{html-safe (concat "position:relative;height:" this.contentSize.height "px;width:" this.contentSize.width "px")}}>
-      <CollectionScrollView::CollectionItems
-        @clientSize={{this.collectionClientSize}}
-        @scrollTop={{this.collectionScrollTop}}
-        @estimatedSize={{hash width=@estimated-width height=@estimated-height}}
-        @items={{@items}}
-        @buffer={{@buffer}}
-        @cellLayout={{this.cellLayout}}
-        @onContentSizeUpdated={{this.updateContentSizeAfterRender}}
-        as |cells|
-      >
-        {{~#each cells as |cell|~}}
-          <div style={{html-safe cell.style}} data-collection-scroll-view-cell-container-id={{cell.containerId}}>{{yield cell.item cell.index scrollViewApi to="row"}}</div>
-        {{~/each~}}
-      </CollectionScrollView::CollectionItems>
-    </div>
-  {{/if}}
+  <VerticalCollection
+    @bufferSize={{@buffer}}
+    @estimateHeight={{@estimateItemHeight}}
+    @firstVisibleChanged={{this.firstVisibleChanged}}
+    @items={{@items}}
+    @key={{or @itemKey "id"}}
+    @registerAPI={{this.registerAPI}}
+    @renderAll={{false}}
+    @staticHeight={{@staticHeight}}
+    @width={{@width}}
+    as |item index|
+  >
+    {{yield item index to="row"}}
+  </VerticalCollection>
+  {{emitter-action
+    emitter=this.windowRef
+    eventName="requestScrollToTop"
+    action=this.scrollToTopIfInViewport
+  }}
 
   {{#if @revealService}}
     {{emitter-action
       emitter=@revealService
       eventName="revealItemById"
-      action=(fn this.scrollToItem scrollViewApi)
+      action=this.scrollToItem
     }}
   {{/if}}
-</ScrollView>
+</div>

@@ -99,3 +99,5 @@ jobs:
 
       - name: Run ember-try scenario
         run: pnpm exec ember try:one $EMBER_TRY_SCENARIO --skip-cleanup
+        env:
+          CHROME_OPTS: '--headless --disable-gpu --window-size=1280,720'
