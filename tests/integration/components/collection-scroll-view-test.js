@@ -91,6 +91,56 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
   });
 
+  test('it passes splatable attributes to the scroll container', async function (assert) {
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+          data-test-scroll-container="true"
+          class="custom-scroll-container"
+        >
+          <:row as |item|>
+            <div class="list-item" data-list-item-id={{item.id}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+    let container = document.querySelector(SCROLL_CONTAINER);
+    assert.ok(container);
+    assert.dom(container).hasAttribute('data-test-scroll-container', 'true');
+    assert.dom(container).hasClass('custom-scroll-container');
+  });
+
+  test('it can have a role', async function (assert) {
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+          role="list"
+        >
+          <:row as |item|>
+            <div class="list-item" data-list-item-id={{item.id}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+    assert.dom(SCROLL_CONTAINER).hasAttribute('role', 'list');
+  });
+
   test('it handles scroll view changing size', async function (assert) {
     await render(EXAMPLE_1_HBS);
     assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
