@@ -4,6 +4,8 @@
   {{this.registerScrollElement}}
   {{on "scroll" this.handleScroll}}
   {{on-resize this.handleResize}}
+  role={{if @role @role}}
+  ...attributes
 >
   {{#if @auxiliaryComponent}}
     {{component @auxiliaryComponent
