@@ -83,6 +83,11 @@ export default class CollectionScrollView extends Component {
     };
   });
 
+  willDestroy() {
+    super.willDestroy(...arguments);
+    this.scrollElement = null;
+  }
+
   get isInViewport() {
     if (!this.scrollElement) {
       return false;
