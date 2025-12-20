@@ -227,6 +227,39 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
     assert.ok(find(SCROLL_CONTAINER).scrollTop >= 100);
   });
 
+  test('it defers scroll position restore until loading completes', async function (assert) {
+    this.set('isLoading', true);
+
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+          @initialScrollTop={{520}}
+          @isLoading={{this.isLoading}}
+        >
+          <:row as |item|>
+            <div class="list-item" data-list-item-id={{item.id}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
+
+    this.set('isLoading', false);
+    await waitUntil(() => find(SCROLL_CONTAINER).scrollTop === 520);
+    assert.equal(find(SCROLL_CONTAINER).scrollTop, 520);
+    await waitUntilText('Ten');
+    assert.dom(SCROLL_CONTAINER).containsText('Ten');
+  });
+
   test('revealItemById does not scroll if source is within the CollectionScrollView', async function (assert) {
     let fakeRevealService = new FakeRevealService();
     this.set('revealService', fakeRevealService);
