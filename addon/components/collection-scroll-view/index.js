@@ -13,6 +13,8 @@ export default class CollectionScrollView extends Component {
   @tracked clientHeight;
   @tracked scrollTop = 0;
   scrollElement;
+  _didRequestInitialRestore = false;
+  _restoreRafId = null;
 
   get headerHeight() {
     return this.args.headerHeight || 0;
@@ -47,13 +49,27 @@ export default class CollectionScrollView extends Component {
     return result;
   }
 
+  maybeRequestInitialRestore() {
+    if (this._didRequestInitialRestore) {
+      return;
+    }
+    if (this.args.isLoading) {
+      return;
+    }
+    if (!this._hasInitialVisibleChange) {
+      return;
+    }
+    this._didRequestInitialRestore = true;
+    this.restoreScrollPosition();
+  }
+
   firstVisibleChanged = (firstVisibleItem) => {
     this.args.firstVisibleChanged?.(firstVisibleItem);
 
     if (!this._hasInitialVisibleChange) {
       this._hasInitialVisibleChange = true;
-      this.restoreScrollPosition();
     }
+    this.maybeRequestInitialRestore();
   };
 
   get visibleHeaderHeight() {
@@ -83,8 +99,18 @@ export default class CollectionScrollView extends Component {
     };
   });
 
+  watchIsLoading = modifier((_element, [isLoading]) => {
+    if (!isLoading) {
+      this.maybeRequestInitialRestore();
+    }
+  });
+
   willDestroy() {
     super.willDestroy(...arguments);
+    if (this._restoreRafId) {
+      cancelAnimationFrame(this._restoreRafId);
+      this._restoreRafId = null;
+    }
     this.scrollElement = null;
   }
 
@@ -244,7 +270,10 @@ export default class CollectionScrollView extends Component {
     }
     this._pendingRestoreAttempts = (this._pendingRestoreAttempts ?? 0) + 1;
     this._restoreScheduled = true;
-    scheduleOnce('afterRender', this, this.applyPendingRestore);
+    this._restoreRafId = requestAnimationFrame(() => {
+      this._restoreRafId = null;
+      this.applyPendingRestore();
+    });
   }
 
   applyPendingRestore() {
@@ -260,6 +289,11 @@ export default class CollectionScrollView extends Component {
     let targetScrollTop = Math.max(0, position);
     this.scrollElement.scrollTop = targetScrollTop;
     this.scrollTop = targetScrollTop;
+    try {
+      this.scrollElement.dispatchEvent(new Event('scroll'));
+    } catch (e) {
+      // ignore
+    }
     this._pendingRestorePosition = undefined;
     this._pendingRestoreAttempts = 0;
   }
