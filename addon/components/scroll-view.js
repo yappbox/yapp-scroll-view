@@ -518,7 +518,7 @@ class ScrollView extends Component {
       scrollViewElement: { offsetWidth, offsetHeight },
     } = this;
     let contentHeight = this.args.contentHeight;
-    if (this._shouldMeasureContent) {
+    if (this._shouldMeasureContent && !this.args.isLoadingMore) {
       contentHeight = this.contentElement.offsetHeight;
     }
 
