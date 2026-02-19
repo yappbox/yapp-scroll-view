@@ -312,8 +312,8 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       assert.expect(8);
       this.set('initialScrollTop', 0);
       await render(HBS_WITH_HEADER);
+      await waitUntilText('This list is fancy');
       assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
-      await waitUntilText('One');
       assert.dom(SCROLL_CONTAINER).containsText('One');
       assertDoNotOverlap(
         assert,

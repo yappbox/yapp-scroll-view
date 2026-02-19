@@ -9,7 +9,6 @@ import { join, schedule } from '@ember/runloop';
 import { translate } from '../utils/translate.js';
 import { task, timeout, waitForQueue } from 'ember-concurrency';
 import ScrollViewApi from '../utils/scroll-view-api.js';
-import { DEBUG } from '@glimmer/env';
 import { buildWaiter } from '@ember/test-waiters';
 import { isTesting } from '@embroider/macros';
 import { cached } from '@glimmer/tracking';
@@ -148,7 +147,7 @@ class ScrollView extends Component {
     this.scrollViewElement = null;
     this._scrollPositionCallbacks = [];
     this.remember(this._lastKey);
-    if (DEBUG) {
+    {
       if (isTesting()) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
       }
@@ -222,7 +221,7 @@ class ScrollView extends Component {
       this.args.scrolledToTopChange(isAtTop);
     }
     this._appliedScrollTop = scrollTop;
-    if (DEBUG) {
+    {
       this._trackIsScrollingForWaiter(isScrolling);
     }
   }
@@ -238,7 +237,7 @@ class ScrollView extends Component {
       0,
     );
     this._preventClickWhileDecelerating = false;
-    if (DEBUG) {
+    {
       this._trackIsScrollingForWaiter(false);
     }
   }
@@ -404,7 +403,7 @@ class ScrollView extends Component {
     if (initialScrollTop) {
       this.scroller.scrollTo(0, initialScrollTop);
     }
-    if (DEBUG) {
+    {
       if (isTesting()) {
         window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
           this.measureClientAndContent();
