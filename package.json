@@ -22,7 +22,7 @@
     "start:js": "rollup --config --watch --no-watch.clearScreen",
     "prepack": "pnpm run build",
     "test": "pnpm build && ember test",
-    "test:ember": "ember test",
+    "test:ember": "pnpm build && ember test",
     "lint": "npx eslint src/ tests/ --ext .js",
     "lint:fix": "npx eslint src/ tests/ --ext .js --fix"
   },
