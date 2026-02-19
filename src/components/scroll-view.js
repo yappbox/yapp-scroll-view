@@ -1,21 +1,19 @@
-/* global Scroller */
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
-// import { argument } from '@ember-decorators/argument';
-// import { Action, optional } from '@ember-decorators/argument/types';
-import normalizeWheel from 'yapp-scroll-view/utils/normalize-wheel';
+import normalizeWheel from '../utils/normalize-wheel.js';
 import Hammer from 'hammerjs';
-import ZyngaScrollerVerticalRecognizer from 'yapp-scroll-view/utils/zynga-scroller-vertical-recognizer';
+import ZyngaScrollerVerticalRecognizer from '../utils/zynga-scroller-vertical-recognizer.js';
 import { join, schedule } from '@ember/runloop';
 import { translate } from 'ember-collection/utils/translate';
 import { task, timeout, waitForQueue } from 'ember-concurrency';
-import ScrollViewApi from 'yapp-scroll-view/utils/scroll-view-api';
+import ScrollViewApi from '../utils/scroll-view-api.js';
 import { DEBUG } from '@glimmer/env';
 import { buildWaiter } from '@ember/test-waiters';
 import { isTesting } from '@embroider/macros';
 import { cached } from '@glimmer/tracking';
+import Scroller from '../vendor/zynga-scroller.js';
 
 let waiter = buildWaiter('yapp-scroll-view:scrolling');
 let measurementWaiter = buildWaiter('yapp-scroll-view:measurement');
@@ -78,30 +76,6 @@ function captureClick(e) {
 }
 
 class ScrollView extends Component {
-  // @argument(optional('number'))
-  // contentHeight; // optional, when not provided, we measure the size
-  //
-  // @argument(optional('string'))
-  // key;
-  //
-  // @argument(optional('number'))
-  // scrollTopOffset; // when provided, we treat "isAtTop" as anywhere before this offset
-
-  // @argument(optional('number'))
-  // initialScrollTop;
-  //
-  // @argument(optional('any'))
-  // auxiliaryComponent;
-  //
-  // @argument(optional(Action))
-  // clientSizeChange;
-  //
-  // @argument(optional(Action))
-  // scrollChange;
-  //
-  // @argument(optional(Action))
-  // scrolledToTopChange;
-
   _scrollTop = 0;
   _isAtTop;
   _needsContentSizeUpdate = true;
@@ -216,9 +190,6 @@ class ScrollView extends Component {
       this.measureClientAndContent();
     }
 
-    // There are times when onScrollComplete is not called. This is due to subtleties
-    // In how the hammer recognizer pass events around. This debounced call will ensure
-    // scroll thumb is hidden 500ms after the last onScrollChange call
     this.debouncedOnScrollingComplete();
   }
 
@@ -349,23 +320,12 @@ class ScrollView extends Component {
   }
 
   doTouchEnd(_touches, timeStamp, event) {
-    // In most cases, `doTouchStart` is being called before `doTouchEnd`, allowing to set `_touchStartTimeStamp`
-    // It is not true when the event occurs on some elements (`input`, `textarea`, or `select`) which can be scrolled.
-    // In this case, `ZyngaScrollerVerticalOrganizer` will not call `doTouchStart`
     let touchDuration = this._touchStartTimeStamp
       ? timeStamp - this._touchStartTimeStamp
       : 0;
     let preventClick = this.needsPreventClick(touchDuration);
 
     if (preventClick) {
-      // A touchend event can prevent a follow-on click event by calling preventDefault.
-      // On Android, it works well.
-      // On iOS, we see a click event being triggered after a touchend event,
-      // even when `preventDefault` and `stopPropagation` were called. However, phantom clicks
-      // are not triggered consistently. In order to avoid capturing legit click events,
-      // we only try to capture phantom clicks if they happen less than 100ms after a touchend event.
-      // On desktop browsers, a mouseup event cannot do this so we need to capture the upcoming click instead.
-
       if (isIPhone || event instanceof MouseEvent) {
         addCaptureClick(this.scrollViewElement);
       }
@@ -382,17 +342,6 @@ class ScrollView extends Component {
   }
 
   needsPreventClick(touchDuration) {
-    // There are three cases where we want to prevent the click that normally follows a mouseup/touchend.
-    //
-    // 1) when the user is just finishing a purposeful scroll (i.e. dragging scroll view beyond a threshold)
-    //    This is only true on a desktop.
-    // 2) when animating with "momentum", a tap should stop the movement rather than
-    //    trigger an interactive element that may be under the tap. Zynga scroller
-    //    takes care of stopping the movement, but we need to capture the click
-    //    and stop propagation.
-    // 3) when the user does a long press (> 500 ms)
-    //
-    // This method determines whether either of these cases apply.
     let momentumVelocity =
       this._touchStartDecelerationVelocityY ?? this._decelerationVelocityY ?? 0;
     let isFinishingDragging =
@@ -445,10 +394,6 @@ class ScrollView extends Component {
   }
 
   measurementTask = task(async () => {
-    // Before we check the size for the first time, we capture the intended scroll position
-    // and apply it after we determine and apply the size. The reason we need to do this
-    // is that attempting to apply the scroll position before the scroller has size results
-    // in a scroll position of [0,0].
     let initialScrollTop =
       this.args.initialScrollTop !== undefined
         ? this.args.initialScrollTop
@@ -555,12 +500,10 @@ class ScrollView extends Component {
   });
 
   get extraCssClasses() {
-    // for overriding by LoadingScrollView
     return null;
   }
 
   get windowRef() {
-    // need a way to reference `window` from hbs
     return window;
   }
 
@@ -612,7 +555,7 @@ class ScrollView extends Component {
       let yPos = this._yOffset(el);
       return this.scroller.scrollTo(0, yPos, animated);
     } else {
-      return console.warn('scrollToElement called before scrollView is inDOM'); // eslint-disable-line
+      return console.warn('scrollToElement called before scrollView is inDOM');
     }
   }
 

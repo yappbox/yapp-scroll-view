@@ -1,6 +1,6 @@
 // Inspired by http://stackoverflow.com/a/30134826
 
-import isEventSupported from './is-event-supported';
+import isEventSupported from './is-event-supported.js';
 
 var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 

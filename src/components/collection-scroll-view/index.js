@@ -167,7 +167,6 @@ export default class CollectionScrollView extends Component {
         behavior: 'smooth',
       });
     } catch (e) {
-      // fall through to direct assignment
       element.scrollTop = yPos;
     }
   }
@@ -308,7 +307,6 @@ export default class CollectionScrollView extends Component {
 function isChildComponent(component, candidateChildComponent) {
   let parentView = candidateChildComponent;
   while ((parentView = parentView.parentView)) {
-    // eslint-disable-line no-cond-assign
     if (parentView === component) {
       return true;
     }

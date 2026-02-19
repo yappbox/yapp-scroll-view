@@ -3,15 +3,6 @@ const MIN_THUMB_LENGTH = 15;
 import { action } from '@ember/object';
 
 export default class VerticalScrollBar extends Component {
-  // @argument(optional('number'))
-  // contentHeight;
-  //
-  // @argument(optional('number'))
-  // scrollerHeight;
-  //
-  // @argument(Action)
-  // registerWithScrollView;
-
   _isScrolling = false;
   _scrollTop = 0;
 
@@ -45,7 +36,6 @@ export default class VerticalScrollBar extends Component {
   updateScrollingParameters(isScrolling, scrollTop) {
     this._scrollTop = scrollTop;
     this._isScrolling = isScrolling;
-
     this.updateThumbStyle();
   }
 
