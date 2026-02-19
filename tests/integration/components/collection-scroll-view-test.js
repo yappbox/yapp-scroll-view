@@ -85,7 +85,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
 
   test('it renders', async function (assert) {
     await render(EXAMPLE_1_HBS);
-    await waitUntilText('One');
+    await waitUntilText('Six');
     assert.dom(SCROLL_CONTAINER).containsText('One');
     assert.dom(SCROLL_CONTAINER).containsText('Six');
     assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');

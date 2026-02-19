@@ -1,14 +1,42 @@
+// --- yapp-scroll-view styles (from original app/styles/) ---
+
 .CollectionScrollView-scrollContainer {
   overflow-y: auto;
 }
 
 .ScrollView {
   position: absolute;
-  top: 0;
   left: 0;
-  right: 0;
+  top: 0;
   bottom: 0;
+  right: 0;
   overflow: hidden;
+
+  & > :first-child {
+    position: relative;
+    will-change: transform;
+  }
+  &-scrollBar {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    bottom: 2px;
+    width: 4px;
+  }
+}
+
+.VerticalScrollBar {
+  &-thumb {
+    border-radius: 4px;
+    border: .5px solid rgba(255, 255, 255, 0.4);
+    background-color: rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 350ms cubic-bezier(0.33, 0.66, 0.66, 1);
+    width: 100%;
+    box-sizing: border-box;
+    will-change: opacity, transform, height;
+  }
 }
 
 .list-item {
