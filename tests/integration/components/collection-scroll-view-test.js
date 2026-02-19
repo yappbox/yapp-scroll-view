@@ -212,6 +212,10 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
         'scroll height after orientation change is correct',
       );
       assert.dom(SCROLL_CONTAINER).containsText('Three');
+      await waitUntil(
+        () => !find(SCROLL_CONTAINER).textContent.includes('Six'),
+        { timeoutMessage: 'Six should be occluded after resize' },
+      );
       assert.dom(SCROLL_CONTAINER).doesNotContainText('Six');
     } finally {
       window.removeEventListener('resize', resizeHandler);
@@ -347,7 +351,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       assert.expect(8);
       this.set('initialScrollTop', 180);
       await render(HBS_WITH_HEADER);
-      await waitUntilText('One');
+      await waitUntilText('Three');
       assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
       assert.dom(SCROLL_CONTAINER).containsText('One');
       assertDoNotOverlap(
