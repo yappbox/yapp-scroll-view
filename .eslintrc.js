@@ -2,16 +2,10 @@
 
 module.exports = {
   root: true,
-  parser: '@babel/eslint-parser',
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    requireConfigFile: false,
-    babelOptions: {
-      plugins: [
-        ['@babel/plugin-proposal-decorators', { decoratorsBeforeExport: true }],
-      ],
-    },
   },
   plugins: ['ember'],
   extends: [
@@ -35,11 +29,14 @@ module.exports = {
         './ember-cli-build.js',
         './index.js',
         './testem.js',
+        './rollup.config.mjs',
         './config/**/*.js',
         './tests/dummy/config/**/*.js',
       ],
+      parser: 'espree',
       parserOptions: {
         sourceType: 'script',
+        ecmaVersion: 'latest',
       },
       env: {
         browser: false,

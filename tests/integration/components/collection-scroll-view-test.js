@@ -5,7 +5,7 @@ import { find, render, settled, waitUntil } from '@ember/test-helpers';
 import { scrollPosition } from '../../helpers/scrolling';
 import EmberObject from '@ember/object';
 import { timeout } from 'ember-concurrency';
-import registerRafWaiter from 'ember-raf-scheduler/test-support/register-waiter';
+// ember-raf-scheduler removed — using settled() for test waiting instead
 import EventEmitter from 'eventemitter3';
 
 const SCROLL_CONTAINER = '[data-test-scroll-container]';
@@ -61,7 +61,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       { id: '10', name: 'Ten' },
     ]);
     this.set('revealService', null);
-    registerRafWaiter();
+    // registerRafWaiter(); — removed, relying on settled() instead
   });
   const EXAMPLE_1_HBS = hbs`
     <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>

@@ -6,7 +6,7 @@ import normalizeWheel from '../utils/normalize-wheel.js';
 import Hammer from 'hammerjs';
 import ZyngaScrollerVerticalRecognizer from '../utils/zynga-scroller-vertical-recognizer.js';
 import { join, schedule } from '@ember/runloop';
-import { translate } from 'ember-collection/utils/translate';
+import { translate } from '../utils/translate.js';
 import { task, timeout, waitForQueue } from 'ember-concurrency';
 import ScrollViewApi from '../utils/scroll-view-api.js';
 import { DEBUG } from '@glimmer/env';
