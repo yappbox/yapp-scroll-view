@@ -144,9 +144,11 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
 
   test('it handles scroll view changing size', async function (assert) {
     await render(EXAMPLE_1_HBS);
+    await waitUntilText('Six');
     assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
     this.set('viewportHeight', 1200);
-    await settled();
+    await waitUntil(() => find(SCROLL_CONTAINER).textContent.includes('Eight'));
+    assert.dom(SCROLL_CONTAINER).containsText('Eight');
 
     let container = document.querySelector(SCROLL_CONTAINER);
     assert.equal(
@@ -154,8 +156,6 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       1000,
       'scroll-view should update its scroll container size',
     );
-    await waitUntil(() => find(SCROLL_CONTAINER).textContent.includes('Eight'));
-    assert.dom(SCROLL_CONTAINER).containsText('Eight');
   });
 
   test('the collection adjusts when resized', async function (assert) {
@@ -316,7 +316,7 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
       assert.expect(8);
       this.set('initialScrollTop', 0);
       await render(HBS_WITH_HEADER);
-      await waitUntilText('This list is fancy');
+      await waitUntilText('Three');
       assert.dom(SCROLL_CONTAINER).containsText('This list is fancy');
       assert.dom(SCROLL_CONTAINER).containsText('One');
       assertDoNotOverlap(
