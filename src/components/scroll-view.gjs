@@ -151,10 +151,8 @@ class ScrollView extends Component {
     this.scrollViewElement = null;
     this._scrollPositionCallbacks = [];
     this.remember(this._lastKey);
-    {
-      if (isTesting()) {
-        window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
-      }
+    if (isTesting()) {
+      window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = null;
       this._trackIsScrollingForWaiter(false);
     }
     super.willDestroy(...arguments);
@@ -193,6 +191,9 @@ class ScrollView extends Component {
       this.measureClientAndContent();
     }
 
+    // There are times when onScrollComplete is not called. This is due to subtleties
+    // In how the hammer recognizer pass events around. This debounced call will ensure
+    // scroll thumb is hidden 500ms after the last onScrollChange call
     this.debouncedOnScrollingComplete();
   }
 
@@ -225,7 +226,7 @@ class ScrollView extends Component {
       this.args.scrolledToTopChange(isAtTop);
     }
     this._appliedScrollTop = scrollTop;
-    {
+    if (isTesting()) {
       this._trackIsScrollingForWaiter(isScrolling);
     }
   }
@@ -241,7 +242,7 @@ class ScrollView extends Component {
       0,
     );
     this._preventClickWhileDecelerating = false;
-    {
+    if (isTesting()) {
       this._trackIsScrollingForWaiter(false);
     }
   }
@@ -323,12 +324,23 @@ class ScrollView extends Component {
   }
 
   doTouchEnd(_touches, timeStamp, event) {
+    // In most cases, `doTouchStart` is being called before `doTouchEnd`, allowing to set `_touchStartTimeStamp`
+    // It is not true when the event occurs on some elements (`input`, `textarea`, or `select`) which can be scrolled.
+    // In this case, `ZyngaScrollerVerticalOrganizer` will not call `doTouchStart`
     let touchDuration = this._touchStartTimeStamp
       ? timeStamp - this._touchStartTimeStamp
       : 0;
     let preventClick = this.needsPreventClick(touchDuration);
 
     if (preventClick) {
+      // A touchend event can prevent a follow-on click event by calling preventDefault.
+      // On Android, it works well.
+      // On iOS, we see a click event being triggered after a touchend event,
+      // even when `preventDefault` and `stopPropagation` were called. However, phantom clicks
+      // are not triggered consistently. In order to avoid capturing legit click events,
+      // we only try to capture phantom clicks if they happen less than 100ms after a touchend event.
+      // On desktop browsers, a mouseup event cannot do this so we need to capture the upcoming click instead.
+
       if (isIPhone || event instanceof MouseEvent) {
         addCaptureClick(this.scrollViewElement);
       }
@@ -345,6 +357,17 @@ class ScrollView extends Component {
   }
 
   needsPreventClick(touchDuration) {
+    // There are three cases where we want to prevent the click that normally follows a mouseup/touchend.
+    //
+    // 1) when the user is just finishing a purposeful scroll (i.e. dragging scroll view beyond a threshold)
+    //    This is only true on a desktop.
+    // 2) when animating with "momentum", a tap should stop the movement rather than
+    //    trigger an interactive element that may be under the tap. Zynga scroller
+    //    takes care of stopping the movement, but we need to capture the click
+    //    and stop propagation.
+    // 3) when the user does a long press (> 500 ms)
+    //
+    // This method determines whether either of these cases apply.
     let momentumVelocity =
       this._touchStartDecelerationVelocityY ?? this._decelerationVelocityY ?? 0;
     let isFinishingDragging =
@@ -397,6 +420,10 @@ class ScrollView extends Component {
   }
 
   measurementTask = task(async () => {
+    // Before we check the size for the first time, we capture the intended scroll position
+    // and apply it after we determine and apply the size. The reason we need to do this
+    // is that attempting to apply the scroll position before the scroller has size results
+    // in a scroll position of [0,0].
     let initialScrollTop =
       this.args.initialScrollTop !== undefined
         ? this.args.initialScrollTop
@@ -407,13 +434,11 @@ class ScrollView extends Component {
     if (initialScrollTop) {
       this.scroller.scrollTo(0, initialScrollTop);
     }
-    {
-      if (isTesting()) {
-        window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
-          this.measureClientAndContent();
-        };
-        return;
-      }
+    if (isTesting()) {
+      window.SIMULATE_SCROLL_VIEW_MEASUREMENT_LOOP = () => {
+        this.measureClientAndContent();
+      };
+      return;
     }
     let lastIsInViewport = true;
     // eslint-disable-next-line no-constant-condition
@@ -503,10 +528,12 @@ class ScrollView extends Component {
   });
 
   get extraCssClasses() {
+    // for overriding by LoadingScrollView
     return null;
   }
 
   get windowRef() {
+    // need a way to reference `window` from hbs
     return window;
   }
 

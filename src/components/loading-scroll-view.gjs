@@ -47,6 +47,9 @@ export default class LoadingScrollView extends ScrollView {
   conditionallyTriggerLoadMore() {
     this._lastLoadMoreCheck = +new Date();
 
+    // on Android, the webview has initial content height of 0 until after the first
+    // render cycle completes, so we can't do load-more checks until we have a
+    // non-zero content height applied.
     if (!this.canLoadMore || !this._appliedContentHeight) {
       return;
     }
