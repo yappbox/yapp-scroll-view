@@ -30,9 +30,11 @@
     "@embroider/addon-shim": "^1.9.0",
     "@glimmer/tracking": "^1.1.2",
     "decorator-transforms": "^2.3.0",
+    "ember-cli-sass": "^11.0.1",
     "eventemitter3": "^5.0.1",
     "hammerjs": "^2.0.8",
-    "macro-decorators": "^0.1.2"
+    "macro-decorators": "^0.1.2",
+    "sass": "^1.97.3"
   },
   "devDependencies": {
     "@babel/core": "^7.26.3",
@@ -45,11 +47,13 @@
     "@ember/test-waiters": "^4.1.1",
     "@embroider/addon-dev": "^6.0.0",
     "@embroider/macros": "^1.19.1",
+    "@embroider/template-tag-codemod": "^1.3.5",
     "@embroider/test-setup": "^4.0.0",
     "@glimmer/component": "^1.1.2",
     "@html-next/vertical-collection": "4.0.2",
     "@rollup/plugin-babel": "^6.0.4",
     "@typescript-eslint/parser": "^8.56.0",
+    "@yappbox/yapp-scroll-view": "link:.",
     "babel-plugin-ember-template-compilation": "^2.3.0",
     "broccoli-asset-rev": "^3.0.0",
     "concurrently": "^9.1.2",
@@ -58,7 +62,6 @@
     "ember-cli-babel": "^8.2.0",
     "ember-cli-htmlbars": "^6.3.0",
     "ember-cli-inject-live-reload": "^2.1.0",
-    "ember-cli-sass": "^11.0.1",
     "ember-cli-sri": "^2.1.1",
     "ember-cli-terser": "^4.0.2",
     "ember-concurrency": "^4.0.6",
@@ -83,9 +86,7 @@
     "qunit": "^2.20.0",
     "qunit-dom": "^2.0.0",
     "rollup": "^4.34.0",
-    "sass": "^1.93.2",
-    "webpack": "^5.95.0",
-    "@yappbox/yapp-scroll-view": "link:."
+    "webpack": "^5.95.0"
   },
   "peerDependencies": {
     "@ember/render-modifiers": "^3.0.0",

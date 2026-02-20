@@ -14,6 +14,7 @@ module.exports = function (defaults) {
       webpack: {
         resolve: {
           alias: {
+            '@yappbox/yapp-scroll-view': path.resolve(__dirname, 'dist'),
             'yapp-scroll-view': path.resolve(__dirname, 'dist'),
           },
         },

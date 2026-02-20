@@ -1,8 +1,14 @@
 import Component from '@glimmer/component';
-const MIN_THUMB_LENGTH = 15;
 import { action } from '@ember/object';
+import didInsert from "@ember/render-modifiers/modifiers/did-insert";
+import didUpdate from "@ember/render-modifiers/modifiers/did-update";
+const MIN_THUMB_LENGTH = 15;
 
-export default class VerticalScrollBar extends Component {
+
+export default class VerticalScrollBar extends Component {<template><div class="VerticalScrollBar" ...attributes {{didInsert this.didInsert}} {{didUpdate this.didUpdateScrollerHeight @scrollerHeight}}>
+  <div class="VerticalScrollBar-thumb" data-test-thumb data-thumb></div>
+</div>
+</template>
   _isScrolling = false;
   _scrollTop = 0;
 

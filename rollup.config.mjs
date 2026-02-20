@@ -12,11 +12,13 @@ export default {
   plugins: [
     addon.publicEntrypoints([
       '**/*.js',
+      '**/*.gjs',
       'index.js',
     ]),
 
     addon.appReexports([
       'components/**/*.js',
+      'components/**/*.gjs',
       'helpers/**/*.js',
       'services/**/*.js',
     ]),

@@ -1,8 +1,41 @@
-import ScrollView from './scroll-view.js';
+import ScrollView from './scroll-view.gjs';
+import VerticalScrollBar from './vertical-scroll-bar.gjs';
+import didInsert from '@ember/render-modifiers/modifiers/did-insert';
+import didUpdate from '@ember/render-modifiers/modifiers/did-update';
+import emitterAction from '../helpers/emitter-action.js';
 
 const MAX_LOAD_MORE_FREQUENCY_MS = 1000;
 
 export default class LoadingScrollView extends ScrollView {
+<template>
+<div
+  class="ScrollView {{this.extraCssClasses}}"
+  ...attributes
+  {{didInsert this.didInsert}}
+  {{didUpdate this.onContentHeightChanged @contentHeight}}
+  {{didUpdate this.onKeyUpdated @key}}
+>
+  <div data-test-scroll-container>
+    {{yield this.scrollViewApi}}
+  </div>
+  {{#if @auxiliaryComponent}}
+    {{component @auxiliaryComponent}}
+  {{/if}}
+  <VerticalScrollBar
+      data-test-scroll-bar
+      class="ScrollView-scrollBar"
+      @contentHeight={{this.scrollBarContentHeight}}
+      @scrollerHeight={{this.scrollBarClientHeight}}
+      @registerWithScrollView={{this.scrollViewApi.registerScrollPositionCallback}}
+  />
+  {{emitterAction
+    emitter=this.windowRef
+    eventName="requestScrollToTop"
+    action=this.scrollViewApi.scrollToTopIfInViewport
+  }}
+</div>
+
+</template>
   _lastLoadMoreCheck = +new Date();
 
   onScrollChange(scrollLeft, scrollTop) {

@@ -13,6 +13,10 @@ import { buildWaiter } from '@ember/test-waiters';
 import { isTesting } from '@embroider/macros';
 import { cached } from '@glimmer/tracking';
 import Scroller from '../vendor/zynga-scroller.js';
+import VerticalScrollBar from './vertical-scroll-bar.gjs';
+import didInsert from '@ember/render-modifiers/modifiers/did-insert';
+import didUpdate from '@ember/render-modifiers/modifiers/did-update';
+import emitterAction from '../helpers/emitter-action.js';
 
 let waiter = buildWaiter('yapp-scroll-view:scrolling');
 let measurementWaiter = buildWaiter('yapp-scroll-view:measurement');
@@ -75,6 +79,35 @@ function captureClick(e) {
 }
 
 class ScrollView extends Component {
+<template>
+<div
+  class="ScrollView {{this.extraCssClasses}}"
+  ...attributes
+  {{didInsert this.didInsert}}
+  {{didUpdate this.onContentHeightChanged @contentHeight}}
+  {{didUpdate this.onKeyUpdated @key}}
+>
+  <div data-test-scroll-container>
+    {{yield this.scrollViewApi}}
+  </div>
+  {{#if @auxiliaryComponent}}
+    {{component @auxiliaryComponent}}
+  {{/if}}
+  <VerticalScrollBar
+      data-test-scroll-bar
+      class="ScrollView-scrollBar"
+      @contentHeight={{this.scrollBarContentHeight}}
+      @scrollerHeight={{this.scrollBarClientHeight}}
+      @registerWithScrollView={{this.scrollViewApi.registerScrollPositionCallback}}
+  />
+  {{emitterAction
+    emitter=this.windowRef
+    eventName="requestScrollToTop"
+    action=this.scrollViewApi.scrollToTopIfInViewport
+  }}
+</div>
+
+</template>
   _scrollTop = 0;
   _isAtTop;
   _needsContentSizeUpdate = true;
