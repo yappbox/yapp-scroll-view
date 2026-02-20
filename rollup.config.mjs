@@ -10,11 +10,7 @@ export default {
   output: addon.output(),
 
   plugins: [
-    addon.publicEntrypoints([
-      '**/*.js',
-      '**/*.gjs',
-      'index.js',
-    ]),
+    addon.publicEntrypoints(['**/*.js', '**/*.gjs', 'index.js']),
 
     addon.appReexports([
       'components/**/*.js',
