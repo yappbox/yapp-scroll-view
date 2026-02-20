@@ -1,6 +1,6 @@
 {
-  "name": "yapp-scroll-view",
-  "version": "13.0.0",
+  "name": "@yappbox/yapp-scroll-view",
+  "version": "14.0.0-beta.1",
   "description": "Ember Scrolling components using a Javascript scroller",
   "keywords": [
     "ember-addon"
@@ -85,7 +85,7 @@
     "rollup": "^4.34.0",
     "sass": "^1.93.2",
     "webpack": "^5.95.0",
-    "yapp-scroll-view": "link:."
+    "@yappbox/yapp-scroll-view": "link:."
   },
   "peerDependencies": {
     "@ember/render-modifiers": "^3.0.0",
@@ -120,7 +120,7 @@
     "pnpm": ">= 9"
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org"
+    "registry": "https://npm.pkg.github.com"
   },
   "ember": {
     "edition": "octane"
