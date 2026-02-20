@@ -7,7 +7,7 @@ import VerticalCollection from '@html-next/vertical-collection/components/vertic
 import { on } from '@ember/modifier';
 import onResize from 'ember-on-resize-modifier/modifiers/on-resize';
 import { or } from 'ember-truth-helpers';
-import emitterAction from '../../helpers/emitter-action.js';
+import emitterAction from '../helpers/emitter-action.js';
 
 const MAX_PENDING_RESTORE_ATTEMPTS = 5;
 

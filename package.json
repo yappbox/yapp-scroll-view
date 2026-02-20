@@ -132,7 +132,7 @@
     "type": "addon",
     "main": "addon-main.cjs",
     "app-js": {
-      "./components/collection-scroll-view/index.js": "./dist/_app_/components/collection-scroll-view/index.js",
+      "./components/collection-scroll-view.js": "./dist/_app_/components/collection-scroll-view.js",
       "./components/loading-scroll-view.js": "./dist/_app_/components/loading-scroll-view.js",
       "./components/scroll-view.js": "./dist/_app_/components/scroll-view.js",
       "./components/vertical-scroll-bar.js": "./dist/_app_/components/vertical-scroll-bar.js",
