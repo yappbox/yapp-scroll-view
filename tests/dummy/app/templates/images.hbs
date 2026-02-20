@@ -14,10 +14,11 @@ Item Width: {{this.itemWidth}}
 <div class="simple-list" style={{html-safe (concat 'position:relative;width:' this.containerWidth 'px;height:' this.containerHeight 'px;')}}>
   <CollectionScrollView
     @items={{this.model}}
-    @estimated-height={{this.containerHeight}}
-    @estimated-width={{this.containerWidth}}
+    @estimatedHeight={{this.containerHeight}}
+    @estimatedWidth={{this.containerWidth}}
+    @estimateItemHeight={{this.itemHeight}}
     @buffer={{1}}
-    @cell-layout={{fixed-grid-layout this.itemWidth this.itemHeight}}
+    @cellLayout={{fixed-grid-layout this.itemWidth this.itemHeight}}
   >
     <:row as |item|>
       <div class="list-item">
