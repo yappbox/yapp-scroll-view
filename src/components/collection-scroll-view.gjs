@@ -12,56 +12,6 @@ import emitterAction from '../helpers/emitter-action.js';
 const MAX_PENDING_RESTORE_ATTEMPTS = 5;
 
 export default class CollectionScrollView extends Component {
-  <template>
-    <div
-      class='CollectionScrollView-scrollContainer'
-      data-test-scroll-container
-      {{this.registerScrollElement}}
-      {{this.watchIsLoading @isLoading}}
-      {{on 'scroll' this.handleScroll}}
-      {{onResize this.handleResize}}
-      role={{if @role @role}}
-      ...attributes
-    >
-      {{#if @auxiliaryComponent}}
-        {{component
-          @auxiliaryComponent
-          cellLayout=@cellLayout
-          items=@items
-          clientSize=this.collectionClientSize
-          scrollTop=this.scrollTop
-          verticalOffset=this.visibleHeaderHeight
-        }}
-      {{/if}}
-      <VerticalCollection
-        @bufferSize={{@buffer}}
-        @estimateHeight={{@estimateItemHeight}}
-        @firstVisibleChanged={{this.firstVisibleChanged}}
-        @items={{@items}}
-        @key={{or @itemKey 'id'}}
-        @registerAPI={{this.registerAPI}}
-        @renderAll={{false}}
-        @staticHeight={{@staticHeight}}
-        @width={{@width}}
-        as |item index|
-      >
-        {{yield item index to='row'}}
-      </VerticalCollection>
-      {{emitterAction
-        emitter=this.windowRef
-        eventName='requestScrollToTop'
-        action=this.scrollToTopIfInViewport
-      }}
-
-      {{#if @revealService}}
-        {{emitterAction
-          emitter=@revealService
-          eventName='revealItemById'
-          action=this.scrollToItem
-        }}
-      {{/if}}
-    </div>
-  </template>
   @service('scroll-position-memory') memory;
 
   @tracked clientWidth;
@@ -357,6 +307,56 @@ export default class CollectionScrollView extends Component {
       Boolean(this.scrollElement) && Boolean(this._hasInitialVisibleChange)
     );
   }
+  <template>
+    <div
+      class='CollectionScrollView-scrollContainer'
+      data-test-scroll-container
+      {{this.registerScrollElement}}
+      {{this.watchIsLoading @isLoading}}
+      {{on 'scroll' this.handleScroll}}
+      {{onResize this.handleResize}}
+      role={{if @role @role}}
+      ...attributes
+    >
+      {{#if @auxiliaryComponent}}
+        {{component
+          @auxiliaryComponent
+          cellLayout=@cellLayout
+          items=@items
+          clientSize=this.collectionClientSize
+          scrollTop=this.scrollTop
+          verticalOffset=this.visibleHeaderHeight
+        }}
+      {{/if}}
+      <VerticalCollection
+        @bufferSize={{@buffer}}
+        @estimateHeight={{@estimateItemHeight}}
+        @firstVisibleChanged={{this.firstVisibleChanged}}
+        @items={{@items}}
+        @key={{or @itemKey 'id'}}
+        @registerAPI={{this.registerAPI}}
+        @renderAll={{false}}
+        @staticHeight={{@staticHeight}}
+        @width={{@width}}
+        as |item index|
+      >
+        {{yield item index to='row'}}
+      </VerticalCollection>
+      {{emitterAction
+        emitter=this.windowRef
+        eventName='requestScrollToTop'
+        action=this.scrollToTopIfInViewport
+      }}
+
+      {{#if @revealService}}
+        {{emitterAction
+          emitter=@revealService
+          eventName='revealItemById'
+          action=this.scrollToItem
+        }}
+      {{/if}}
+    </div>
+  </template>
 }
 
 function isChildComponent(component, candidateChildComponent) {
