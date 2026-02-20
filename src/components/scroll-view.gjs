@@ -79,35 +79,34 @@ function captureClick(e) {
 }
 
 class ScrollView extends Component {
-<template>
-<div
-  class="ScrollView {{this.extraCssClasses}}"
-  ...attributes
-  {{didInsert this.didInsert}}
-  {{didUpdate this.onContentHeightChanged @contentHeight}}
-  {{didUpdate this.onKeyUpdated @key}}
->
-  <div data-test-scroll-container>
-    {{yield this.scrollViewApi}}
-  </div>
-  {{#if @auxiliaryComponent}}
-    {{component @auxiliaryComponent}}
-  {{/if}}
-  <VerticalScrollBar
-      data-test-scroll-bar
-      class="ScrollView-scrollBar"
-      @contentHeight={{this.scrollBarContentHeight}}
-      @scrollerHeight={{this.scrollBarClientHeight}}
-      @registerWithScrollView={{this.scrollViewApi.registerScrollPositionCallback}}
-  />
-  {{emitterAction
-    emitter=this.windowRef
-    eventName="requestScrollToTop"
-    action=this.scrollViewApi.scrollToTopIfInViewport
-  }}
-</div>
-
-</template>
+  <template>
+    <div
+      class='ScrollView {{this.extraCssClasses}}'
+      ...attributes
+      {{didInsert this.didInsert}}
+      {{didUpdate this.onContentHeightChanged @contentHeight}}
+      {{didUpdate this.onKeyUpdated @key}}
+    >
+      <div data-test-scroll-container>
+        {{yield this.scrollViewApi}}
+      </div>
+      {{#if @auxiliaryComponent}}
+        {{component @auxiliaryComponent}}
+      {{/if}}
+      <VerticalScrollBar
+        data-test-scroll-bar
+        class='ScrollView-scrollBar'
+        @contentHeight={{this.scrollBarContentHeight}}
+        @scrollerHeight={{this.scrollBarClientHeight}}
+        @registerWithScrollView={{this.scrollViewApi.registerScrollPositionCallback}}
+      />
+      {{emitterAction
+        emitter=this.windowRef
+        eventName='requestScrollToTop'
+        action=this.scrollViewApi.scrollToTopIfInViewport
+      }}
+    </div>
+  </template>
   _scrollTop = 0;
   _isAtTop;
   _needsContentSizeUpdate = true;

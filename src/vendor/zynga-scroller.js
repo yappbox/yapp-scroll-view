@@ -14,25 +14,37 @@
 
 // --- Animate ---
 
-const time = Date.now || function() {
-  return +new Date();
-};
+const time =
+  Date.now ||
+  function () {
+    return +new Date();
+  };
 const desiredFrames = 60;
 const millisecondsPerSecond = 1000;
 let running = {};
 let counter = 1;
 
 const Animate = {
-  requestAnimationFrame: (function() {
-    var requestFrame = typeof window !== 'undefined' && (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame);
+  requestAnimationFrame: (function () {
+    var requestFrame =
+      typeof window !== 'undefined' &&
+      (window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame);
     var isNative = !!requestFrame;
 
-    if (requestFrame && !/requestAnimationFrame\(\)\s*\{\s*\[native code\]\s*\}/i.test(requestFrame.toString())) {
+    if (
+      requestFrame &&
+      !/requestAnimationFrame\(\)\s*\{\s*\[native code\]\s*\}/i.test(
+        requestFrame.toString(),
+      )
+    ) {
       isNative = false;
     }
 
     if (isNative) {
-      return function(callback, root) {
+      return function (callback, root) {
         requestFrame(callback, root);
       };
     }
@@ -44,19 +56,19 @@ const Animate = {
     var intervalHandle = null;
     var lastActive = +new Date();
 
-    return function(callback, root) {
+    return function (callback, root) {
       var callbackHandle = rafHandle++;
       requests[callbackHandle] = callback;
       requestCount++;
 
       if (intervalHandle === null) {
-        intervalHandle = setInterval(function() {
+        intervalHandle = setInterval(function () {
           var time = +new Date();
           var currentRequests = requests;
           requests = {};
           requestCount = 0;
 
-          for(var key in currentRequests) {
+          for (var key in currentRequests) {
             if (currentRequests.hasOwnProperty(key)) {
               currentRequests[key](time);
               lastActive = time;
@@ -74,7 +86,7 @@ const Animate = {
     };
   })(),
 
-  stop: function(id) {
+  stop: function (id) {
     var cleared = running[id] != null;
     if (cleared) {
       running[id] = null;
@@ -82,11 +94,18 @@ const Animate = {
     return cleared;
   },
 
-  isRunning: function(id) {
+  isRunning: function (id) {
     return running[id] != null;
   },
 
-  start: function(stepCallback, verifyCallback, completedCallback, duration, easingMethod, root) {
+  start: function (
+    stepCallback,
+    verifyCallback,
+    completedCallback,
+    duration,
+    easingMethod,
+    root,
+  ) {
     var start = time();
     var lastFrame = start;
     var percent = 0;
@@ -105,18 +124,27 @@ const Animate = {
       running = newRunning;
     }
 
-    var step = function(virtual) {
+    var step = function (virtual) {
       var render = virtual !== true;
       var now = time();
 
       if (!running[id] || (verifyCallback && !verifyCallback(id))) {
         running[id] = null;
-        completedCallback && completedCallback(desiredFrames - (dropCounter / ((now - start) / millisecondsPerSecond)), id, false);
+        completedCallback &&
+          completedCallback(
+            desiredFrames -
+              dropCounter / ((now - start) / millisecondsPerSecond),
+            id,
+            false,
+          );
         return;
       }
 
       if (render) {
-        var droppedFrames = Math.round((now - lastFrame) / (millisecondsPerSecond / desiredFrames)) - 1;
+        var droppedFrames =
+          Math.round(
+            (now - lastFrame) / (millisecondsPerSecond / desiredFrames),
+          ) - 1;
         for (var j = 0; j < Math.min(droppedFrames, 4); j++) {
           step(true);
           dropCounter++;
@@ -131,9 +159,18 @@ const Animate = {
       }
 
       var value = easingMethod ? easingMethod(percent) : percent;
-      if ((stepCallback(value, now, render) === false || percent === 1) && render) {
+      if (
+        (stepCallback(value, now, render) === false || percent === 1) &&
+        render
+      ) {
         running[id] = null;
-        completedCallback && completedCallback(desiredFrames - (dropCounter / ((now - start) / millisecondsPerSecond)), id, percent === 1 || duration == null);
+        completedCallback &&
+          completedCallback(
+            desiredFrames -
+              dropCounter / ((now - start) / millisecondsPerSecond),
+            id,
+            percent === 1 || duration == null,
+          );
       } else if (render) {
         lastFrame = now;
         Animate.requestAnimationFrame(step, root);
@@ -143,22 +180,22 @@ const Animate = {
     running[id] = true;
     Animate.requestAnimationFrame(step, root);
     return id;
-  }
+  },
 };
 
 // --- Scroller ---
 
-var NOOP = function(){};
+var NOOP = function () {};
 
-var easeOutCubic = function(pos) {
-  return (Math.pow((pos - 1), 3) + 1);
+var easeOutCubic = function (pos) {
+  return Math.pow(pos - 1, 3) + 1;
 };
 
-var easeInOutCubic = function(pos) {
+var easeInOutCubic = function (pos) {
   if ((pos /= 0.5) < 1) {
     return 0.5 * Math.pow(pos, 3);
   }
-  return 0.5 * (Math.pow((pos - 2), 3) + 2);
+  return 0.5 * (Math.pow(pos - 2, 3) + 2);
 };
 
 function Scroller(callback, options) {
@@ -179,7 +216,7 @@ function Scroller(callback, options) {
     speedMultiplier: 1,
     scrollingComplete: NOOP,
     penetrationDeceleration: 0.03,
-    penetrationAcceleration: 0.08
+    penetrationAcceleration: 0.08,
   };
 
   for (var key in options) {
@@ -227,29 +264,47 @@ var members = {
   __decelerationVelocityX: null,
   __decelerationVelocityY: null,
 
-  setDimensions: function(clientWidth, clientHeight, contentWidth, contentHeight) {
+  setDimensions: function (
+    clientWidth,
+    clientHeight,
+    contentWidth,
+    contentHeight,
+  ) {
     var self = this;
-    if (clientWidth === +clientWidth) { self.__clientWidth = clientWidth; }
-    if (clientHeight === +clientHeight) { self.__clientHeight = clientHeight; }
-    if (contentWidth === +contentWidth) { self.__contentWidth = contentWidth; }
-    if (contentHeight === +contentHeight) { self.__contentHeight = contentHeight; }
+    if (clientWidth === +clientWidth) {
+      self.__clientWidth = clientWidth;
+    }
+    if (clientHeight === +clientHeight) {
+      self.__clientHeight = clientHeight;
+    }
+    if (contentWidth === +contentWidth) {
+      self.__contentWidth = contentWidth;
+    }
+    if (contentHeight === +contentHeight) {
+      self.__contentHeight = contentHeight;
+    }
     self.__computeScrollMax();
     self.scrollTo(self.__scrollLeft, self.__scrollTop, true);
   },
 
-  setPosition: function(left, top) {
+  setPosition: function (left, top) {
     var self = this;
     self.__clientLeft = left || 0;
     self.__clientTop = top || 0;
   },
 
-  setSnapSize: function(width, height) {
+  setSnapSize: function (width, height) {
     var self = this;
     self.__snapWidth = width;
     self.__snapHeight = height;
   },
 
-  activatePullToRefresh: function(height, activateCallback, deactivateCallback, startCallback) {
+  activatePullToRefresh: function (
+    height,
+    activateCallback,
+    deactivateCallback,
+    startCallback,
+  ) {
     var self = this;
     self.__refreshHeight = height;
     self.__refreshActivate = activateCallback;
@@ -257,95 +312,164 @@ var members = {
     self.__refreshStart = startCallback;
   },
 
-  finishPullToRefresh: function() {
+  finishPullToRefresh: function () {
     var self = this;
     self.__refreshActive = false;
-    if (self.__refreshDeactivate) { self.__refreshDeactivate(); }
+    if (self.__refreshDeactivate) {
+      self.__refreshDeactivate();
+    }
     self.scrollTo(self.__scrollLeft, self.__scrollTop, true);
   },
 
-  getValues: function() {
+  getValues: function () {
     var self = this;
-    return { left: self.__scrollLeft, top: self.__scrollTop, zoom: self.__zoomLevel };
+    return {
+      left: self.__scrollLeft,
+      top: self.__scrollTop,
+      zoom: self.__zoomLevel,
+    };
   },
 
-  getScrollMax: function() {
+  getScrollMax: function () {
     var self = this;
     return { left: self.__maxScrollLeft, top: self.__maxScrollTop };
   },
 
-  zoomTo: function(level, animate, originLeft, originTop) {
+  zoomTo: function (level, animate, originLeft, originTop) {
     var self = this;
-    if (!self.options.zooming) { throw new Error("Zooming is not enabled!"); }
-    if (self.__isDecelerating) { Animate.stop(self.__isDecelerating); self.__isDecelerating = false; }
+    if (!self.options.zooming) {
+      throw new Error('Zooming is not enabled!');
+    }
+    if (self.__isDecelerating) {
+      Animate.stop(self.__isDecelerating);
+      self.__isDecelerating = false;
+    }
     var oldLevel = self.__zoomLevel;
-    if (originLeft == null) { originLeft = self.__clientWidth / 2; }
-    if (originTop == null) { originTop = self.__clientHeight / 2; }
-    level = Math.max(Math.min(level, self.options.maxZoom), self.options.minZoom);
+    if (originLeft == null) {
+      originLeft = self.__clientWidth / 2;
+    }
+    if (originTop == null) {
+      originTop = self.__clientHeight / 2;
+    }
+    level = Math.max(
+      Math.min(level, self.options.maxZoom),
+      self.options.minZoom,
+    );
     self.__computeScrollMax(level);
-    var left = ((originLeft + self.__scrollLeft) * level / oldLevel) - originLeft;
-    var top = ((originTop + self.__scrollTop) * level / oldLevel) - originTop;
-    if (left > self.__maxScrollLeft) { left = self.__maxScrollLeft; } else if (left < 0) { left = 0; }
-    if (top > self.__maxScrollTop) { top = self.__maxScrollTop; } else if (top < 0) { top = 0; }
+    var left =
+      ((originLeft + self.__scrollLeft) * level) / oldLevel - originLeft;
+    var top = ((originTop + self.__scrollTop) * level) / oldLevel - originTop;
+    if (left > self.__maxScrollLeft) {
+      left = self.__maxScrollLeft;
+    } else if (left < 0) {
+      left = 0;
+    }
+    if (top > self.__maxScrollTop) {
+      top = self.__maxScrollTop;
+    } else if (top < 0) {
+      top = 0;
+    }
     self.__publish(left, top, level, animate);
   },
 
-  zoomBy: function(factor, animate, originLeft, originTop) {
+  zoomBy: function (factor, animate, originLeft, originTop) {
     var self = this;
     self.zoomTo(self.__zoomLevel * factor, animate, originLeft, originTop);
   },
 
-  scrollTo: function(left, top, animate, zoom) {
+  scrollTo: function (left, top, animate, zoom) {
     var self = this;
-    if (self.__isDecelerating) { Animate.stop(self.__isDecelerating); self.__isDecelerating = false; }
+    if (self.__isDecelerating) {
+      Animate.stop(self.__isDecelerating);
+      self.__isDecelerating = false;
+    }
     if (zoom != null && zoom !== self.__zoomLevel) {
-      if (!self.options.zooming) { throw new Error("Zooming is not enabled!"); }
-      left *= zoom; top *= zoom;
+      if (!self.options.zooming) {
+        throw new Error('Zooming is not enabled!');
+      }
+      left *= zoom;
+      top *= zoom;
       self.__computeScrollMax(zoom);
     } else {
       zoom = self.__zoomLevel;
     }
-    if (!self.options.scrollingX) { left = self.__scrollLeft; }
-    else {
-      if (self.options.paging) { left = Math.round(left / self.__clientWidth) * self.__clientWidth; }
-      else if (self.options.snapping) { left = Math.round(left / self.__snapWidth) * self.__snapWidth; }
+    if (!self.options.scrollingX) {
+      left = self.__scrollLeft;
+    } else {
+      if (self.options.paging) {
+        left = Math.round(left / self.__clientWidth) * self.__clientWidth;
+      } else if (self.options.snapping) {
+        left = Math.round(left / self.__snapWidth) * self.__snapWidth;
+      }
     }
-    if (!self.options.scrollingY) { top = self.__scrollTop; }
-    else {
-      if (self.options.paging) { top = Math.round(top / self.__clientHeight) * self.__clientHeight; }
-      else if (self.options.snapping) { top = Math.round(top / self.__snapHeight) * self.__snapHeight; }
+    if (!self.options.scrollingY) {
+      top = self.__scrollTop;
+    } else {
+      if (self.options.paging) {
+        top = Math.round(top / self.__clientHeight) * self.__clientHeight;
+      } else if (self.options.snapping) {
+        top = Math.round(top / self.__snapHeight) * self.__snapHeight;
+      }
     }
     left = Math.max(Math.min(self.__maxScrollLeft, left), 0);
     top = Math.max(Math.min(self.__maxScrollTop, top), 0);
-    if (left === self.__scrollLeft && top === self.__scrollTop) { animate = false; }
+    if (left === self.__scrollLeft && top === self.__scrollTop) {
+      animate = false;
+    }
     self.__publish(left, top, zoom, animate);
   },
 
-  scrollBy: function(left, top, animate) {
+  scrollBy: function (left, top, animate) {
     var self = this;
-    var startLeft = self.__isAnimating ? self.__scheduledLeft : self.__scrollLeft;
+    var startLeft = self.__isAnimating
+      ? self.__scheduledLeft
+      : self.__scrollLeft;
     var startTop = self.__isAnimating ? self.__scheduledTop : self.__scrollTop;
     self.scrollTo(startLeft + (left || 0), startTop + (top || 0), animate);
   },
 
-  doMouseZoom: function(wheelDelta, timeStamp, pageX, pageY) {
+  doMouseZoom: function (wheelDelta, timeStamp, pageX, pageY) {
     var self = this;
     var change = wheelDelta > 0 ? 0.97 : 1.03;
-    return self.zoomTo(self.__zoomLevel * change, false, pageX - self.__clientLeft, pageY - self.__clientTop);
+    return self.zoomTo(
+      self.__zoomLevel * change,
+      false,
+      pageX - self.__clientLeft,
+      pageY - self.__clientTop,
+    );
   },
 
-  doTouchStart: function(touches, timeStamp) {
-    if (touches.length == null) { throw new Error("Invalid touch list: " + touches); }
-    if (timeStamp instanceof Date) { timeStamp = timeStamp.valueOf(); }
-    if (typeof timeStamp !== "number") { throw new Error("Invalid timestamp value: " + timeStamp); }
+  doTouchStart: function (touches, timeStamp) {
+    if (touches.length == null) {
+      throw new Error('Invalid touch list: ' + touches);
+    }
+    if (timeStamp instanceof Date) {
+      timeStamp = timeStamp.valueOf();
+    }
+    if (typeof timeStamp !== 'number') {
+      throw new Error('Invalid timestamp value: ' + timeStamp);
+    }
     var self = this;
     self.__interruptedAnimation = true;
-    if (self.__isDecelerating) { Animate.stop(self.__isDecelerating); self.__isDecelerating = false; self.__interruptedAnimation = true; }
-    if (self.__isAnimating) { Animate.stop(self.__isAnimating); self.__isAnimating = false; self.__interruptedAnimation = true; }
+    if (self.__isDecelerating) {
+      Animate.stop(self.__isDecelerating);
+      self.__isDecelerating = false;
+      self.__interruptedAnimation = true;
+    }
+    if (self.__isAnimating) {
+      Animate.stop(self.__isAnimating);
+      self.__isAnimating = false;
+      self.__interruptedAnimation = true;
+    }
     var currentTouchLeft, currentTouchTop;
     var isSingleTouch = touches.length === 1;
-    if (isSingleTouch) { currentTouchLeft = touches[0].pageX; currentTouchTop = touches[0].pageY; }
-    else { currentTouchLeft = Math.abs(touches[0].pageX + touches[1].pageX) / 2; currentTouchTop = Math.abs(touches[0].pageY + touches[1].pageY) / 2; }
+    if (isSingleTouch) {
+      currentTouchLeft = touches[0].pageX;
+      currentTouchTop = touches[0].pageY;
+    } else {
+      currentTouchLeft = Math.abs(touches[0].pageX + touches[1].pageX) / 2;
+      currentTouchTop = Math.abs(touches[0].pageY + touches[1].pageY) / 2;
+    }
     self.__initialTouchLeft = currentTouchLeft;
     self.__initialTouchTop = currentTouchTop;
     self.__zoomLevelStart = self.__zoomLevel;
@@ -362,15 +486,28 @@ var members = {
     self.__positions = [];
   },
 
-  doTouchMove: function(touches, timeStamp, scale) {
-    if (touches.length == null) { throw new Error("Invalid touch list: " + touches); }
-    if (timeStamp instanceof Date) { timeStamp = timeStamp.valueOf(); }
-    if (typeof timeStamp !== "number") { throw new Error("Invalid timestamp value: " + timeStamp); }
+  doTouchMove: function (touches, timeStamp, scale) {
+    if (touches.length == null) {
+      throw new Error('Invalid touch list: ' + touches);
+    }
+    if (timeStamp instanceof Date) {
+      timeStamp = timeStamp.valueOf();
+    }
+    if (typeof timeStamp !== 'number') {
+      throw new Error('Invalid timestamp value: ' + timeStamp);
+    }
     var self = this;
-    if (!self.__isTracking) { return; }
+    if (!self.__isTracking) {
+      return;
+    }
     var currentTouchLeft, currentTouchTop;
-    if (touches.length === 2) { currentTouchLeft = Math.abs(touches[0].pageX + touches[1].pageX) / 2; currentTouchTop = Math.abs(touches[0].pageY + touches[1].pageY) / 2; }
-    else { currentTouchLeft = touches[0].pageX; currentTouchTop = touches[0].pageY; }
+    if (touches.length === 2) {
+      currentTouchLeft = Math.abs(touches[0].pageX + touches[1].pageX) / 2;
+      currentTouchTop = Math.abs(touches[0].pageY + touches[1].pageY) / 2;
+    } else {
+      currentTouchLeft = touches[0].pageX;
+      currentTouchTop = touches[0].pageY;
+    }
     var positions = self.__positions;
     if (self.__isDragging) {
       var moveX = currentTouchLeft - self.__lastTouchLeft;
@@ -380,13 +517,20 @@ var members = {
       var level = self.__zoomLevel;
       if (scale != null && self.options.zooming) {
         var oldLevel = level;
-        level = level / self.__lastScale * scale;
-        level = Math.max(Math.min(level, self.options.maxZoom), self.options.minZoom);
+        level = (level / self.__lastScale) * scale;
+        level = Math.max(
+          Math.min(level, self.options.maxZoom),
+          self.options.minZoom,
+        );
         if (oldLevel !== level) {
           var currentTouchLeftRel = currentTouchLeft - self.__clientLeft;
           var currentTouchTopRel = currentTouchTop - self.__clientTop;
-          scrollLeft = ((currentTouchLeftRel + scrollLeft) * level / oldLevel) - currentTouchLeftRel;
-          scrollTop = ((currentTouchTopRel + scrollTop) * level / oldLevel) - currentTouchTopRel;
+          scrollLeft =
+            ((currentTouchLeftRel + scrollLeft) * level) / oldLevel -
+            currentTouchLeftRel;
+          scrollTop =
+            ((currentTouchTopRel + scrollTop) * level) / oldLevel -
+            currentTouchTopRel;
           self.__computeScrollMax(level);
         }
       }
@@ -394,9 +538,13 @@ var members = {
         scrollLeft -= moveX * this.options.speedMultiplier;
         var maxScrollLeft = self.__maxScrollLeft;
         if (scrollLeft > maxScrollLeft || scrollLeft < 0) {
-          if (self.options.bouncing) { scrollLeft += (moveX / 2 * this.options.speedMultiplier); }
-          else if (scrollLeft > maxScrollLeft) { scrollLeft = maxScrollLeft; }
-          else { scrollLeft = 0; }
+          if (self.options.bouncing) {
+            scrollLeft += (moveX / 2) * this.options.speedMultiplier;
+          } else if (scrollLeft > maxScrollLeft) {
+            scrollLeft = maxScrollLeft;
+          } else {
+            scrollLeft = 0;
+          }
         }
       }
       if (self.__enableScrollY) {
@@ -404,16 +552,33 @@ var members = {
         var maxScrollTop = self.__maxScrollTop;
         if (scrollTop > maxScrollTop || scrollTop < 0) {
           if (self.options.bouncing) {
-            scrollTop += (moveY / 2 * this.options.speedMultiplier);
+            scrollTop += (moveY / 2) * this.options.speedMultiplier;
             if (!self.__enableScrollX && self.__refreshHeight != null) {
-              if (!self.__refreshActive && scrollTop <= -self.__refreshHeight) { self.__refreshActive = true; if (self.__refreshActivate) { self.__refreshActivate(); } }
-              else if (self.__refreshActive && scrollTop > -self.__refreshHeight) { self.__refreshActive = false; if (self.__refreshDeactivate) { self.__refreshDeactivate(); } }
+              if (!self.__refreshActive && scrollTop <= -self.__refreshHeight) {
+                self.__refreshActive = true;
+                if (self.__refreshActivate) {
+                  self.__refreshActivate();
+                }
+              } else if (
+                self.__refreshActive &&
+                scrollTop > -self.__refreshHeight
+              ) {
+                self.__refreshActive = false;
+                if (self.__refreshDeactivate) {
+                  self.__refreshDeactivate();
+                }
+              }
             }
-          } else if (scrollTop > maxScrollTop) { scrollTop = maxScrollTop; }
-          else { scrollTop = 0; }
+          } else if (scrollTop > maxScrollTop) {
+            scrollTop = maxScrollTop;
+          } else {
+            scrollTop = 0;
+          }
         }
       }
-      if (positions.length > 60) { positions.splice(0, 30); }
+      if (positions.length > 60) {
+        positions.splice(0, 30);
+      }
       positions.push(scrollLeft, scrollTop, timeStamp);
       self.__publish(scrollLeft, scrollTop, level);
     } else {
@@ -421,11 +586,18 @@ var members = {
       var minimumTrackingForDrag = 5;
       var distanceX = Math.abs(currentTouchLeft - self.__initialTouchLeft);
       var distanceY = Math.abs(currentTouchTop - self.__initialTouchTop);
-      self.__enableScrollX = self.options.scrollingX && distanceX >= minimumTrackingForScroll;
-      self.__enableScrollY = self.options.scrollingY && distanceY >= minimumTrackingForScroll;
+      self.__enableScrollX =
+        self.options.scrollingX && distanceX >= minimumTrackingForScroll;
+      self.__enableScrollY =
+        self.options.scrollingY && distanceY >= minimumTrackingForScroll;
       positions.push(self.__scrollLeft, self.__scrollTop, timeStamp);
-      self.__isDragging = (self.__enableScrollX || self.__enableScrollY) && (distanceX >= minimumTrackingForDrag || distanceY >= minimumTrackingForDrag);
-      if (self.__isDragging) { self.__interruptedAnimation = false; }
+      self.__isDragging =
+        (self.__enableScrollX || self.__enableScrollY) &&
+        (distanceX >= minimumTrackingForDrag ||
+          distanceY >= minimumTrackingForDrag);
+      if (self.__isDragging) {
+        self.__interruptedAnimation = false;
+      }
     }
     self.__lastTouchLeft = currentTouchLeft;
     self.__lastTouchTop = currentTouchTop;
@@ -433,49 +605,99 @@ var members = {
     self.__lastScale = scale;
   },
 
-  doTouchEnd: function(timeStamp) {
-    if (timeStamp instanceof Date) { timeStamp = timeStamp.valueOf(); }
-    if (typeof timeStamp !== "number") { throw new Error("Invalid timestamp value: " + timeStamp); }
+  doTouchEnd: function (timeStamp) {
+    if (timeStamp instanceof Date) {
+      timeStamp = timeStamp.valueOf();
+    }
+    if (typeof timeStamp !== 'number') {
+      throw new Error('Invalid timestamp value: ' + timeStamp);
+    }
     var self = this;
-    if (!self.__isTracking) { return; }
+    if (!self.__isTracking) {
+      return;
+    }
     self.__isTracking = false;
     if (self.__isDragging) {
       self.__isDragging = false;
-      if (self.__isSingleTouch && self.options.animating && (timeStamp - self.__lastTouchMove) <= 100) {
+      if (
+        self.__isSingleTouch &&
+        self.options.animating &&
+        timeStamp - self.__lastTouchMove <= 100
+      ) {
         var positions = self.__positions;
         var endPos = positions.length - 1;
         var startPos = endPos;
-        for (var i = endPos; i > 0 && positions[i] > (self.__lastTouchMove - 100); i -= 3) { startPos = i; }
+        for (
+          var i = endPos;
+          i > 0 && positions[i] > self.__lastTouchMove - 100;
+          i -= 3
+        ) {
+          startPos = i;
+        }
         if (startPos !== endPos) {
           var timeOffset = positions[endPos] - positions[startPos];
           var movedLeft = self.__scrollLeft - positions[startPos - 2];
           var movedTop = self.__scrollTop - positions[startPos - 1];
-          self.__decelerationVelocityX = movedLeft / timeOffset * (1000 / 60);
-          self.__decelerationVelocityY = movedTop / timeOffset * (1000 / 60);
-          var minVelocityToStartDeceleration = self.options.paging || self.options.snapping ? 4 : 1;
-          if (Math.abs(self.__decelerationVelocityX) > minVelocityToStartDeceleration || Math.abs(self.__decelerationVelocityY) > minVelocityToStartDeceleration) {
-            if (!self.__refreshActive) { self.__startDeceleration(timeStamp); }
+          self.__decelerationVelocityX = (movedLeft / timeOffset) * (1000 / 60);
+          self.__decelerationVelocityY = (movedTop / timeOffset) * (1000 / 60);
+          var minVelocityToStartDeceleration =
+            self.options.paging || self.options.snapping ? 4 : 1;
+          if (
+            Math.abs(self.__decelerationVelocityX) >
+              minVelocityToStartDeceleration ||
+            Math.abs(self.__decelerationVelocityY) >
+              minVelocityToStartDeceleration
+          ) {
+            if (!self.__refreshActive) {
+              self.__startDeceleration(timeStamp);
+            }
           }
-        } else { self.options.scrollingComplete(); }
-      } else if ((timeStamp - self.__lastTouchMove) > 100) { self.options.scrollingComplete(); }
+        } else {
+          self.options.scrollingComplete();
+        }
+      } else if (timeStamp - self.__lastTouchMove > 100) {
+        self.options.scrollingComplete();
+      }
     }
     if (!self.__isDecelerating) {
       if (self.__refreshActive && self.__refreshStart) {
-        self.__publish(self.__scrollLeft, -self.__refreshHeight, self.__zoomLevel, true);
-        if (self.__refreshStart) { self.__refreshStart(); }
+        self.__publish(
+          self.__scrollLeft,
+          -self.__refreshHeight,
+          self.__zoomLevel,
+          true,
+        );
+        if (self.__refreshStart) {
+          self.__refreshStart();
+        }
       } else {
-        if (self.__interruptedAnimation || self.__isDragging) { self.options.scrollingComplete(); }
-        self.scrollTo(self.__scrollLeft, self.__scrollTop, true, self.__zoomLevel);
-        if (self.__refreshActive) { self.__refreshActive = false; if (self.__refreshDeactivate) { self.__refreshDeactivate(); } }
+        if (self.__interruptedAnimation || self.__isDragging) {
+          self.options.scrollingComplete();
+        }
+        self.scrollTo(
+          self.__scrollLeft,
+          self.__scrollTop,
+          true,
+          self.__zoomLevel,
+        );
+        if (self.__refreshActive) {
+          self.__refreshActive = false;
+          if (self.__refreshDeactivate) {
+            self.__refreshDeactivate();
+          }
+        }
       }
     }
     self.__positions.length = 0;
   },
 
-  __publish: function(left, top, zoom, animate) {
+  __publish: function (left, top, zoom, animate) {
     var self = this;
     var wasAnimating = self.__isAnimating;
-    if (wasAnimating) { Animate.stop(wasAnimating); self.__isAnimating = false; }
+    if (wasAnimating) {
+      Animate.stop(wasAnimating);
+      self.__isAnimating = false;
+    }
     if (animate && self.options.animating) {
       self.__scheduledLeft = left;
       self.__scheduledTop = top;
@@ -486,81 +708,156 @@ var members = {
       var diffLeft = left - oldLeft;
       var diffTop = top - oldTop;
       var diffZoom = zoom - oldZoom;
-      var step = function(percent, now, render) {
+      var step = function (percent, now, render) {
         if (render) {
-          self.__scrollLeft = oldLeft + (diffLeft * percent);
-          self.__scrollTop = oldTop + (diffTop * percent);
-          self.__zoomLevel = oldZoom + (diffZoom * percent);
-          if (self.__callback) { self.__callback(self.__scrollLeft, self.__scrollTop, self.__zoomLevel); }
+          self.__scrollLeft = oldLeft + diffLeft * percent;
+          self.__scrollTop = oldTop + diffTop * percent;
+          self.__zoomLevel = oldZoom + diffZoom * percent;
+          if (self.__callback) {
+            self.__callback(
+              self.__scrollLeft,
+              self.__scrollTop,
+              self.__zoomLevel,
+            );
+          }
         }
       };
-      var verify = function(id) { return self.__isAnimating === id; };
-      var completed = function(renderedFramesPerSecond, animationId, wasFinished) {
-        if (animationId === self.__isAnimating) { self.__isAnimating = false; }
-        if (self.__didDecelerationComplete || wasFinished) { self.options.scrollingComplete(); }
-        if (self.options.zooming) { self.__computeScrollMax(); }
+      var verify = function (id) {
+        return self.__isAnimating === id;
       };
-      self.__isAnimating = Animate.start(step, verify, completed, self.options.animationDuration, wasAnimating ? easeOutCubic : easeInOutCubic);
+      var completed = function (
+        renderedFramesPerSecond,
+        animationId,
+        wasFinished,
+      ) {
+        if (animationId === self.__isAnimating) {
+          self.__isAnimating = false;
+        }
+        if (self.__didDecelerationComplete || wasFinished) {
+          self.options.scrollingComplete();
+        }
+        if (self.options.zooming) {
+          self.__computeScrollMax();
+        }
+      };
+      self.__isAnimating = Animate.start(
+        step,
+        verify,
+        completed,
+        self.options.animationDuration,
+        wasAnimating ? easeOutCubic : easeInOutCubic,
+      );
     } else {
       self.__scheduledLeft = self.__scrollLeft = left;
       self.__scheduledTop = self.__scrollTop = top;
       self.__scheduledZoom = self.__zoomLevel = zoom;
-      if (self.__callback) { self.__callback(left, top, zoom); }
-      if (self.options.zooming) { self.__computeScrollMax(); }
+      if (self.__callback) {
+        self.__callback(left, top, zoom);
+      }
+      if (self.options.zooming) {
+        self.__computeScrollMax();
+      }
     }
   },
 
-  __computeScrollMax: function(zoomLevel) {
+  __computeScrollMax: function (zoomLevel) {
     var self = this;
-    if (zoomLevel == null) { zoomLevel = self.__zoomLevel; }
-    self.__maxScrollLeft = Math.max((self.__contentWidth * zoomLevel) - self.__clientWidth, 0);
-    self.__maxScrollTop = Math.max((self.__contentHeight * zoomLevel) - self.__clientHeight, 0);
+    if (zoomLevel == null) {
+      zoomLevel = self.__zoomLevel;
+    }
+    self.__maxScrollLeft = Math.max(
+      self.__contentWidth * zoomLevel - self.__clientWidth,
+      0,
+    );
+    self.__maxScrollTop = Math.max(
+      self.__contentHeight * zoomLevel - self.__clientHeight,
+      0,
+    );
   },
 
-  __startDeceleration: function(timeStamp) {
+  __startDeceleration: function (timeStamp) {
     var self = this;
     if (self.options.paging) {
-      var scrollLeft = Math.max(Math.min(self.__scrollLeft, self.__maxScrollLeft), 0);
-      var scrollTop = Math.max(Math.min(self.__scrollTop, self.__maxScrollTop), 0);
+      var scrollLeft = Math.max(
+        Math.min(self.__scrollLeft, self.__maxScrollLeft),
+        0,
+      );
+      var scrollTop = Math.max(
+        Math.min(self.__scrollTop, self.__maxScrollTop),
+        0,
+      );
       var clientWidth = self.__clientWidth;
       var clientHeight = self.__clientHeight;
-      self.__minDecelerationScrollLeft = Math.floor(scrollLeft / clientWidth) * clientWidth;
-      self.__minDecelerationScrollTop = Math.floor(scrollTop / clientHeight) * clientHeight;
-      self.__maxDecelerationScrollLeft = Math.ceil(scrollLeft / clientWidth) * clientWidth;
-      self.__maxDecelerationScrollTop = Math.ceil(scrollTop / clientHeight) * clientHeight;
+      self.__minDecelerationScrollLeft =
+        Math.floor(scrollLeft / clientWidth) * clientWidth;
+      self.__minDecelerationScrollTop =
+        Math.floor(scrollTop / clientHeight) * clientHeight;
+      self.__maxDecelerationScrollLeft =
+        Math.ceil(scrollLeft / clientWidth) * clientWidth;
+      self.__maxDecelerationScrollTop =
+        Math.ceil(scrollTop / clientHeight) * clientHeight;
     } else {
       self.__minDecelerationScrollLeft = 0;
       self.__minDecelerationScrollTop = 0;
       self.__maxDecelerationScrollLeft = self.__maxScrollLeft;
       self.__maxDecelerationScrollTop = self.__maxScrollTop;
     }
-    var step = function(percent, now, render) { self.__stepThroughDeceleration(render); };
+    var step = function (percent, now, render) {
+      self.__stepThroughDeceleration(render);
+    };
     var minVelocityToKeepDecelerating = self.options.snapping ? 4 : 0.1;
-    var verify = function() {
-      var shouldContinue = Math.abs(self.__decelerationVelocityX) >= minVelocityToKeepDecelerating || Math.abs(self.__decelerationVelocityY) >= minVelocityToKeepDecelerating;
-      if (!shouldContinue) { self.__didDecelerationComplete = true; }
+    var verify = function () {
+      var shouldContinue =
+        Math.abs(self.__decelerationVelocityX) >=
+          minVelocityToKeepDecelerating ||
+        Math.abs(self.__decelerationVelocityY) >= minVelocityToKeepDecelerating;
+      if (!shouldContinue) {
+        self.__didDecelerationComplete = true;
+      }
       return shouldContinue;
     };
-    var completed = function(renderedFramesPerSecond, animationId, wasFinished) {
+    var completed = function (
+      renderedFramesPerSecond,
+      animationId,
+      wasFinished,
+    ) {
       self.__isDecelerating = false;
-      if (self.__didDecelerationComplete) { self.options.scrollingComplete(); }
+      if (self.__didDecelerationComplete) {
+        self.options.scrollingComplete();
+      }
       self.scrollTo(self.__scrollLeft, self.__scrollTop, self.options.snapping);
     };
     self.__isDecelerating = Animate.start(step, verify, completed);
   },
 
-  __stepThroughDeceleration: function(render) {
+  __stepThroughDeceleration: function (render) {
     var self = this;
     var scrollLeft = self.__scrollLeft + self.__decelerationVelocityX;
     var scrollTop = self.__scrollTop + self.__decelerationVelocityY;
     if (!self.options.bouncing) {
-      var scrollLeftFixed = Math.max(Math.min(self.__maxDecelerationScrollLeft, scrollLeft), self.__minDecelerationScrollLeft);
-      if (scrollLeftFixed !== scrollLeft) { scrollLeft = scrollLeftFixed; self.__decelerationVelocityX = 0; }
-      var scrollTopFixed = Math.max(Math.min(self.__maxDecelerationScrollTop, scrollTop), self.__minDecelerationScrollTop);
-      if (scrollTopFixed !== scrollTop) { scrollTop = scrollTopFixed; self.__decelerationVelocityY = 0; }
+      var scrollLeftFixed = Math.max(
+        Math.min(self.__maxDecelerationScrollLeft, scrollLeft),
+        self.__minDecelerationScrollLeft,
+      );
+      if (scrollLeftFixed !== scrollLeft) {
+        scrollLeft = scrollLeftFixed;
+        self.__decelerationVelocityX = 0;
+      }
+      var scrollTopFixed = Math.max(
+        Math.min(self.__maxDecelerationScrollTop, scrollTop),
+        self.__minDecelerationScrollTop,
+      );
+      if (scrollTopFixed !== scrollTop) {
+        scrollTop = scrollTopFixed;
+        self.__decelerationVelocityY = 0;
+      }
     }
-    if (render) { self.__publish(scrollLeft, scrollTop, self.__zoomLevel); }
-    else { self.__scrollLeft = scrollLeft; self.__scrollTop = scrollTop; }
+    if (render) {
+      self.__publish(scrollLeft, scrollTop, self.__zoomLevel);
+    } else {
+      self.__scrollLeft = scrollLeft;
+      self.__scrollTop = scrollTop;
+    }
     if (!self.options.paging) {
       var frictionFactor = 0.95;
       self.__decelerationVelocityX *= frictionFactor;
@@ -571,20 +868,36 @@ var members = {
       var scrollOutsideY = 0;
       var penetrationDeceleration = self.options.penetrationDeceleration;
       var penetrationAcceleration = self.options.penetrationAcceleration;
-      if (scrollLeft < self.__minDecelerationScrollLeft) { scrollOutsideX = self.__minDecelerationScrollLeft - scrollLeft; }
-      else if (scrollLeft > self.__maxDecelerationScrollLeft) { scrollOutsideX = self.__maxDecelerationScrollLeft - scrollLeft; }
-      if (scrollTop < self.__minDecelerationScrollTop) { scrollOutsideY = self.__minDecelerationScrollTop - scrollTop; }
-      else if (scrollTop > self.__maxDecelerationScrollTop) { scrollOutsideY = self.__maxDecelerationScrollTop - scrollTop; }
+      if (scrollLeft < self.__minDecelerationScrollLeft) {
+        scrollOutsideX = self.__minDecelerationScrollLeft - scrollLeft;
+      } else if (scrollLeft > self.__maxDecelerationScrollLeft) {
+        scrollOutsideX = self.__maxDecelerationScrollLeft - scrollLeft;
+      }
+      if (scrollTop < self.__minDecelerationScrollTop) {
+        scrollOutsideY = self.__minDecelerationScrollTop - scrollTop;
+      } else if (scrollTop > self.__maxDecelerationScrollTop) {
+        scrollOutsideY = self.__maxDecelerationScrollTop - scrollTop;
+      }
       if (scrollOutsideX !== 0) {
-        if (scrollOutsideX * self.__decelerationVelocityX <= 0) { self.__decelerationVelocityX += scrollOutsideX * penetrationDeceleration; }
-        else { self.__decelerationVelocityX = scrollOutsideX * penetrationAcceleration; }
+        if (scrollOutsideX * self.__decelerationVelocityX <= 0) {
+          self.__decelerationVelocityX +=
+            scrollOutsideX * penetrationDeceleration;
+        } else {
+          self.__decelerationVelocityX =
+            scrollOutsideX * penetrationAcceleration;
+        }
       }
       if (scrollOutsideY !== 0) {
-        if (scrollOutsideY * self.__decelerationVelocityY <= 0) { self.__decelerationVelocityY += scrollOutsideY * penetrationDeceleration; }
-        else { self.__decelerationVelocityY = scrollOutsideY * penetrationAcceleration; }
+        if (scrollOutsideY * self.__decelerationVelocityY <= 0) {
+          self.__decelerationVelocityY +=
+            scrollOutsideY * penetrationDeceleration;
+        } else {
+          self.__decelerationVelocityY =
+            scrollOutsideY * penetrationAcceleration;
+        }
       }
     }
-  }
+  },
 };
 
 for (var key in members) {
