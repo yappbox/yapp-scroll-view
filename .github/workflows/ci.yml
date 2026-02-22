@@ -13,8 +13,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: volta-cli/action@v4
-      - run: volta install node pnpm
+      - uses: jdx/mise-action@v2
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -33,8 +32,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: volta-cli/action@v4
-      - run: volta install node pnpm
+      - uses: jdx/mise-action@v2
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -66,8 +64,7 @@ jobs:
       EMBER_TRY_SCENARIO: ${{ matrix.scenario }}
     steps:
       - uses: actions/checkout@v4
-      - uses: volta-cli/action@v4
-      - run: volta install node pnpm
+      - uses: jdx/mise-action@v2
 
       - name: Cache pnpm store
         uses: actions/cache@v4
