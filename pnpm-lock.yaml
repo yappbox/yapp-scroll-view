@@ -118,7 +118,7 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       ember-concurrency:
-        specifier: ^4.0.6
+        specifier: ^4.0.4
         version: 4.0.6(@babel/core@7.28.5)
       ember-load-initializers:
         specifier: ^2.1.2
@@ -8970,7 +8970,7 @@ snapshots:
 
   decorator-transforms@1.2.1(@babel/core@7.28.5):
     dependencies:
-      '@babel/plugin-syntax-decorators': 7.27.1(@babel/core@7.28.5)
+      '@babel/plugin-syntax-decorators': 7.28.6(@babel/core@7.28.5)
       babel-import-util: 2.1.1
     transitivePeerDependencies:
       - '@babel/core'
@@ -9535,8 +9535,8 @@ snapshots:
   ember-concurrency@4.0.6(@babel/core@7.28.5):
     dependencies:
       '@babel/helper-module-imports': 7.27.1
-      '@babel/helper-plugin-utils': 7.27.1
-      '@babel/types': 7.28.5
+      '@babel/helper-plugin-utils': 7.28.6
+      '@babel/types': 7.29.0
       '@embroider/addon-shim': 1.10.0
       decorator-transforms: 1.2.1(@babel/core@7.28.5)
     transitivePeerDependencies:

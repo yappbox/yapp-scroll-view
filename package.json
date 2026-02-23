@@ -1,6 +1,6 @@
 {
   "name": "@yappbox/yapp-scroll-view",
-  "version": "15.0.2",
+  "version": "15.0.3",
   "description": "Ember Scrolling components using a Javascript scroller",
   "keywords": [
     "ember-addon"
