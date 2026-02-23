@@ -5,7 +5,7 @@ import { htmlSafe } from '@ember/template';
 export default function dynamicImage(imageSrc, hash) {
   if (typeof imageSrc !== 'string') {
     throw new Error(
-      `dynamicImage expected a string for imageSrc, got ${typeof imageSrc}${Array.isArray(imageSrc) ? ' (array)' : ''}`
+      `dynamicImage expected a string for imageSrc, got ${typeof imageSrc}${Array.isArray(imageSrc) ? ' (array)' : ''}`,
     );
   }
   const { width, height } = hash;
