@@ -3,6 +3,11 @@ import { htmlSafe } from '@ember/template';
 // This is deprecated and should be removed once Sponsors is updated in editor and core.
 
 export default function dynamicImage(imageSrc, hash) {
+  if (typeof imageSrc !== 'string') {
+    throw new Error(
+      `dynamicImage expected a string for imageSrc, got ${typeof imageSrc}${Array.isArray(imageSrc) ? ' (array)' : ''}`
+    );
+  }
   const { width, height } = hash;
   const className = hash.class;
   if (typeof Image === 'undefined') {
