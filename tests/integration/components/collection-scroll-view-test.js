@@ -279,6 +279,144 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
     assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
   });
 
+  test('scrollToItem looks up item by id not by raw id value', async function (assert) {
+    this.set('items', [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+      { id: 'gamma', name: 'Gamma' },
+      { id: 'delta', name: 'Delta' },
+      { id: 'epsilon', name: 'Epsilon' },
+      { id: 'zeta', name: 'Zeta' },
+      { id: 'eta', name: 'Eta' },
+      { id: 'theta', name: 'Theta' },
+      { id: 'iota', name: 'Iota' },
+      { id: 'kappa', name: 'Kappa' },
+    ]);
+    let fakeRevealService = new FakeRevealService();
+    this.set('revealService', fakeRevealService);
+    await render(EXAMPLE_1_HBS);
+    await waitUntilText('Alpha');
+    assert.dom(SCROLL_CONTAINER).doesNotContainText('Theta');
+    fakeRevealService.trigger('revealItemById', { id: 'theta' });
+    await waitUntilText('Theta');
+    assert.dom(SCROLL_CONTAINER).containsText('Theta');
+    assert.ok(find(SCROLL_CONTAINER).scrollTop >= 100);
+  });
+
+  test('scrollToItem does nothing for an unknown id', async function (assert) {
+    let fakeRevealService = new FakeRevealService();
+    this.set('revealService', fakeRevealService);
+    await render(EXAMPLE_1_HBS);
+    await waitUntilText('One');
+    fakeRevealService.trigger('revealItemById', { id: 'nonexistent' });
+    await timeout(200);
+    assert.equal(scrollPosition(find(SCROLL_CONTAINER)), 0);
+  });
+
+  test('@onScrollToItem callback is called after scrollToItem', async function (assert) {
+    let fakeRevealService = new FakeRevealService();
+    this.set('revealService', fakeRevealService);
+    let callbackArgs = null;
+    this.set('onScrollToItem', (args) => {
+      callbackArgs = args;
+    });
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+          @revealService={{this.revealService}}
+          @onScrollToItem={{this.onScrollToItem}}
+        >
+          <:row as |item|>
+            <div class="list-item" data-list-item-id={{item.id}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+    await waitUntilText('One');
+    assert.dom(SCROLL_CONTAINER).doesNotContainText('Eight');
+    fakeRevealService.trigger('revealItemById', { id: '8' });
+    await waitUntil(() => callbackArgs !== null, { timeout: 5000 });
+    assert.ok(callbackArgs, 'onScrollToItem was called');
+    assert.equal(callbackArgs.id, '8', 'callback receives the item id');
+    assert.equal(callbackArgs.index, 7, 'callback receives the correct index');
+    assert.ok(
+      callbackArgs.scrollElement instanceof HTMLElement,
+      'callback receives the scroll element',
+    );
+  });
+
+  test('@revealOffset adjusts scroll position after reveal', async function (assert) {
+    let fakeRevealService = new FakeRevealService();
+    this.set('revealService', fakeRevealService);
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+          @revealService={{this.revealService}}
+          @revealOffset={{50}}
+        >
+          <:row as |item|>
+            <div class="list-item" data-list-item-id={{item.id}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+    await waitUntilText('One');
+    fakeRevealService.trigger('revealItemById', { id: '5' });
+    await waitUntil(() => find(SCROLL_CONTAINER).scrollTop > 0);
+    let container = find(SCROLL_CONTAINER);
+    // Item '5' is at index 4. VC scrolls to 4*100+1 = 401.
+    // With revealOffset=50, adjusted to max(0, 401-50) = 351.
+    assert.ok(
+      container.scrollTop < 401,
+      'scroll position is adjusted upward by revealOffset',
+    );
+  });
+
+  test('it yields a public API as the third block param', async function (assert) {
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+        >
+          <:row as |item index api|>
+            <div class="list-item" data-list-item-id={{item.id}} data-has-api={{if api "true" "false"}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+    await waitUntilText('One');
+    assert
+      .dom('[data-list-item-id="1"]')
+      .hasAttribute(
+        'data-has-api',
+        'true',
+        'api object is yielded to the row block',
+      );
+  });
+
   module('providing a header', function (hooks) {
     const HBS_WITH_HEADER = hbs`
     <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
