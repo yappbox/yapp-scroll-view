@@ -140,6 +140,19 @@ export default class CollectionScrollView extends Component {
     this.verticalCollectionApi = verticalCollectionApi;
   };
 
+  @cached
+  get publicApi() {
+    let component = this;
+    return {
+      scrollTo: (yPos, options) => this.scrollTo(yPos, options),
+      scrollToItem: (revealItemPayload) => this.scrollToItem(revealItemPayload),
+      scrollToTop: () => this.scrollToTop(),
+      get scrollElement() {
+        return component.scrollElement;
+      },
+    };
+  }
+
   handleScroll = (event) => {
     let nextScrollTop = event?.target?.scrollTop ?? 0;
 
@@ -161,7 +174,11 @@ export default class CollectionScrollView extends Component {
     this.scrollTo(0);
   }
 
-  scrollTo(yPos) {
+  get revealOffset() {
+    return this.args.revealOffset ?? 0;
+  }
+
+  scrollTo(yPos, { animated = true } = {}) {
     let element = this.scrollElement;
     if (!element) {
       return;
@@ -169,7 +186,7 @@ export default class CollectionScrollView extends Component {
     try {
       element.scrollTo({
         top: yPos,
-        behavior: 'smooth',
+        behavior: animated ? 'smooth' : 'instant',
       });
     } catch (e) {
       element.scrollTop = yPos;
@@ -186,7 +203,34 @@ export default class CollectionScrollView extends Component {
       return;
     }
 
-    await this.verticalCollectionApi?.scrollToItem(id);
+    let items = this.args.items;
+    let itemIndex = items?.findIndex((item) => item.id === id) ?? -1;
+    if (itemIndex < 0 || !this.verticalCollectionApi) {
+      return;
+    }
+
+    // scrollToItem sets scrollTop synchronously, then queues a re-render.
+    // The returned promise may not resolve if the radar already has a pending
+    // update (_nextUpdate !== null), so we don't depend on it.
+    this.verticalCollectionApi.scrollToItem(itemIndex);
+
+    // Apply revealOffset immediately so the radar picks up the adjusted
+    // scrollTop when it re-renders in the next frame.
+    let revealOffset = this.revealOffset;
+    if (revealOffset > 0 && this.scrollElement) {
+      let currentTop = this.scrollElement.scrollTop;
+      let adjustedTop = Math.max(0, currentTop - revealOffset);
+      this.scrollElement.scrollTop = adjustedTop;
+    }
+
+    // Wait one frame for VC to re-render before notifying consumers.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    this.args.onScrollToItem?.({
+      id,
+      index: itemIndex,
+      scrollElement: this.scrollElement,
+    });
   };
 
   handleResize = (entry) => {
@@ -340,7 +384,7 @@ export default class CollectionScrollView extends Component {
         @width={{@width}}
         as |item index|
       >
-        {{yield item index to='row'}}
+        {{yield item index this.publicApi to='row'}}
       </VerticalCollection>
       {{emitterAction
         emitter=this.windowRef
