@@ -3,7 +3,7 @@ import { service } from '@ember/service';
 import Component from '@glimmer/component';
 import { cached, tracked } from '@glimmer/tracking';
 import { modifier } from 'ember-modifier';
-import VerticalCollection from '@html-next/vertical-collection/components/vertical-collection/component';
+import { VerticalCollection } from '@html-next/vertical-collection';
 import { on } from '@ember/modifier';
 import onResize from 'ember-on-resize-modifier/modifiers/on-resize';
 import { or } from 'ember-truth-helpers';
