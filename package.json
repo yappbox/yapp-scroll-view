@@ -1,6 +1,6 @@
 {
   "name": "@yappbox/yapp-scroll-view",
-  "version": "15.1.0",
+  "version": "16.0.0",
   "description": "Ember Scrolling components using a Javascript scroller",
   "keywords": [
     "ember-addon"
@@ -49,7 +49,7 @@
     "@embroider/macros": "^1.19.1",
     "@embroider/test-setup": "^4.0.0",
     "@glimmer/component": "^1.1.2",
-    "@html-next/vertical-collection": "4.0.2",
+    "@html-next/vertical-collection": "^5.0.5",
     "@rollup/plugin-babel": "^6.0.4",
     "@typescript-eslint/parser": "^8.56.0",
     "@yappbox/yapp-scroll-view": "link:.",
@@ -92,7 +92,7 @@
     "@ember/render-modifiers": "^3.0.0",
     "@ember/test-waiters": "^4.1.1",
     "@embroider/macros": "^1.19.1",
-    "@html-next/vertical-collection": "4.0.2",
+    "@html-next/vertical-collection": "^5.0.0",
     "ember-collection": "^3.0.0",
     "ember-concurrency": "^4.0.4",
     "ember-modifier": "^4.2.0",
@@ -147,5 +147,11 @@
     "./styles/*": "./dist/styles/*",
     "./addon-main.js": "./addon-main.cjs"
   },
-  "packageManager": "pnpm@10.30.1+sha512.3590e550d5384caa39bd5c7c739f72270234b2f6059e13018f975c313b1eb9fefcc09714048765d4d9efe961382c312e624572c0420762bdc5d5940cdf9be73a"
+  "packageManager": "pnpm@10.30.1+sha512.3590e550d5384caa39bd5c7c739f72270234b2f6059e13018f975c313b1eb9fefcc09714048765d4d9efe961382c312e624572c0420762bdc5d5940cdf9be73a",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "core-js"
+    ]
+  }
 }
