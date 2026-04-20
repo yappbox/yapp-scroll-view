@@ -388,6 +388,80 @@ module('Integration | Component | collection-scroll-view', function (hooks) {
     );
   });
 
+  test('settled() covers the initial scroll-position restore RAF', async function (assert) {
+    this.set('isLoading', true);
+
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+          @initialScrollTop={{520}}
+          @isLoading={{this.isLoading}}
+        >
+          <:row as |item|>
+            <div class="list-item" data-list-item-id={{item.id}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+
+    this.set('isLoading', false);
+    await settled();
+
+    assert.equal(
+      find(SCROLL_CONTAINER).scrollTop,
+      520,
+      'scroll position is restored after settled() without waitUntil polling',
+    );
+  });
+
+  test('settled() covers the scrollToItem RAF before onScrollToItem fires', async function (assert) {
+    let fakeRevealService = new FakeRevealService();
+    this.set('revealService', fakeRevealService);
+    let callbackArgs = null;
+    this.set('onScrollToItem', (args) => {
+      callbackArgs = args;
+    });
+    await render(hbs`
+      <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>
+        <CollectionScrollView
+          @items={{this.items}}
+          @estimateItemHeight={{this.itemHeight}}
+          @estimatedHeight={{this.viewportHeight}}
+          @estimatedWidth={{this.viewportWidth}}
+          @buffer={{1}}
+          @cellLayout={{fixed-grid-layout 320 100}}
+          @revealService={{this.revealService}}
+          @onScrollToItem={{this.onScrollToItem}}
+        >
+          <:row as |item|>
+            <div class="list-item" data-list-item-id={{item.id}}>
+              {{item.name}}
+            </div>
+          </:row>
+        </CollectionScrollView>
+      </div>
+    `);
+    await waitUntilText('One');
+
+    fakeRevealService.trigger('revealItemById', { id: '8' });
+    await settled();
+
+    assert.ok(
+      callbackArgs,
+      'onScrollToItem fires within settled() without waitUntil polling',
+    );
+    assert.equal(callbackArgs.id, '8');
+    assert.equal(callbackArgs.index, 7);
+  });
+
   test('it yields a public API as the third block param', async function (assert) {
     await render(hbs`
       <div style={{html-safe (concat "width:" this.viewportWidth "px; height:" this.viewportHeight "px; position:relative; --item-height:" this.itemHeight "px; display:flex; flex-direction:column;")}}>

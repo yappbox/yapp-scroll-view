@@ -7,9 +7,12 @@ import { VerticalCollection } from '@html-next/vertical-collection';
 import { on } from '@ember/modifier';
 import onResize from 'ember-on-resize-modifier/modifiers/on-resize';
 import { or } from 'ember-truth-helpers';
+import { buildWaiter } from '@ember/test-waiters';
 import emitterAction from '../helpers/emitter-action.js';
 
 const MAX_PENDING_RESTORE_ATTEMPTS = 5;
+
+const waiter = buildWaiter('yapp-scroll-view:collection-scroll-view');
 
 export default class CollectionScrollView extends Component {
   @service('scroll-position-memory') memory;
@@ -115,6 +118,11 @@ export default class CollectionScrollView extends Component {
     if (this._restoreRafId) {
       cancelAnimationFrame(this._restoreRafId);
       this._restoreRafId = null;
+    }
+    this._endRestoreWaiterToken();
+    if (this._verticalCollectionRefreshWaiterToken) {
+      waiter.endAsync(this._verticalCollectionRefreshWaiterToken);
+      this._verticalCollectionRefreshWaiterToken = null;
     }
     this.scrollElement = null;
   }
@@ -224,7 +232,12 @@ export default class CollectionScrollView extends Component {
     }
 
     // Wait one frame for VC to re-render before notifying consumers.
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    let scrollToItemToken = waiter.beginAsync();
+    try {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    } finally {
+      waiter.endAsync(scrollToItemToken);
+    }
 
     this.args.onScrollToItem?.({
       id,
@@ -266,15 +279,24 @@ export default class CollectionScrollView extends Component {
       return;
     }
     this._verticalCollectionRefreshScheduled = true;
+    this._verticalCollectionRefreshWaiterToken = waiter.beginAsync();
     scheduleOnce('afterRender', this, this.dispatchVerticalCollectionRefresh);
   }
 
   dispatchVerticalCollectionRefresh() {
     this._verticalCollectionRefreshScheduled = false;
-    if (typeof window === 'undefined') {
-      return;
+    let token = this._verticalCollectionRefreshWaiterToken;
+    this._verticalCollectionRefreshWaiterToken = null;
+    try {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      window.dispatchEvent(new Event('resize'));
+    } finally {
+      if (token) {
+        waiter.endAsync(token);
+      }
     }
-    window.dispatchEvent(new Event('resize'));
   }
 
   storeScrollPosition() {
@@ -313,15 +335,33 @@ export default class CollectionScrollView extends Component {
     ) {
       if (hasReachedMaxAttempts) {
         this._pendingRestorePosition = undefined;
+        this._endRestoreWaiterToken();
       }
       return;
     }
     this._pendingRestoreAttempts = (this._pendingRestoreAttempts ?? 0) + 1;
     this._restoreScheduled = true;
+    if (!this._restoreWaiterToken) {
+      this._restoreWaiterToken = waiter.beginAsync();
+    }
     this._restoreRafId = requestAnimationFrame(() => {
       this._restoreRafId = null;
-      this.applyPendingRestore();
+      try {
+        this.applyPendingRestore();
+      } finally {
+        if (!this._restoreScheduled) {
+          this._endRestoreWaiterToken();
+        }
+      }
     });
+  }
+
+  _endRestoreWaiterToken() {
+    let token = this._restoreWaiterToken;
+    this._restoreWaiterToken = null;
+    if (token) {
+      waiter.endAsync(token);
+    }
   }
 
   applyPendingRestore() {
